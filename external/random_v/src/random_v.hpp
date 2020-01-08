@@ -17,66 +17,71 @@ template<typename StateType = uint64_t,
          typename DriverType = void>
 class Random
 {
-  StateType _state;
-  DriverType& _rng;
+    StateType _state;
+    DriverType& _rng;
 
-public:
-  Random(StateType state)
-    : _state(state)
-  {
-    _rng = lcg_xor_rot;
-  };
-  Random(StateType* state)
-    : Random(*state){};
+  public:
+    Random(StateType state)
+      : _state(state)
+    {
+        _rng = lcg_xor_rot;
+    };
+    Random(StateType* state)
+      : Random(*state){};
 
-  Random(DriverType& rng)
-    : _state(static_cast<uint64_t>(1))
-    , _rng(rng){};
+    Random(DriverType& rng)
+      : _state(static_cast<uint64_t>(1))
+      , _rng(rng){};
 
-  Random(StateType state, DriverType& rng)
-    : _state(state)
-    , _rng(rng){};
+    Random(StateType state, DriverType& rng)
+      : _state(state)
+      , _rng(rng){};
 
-  Random(StateType* state, DriverType& rng)
-    : Random(*state, rng){};
+    Random(StateType* state, DriverType& rng)
+      : Random(*state, rng){};
 
-  StateType state() { return _state; };
-  StateType state() const { return _state; };
-  void state(StateType state) { _state = state; };
+    Random(StateType state, DriverType& rng, OutputType out_state)
+      : _state(state)
+      , _rng(rng){};
 
-  OutputType generate()
-  {
-    OutputType t = _rng(&_state);
-    return t;
-  };
+    StateType state() { return _state; };
+    StateType state() const { return _state; };
+    void state(StateType state) { _state = state; };
 
-  OutputType operator()() { return this->generate(); };
+    OutputType generate()
+    {
+        OutputType t = _rng(&_state);
+        return t;
+    };
 
-  OutputType rand2m(uint8_t m)
-  {
-    return this->generate() >> (sizeof(OutputType) - (m + 1));
-  };
+    OutputType operator()() { return this->generate(); };
 
-  OutputType bounded_rand(OutputType range)
-  {
-    OutputType t = (-range) % range;
-    while (true) {
-      OutputType r = this->generate();
-      if (r >= t) return r % range;
-    }
-  };
+    OutputType rand2m(uint8_t m)
+    {
+        return this->generate() >> (sizeof(OutputType) - (m + 1));
+    };
 
-  OutputType randrange(OutputType a, OutputType b)
-  {
-    OutputType range = b - a;
-    return bounded_rand(range) + a;
-  };
+    OutputType bounded_rand(OutputType range)
+    {
+        OutputType t = (-range) % range;
+        while (true) {
+            OutputType r = this->generate();
+            if (r >= t)
+                return r % range;
+        }
+    };
 
-  double unit(uint64_t interval = 0x7FFFFFF)
-  {
-    double i = static_cast<double>(interval);
-    return this->generate() / i;
-  };
+    OutputType randrange(OutputType a, OutputType b)
+    {
+        OutputType range = b - a;
+        return bounded_rand(range) + a;
+    };
+
+    double unit(OutputType interval = 0xFFFFFFFF)
+    {
+        double i = static_cast<double>(interval);
+        return this->generate() / i;
+    };
 };
 }
 #endif // RAND_H

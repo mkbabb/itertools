@@ -34,16 +34,16 @@ template<size_t... Ixs, class Func>
 constexpr auto
 index_apply_impl(Func&& func, std::index_sequence<Ixs...>)
 {
-    return std::invoke(std::forward<Func>(func),
-                       std::integral_constant<size_t, Ixs>{}...);
+    return std::invoke(
+        std::forward<Func>(func), std::integral_constant<size_t, Ixs>{}...);
 }
 
 template<size_t N, class Func>
 constexpr auto
 index_apply(Func&& func)
 {
-    return index_apply_impl(std::forward<Func>(func),
-                            std::make_index_sequence<N>{});
+    return index_apply_impl(
+        std::forward<Func>(func), std::make_index_sequence<N>{});
 }
 
 /*
@@ -55,8 +55,8 @@ constexpr auto
 apply(Func&& func, Tup&& tup)
 {
     return index_apply<N>([&](auto... Ixs) {
-        return std::invoke(std::forward<Func>(func),
-                           std::get<Ixs>(std::forward<Tup>(tup))...);
+        return std::invoke(
+            std::forward<Func>(func), std::get<Ixs>(std::forward<Tup>(tup))...);
     });
 }
 
@@ -72,8 +72,8 @@ constexpr auto
 make_tuple_of(T value)
 {
     auto func = [&value](auto t) { return value; };
-    auto tup =
-      index_apply<N>([&value](auto... Ixs) { return std::make_tuple(Ixs...); });
+    auto tup = index_apply<N>(
+        [&value](auto... Ixs) { return std::make_tuple(Ixs...); });
     return index_apply<N>([&](auto... Ixs) {
         return std::make_tuple(func(std::get<Ixs>(tup))...);
     });
@@ -101,8 +101,9 @@ void
 for_each(Tup&& tup, Func&& func)
 {
     index_apply<N>([&](auto... Ixs) {
-        (func(Ixs,
-              std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
+        (func(
+             Ixs,
+             std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
          ...);
     });
     return;
@@ -144,8 +145,9 @@ roll(Tup&& tup, bool reverse = false)
     return tup;
 }
 
-template<class... Tuples,
-         const size_t N = std::min({std::tuple_size<Tuples>{}...})>
+template<
+    class... Tuples,
+    const size_t N = std::min({std::tuple_size<Tuples>{}...})>
 constexpr auto
 transpose(Tuples&&... tups)
 {
@@ -153,7 +155,7 @@ transpose(Tuples&&... tups)
         return std::make_tuple(std::get<Ixs>(tups)...);
     };
     return index_apply<N>(
-      [&](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
+        [&](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
 }
 
 template<class Tup, const size_t N = tuple_size<Tup>::value>
@@ -187,59 +189,67 @@ template<class Tup>
 constexpr auto
 increment_ref(Tup&& tup)
 {
-    return tupletools::for_each(std::forward<Tup>(tup),
-                                [](auto n, auto& v) { ++v; });
+    return tupletools::for_each(std::forward<Tup>(tup), [](auto n, auto& v) {
+        ++v;
+    });
 }
 
-template<class Pred,
-         class Tup1,
-         class Tup2,
-         const size_t N = tupletools::tuple_size_v<Tup1>,
-         const size_t M = tupletools::tuple_size_v<Tup2>>
+template<
+    class Pred,
+    class Tup1,
+    class Tup2,
+    const size_t N = tupletools::tuple_size_v<Tup1>,
+    const size_t M = tupletools::tuple_size_v<Tup2>>
 constexpr auto
 where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
     return index_apply<N>([&](auto... Ixs) {
-        auto tup = std::make_tuple(
-          std::invoke(std::forward<Pred>(pred),
-                      std::get<Ixs>(std::forward<Tup1>(tup1)),
-                      std::get<Ixs>(std::forward<Tup2>(tup2)))...);
+        auto tup = std::make_tuple(std::invoke(
+            std::forward<Pred>(pred),
+            std::get<Ixs>(std::forward<Tup1>(tup1)),
+            std::get<Ixs>(std::forward<Tup2>(tup2)))...);
         return tup;
     });
 }
 
-template<class Pred,
-         class Tup1,
-         class Tup2,
-         const size_t N = tupletools::tuple_size_v<Tup1>,
-         const size_t M = tupletools::tuple_size_v<Tup2>>
+template<
+    class Pred,
+    class Tup1,
+    class Tup2,
+    const size_t N = tupletools::tuple_size_v<Tup1>,
+    const size_t M = tupletools::tuple_size_v<Tup2>>
 constexpr bool
 any_where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
     return index_apply<N>([&](auto... Ixs) {
-        return ((std::invoke(std::forward<Pred>(pred),
-                             std::get<Ixs>(std::forward<Tup1>(tup1)),
-                             std::get<Ixs>(std::forward<Tup2>(tup2)))) ||
-                ...);
+        return (
+            (std::invoke(
+                std::forward<Pred>(pred),
+                std::get<Ixs>(std::forward<Tup1>(tup1)),
+                std::get<Ixs>(std::forward<Tup2>(tup2)))) ||
+            ...);
     });
 }
 
-template<class Pred,
-         class Tup1,
-         class Tup2,
-         const size_t N = tupletools::tuple_size_v<Tup1>,
-         const size_t M = tupletools::tuple_size_v<Tup2>>
+template<
+    class Pred,
+    class Tup1,
+    class Tup2,
+    const size_t N = tupletools::tuple_size_v<Tup1>,
+    const size_t M = tupletools::tuple_size_v<Tup2>>
 constexpr bool
 all_where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
     return index_apply<N>([&](auto... Ixs) {
-        return ((std::invoke(std::forward<Pred>(pred),
-                             std::get<Ixs>(std::forward<Tup1>(tup1)),
-                             std::get<Ixs>(std::forward<Tup2>(tup2)))) &&
-                ...);
+        return (
+            (std::invoke(
+                std::forward<Pred>(pred),
+                std::get<Ixs>(std::forward<Tup1>(tup1)),
+                std::get<Ixs>(std::forward<Tup2>(tup2)))) &&
+            ...);
     });
 }
 
@@ -256,12 +266,12 @@ std::string
 to_string(Tup&& tup)
 {
     std::string s = "(";
-    tupletools::for_each(std::forward<Tup>(tup),
-                         [&tup, &s](auto&& n, auto&& v) {
-                             s += std::to_string(v);
-                             s += n < N - 1 ? ", " : "";
-                             return false;
-                         });
+    tupletools::
+        for_each(std::forward<Tup>(tup), [&tup, &s](auto&& n, auto&& v) {
+            s += std::to_string(v);
+            s += n < N - 1 ? ", " : "";
+            return false;
+        });
     return s + ")";
 }
 
@@ -277,8 +287,8 @@ any_of(Tup&& tup)
         }
         return false;
     };
-    tupletools::for_each(std::forward<Tup>(tup),
-                         std::forward<decltype(func)>(func));
+    tupletools::
+        for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
     return b;
 }
 
@@ -294,8 +304,8 @@ all_of(Tup&& tup)
         }
         return false;
     };
-    tupletools::for_each(std::forward<Tup>(tup),
-                         std::forward<decltype(func)>(func));
+    tupletools::
+        for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
     return b;
 }
 
@@ -314,8 +324,8 @@ disjunction_of(Tup&& tup)
             return false;
         }
     };
-    tupletools::for_each(std::forward<Tup>(tup),
-                         std::forward<decltype(func)>(func));
+    tupletools::
+        for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
     return b;
 }
 
@@ -360,23 +370,24 @@ struct flatten_impl<std::tuple<T>>
 template<class T, class... Ts>
 struct flatten_impl<std::tuple<T, Ts...>>
 {
-    template<class Tup,
-             const size_t N = sizeof...(Ts),
-             std::enable_if_t<(N >= 1), int> = 0>
+    template<
+        class Tup,
+        const size_t N = sizeof...(Ts),
+        std::enable_if_t<(N >= 1), int> = 0>
     constexpr auto operator()(Tup&& tup)
     {
         auto tup_first =
-          flatten_impl<tupletools::remove_cvref_t<T>>{}(std::get<0>(tup));
+            flatten_impl<tupletools::remove_cvref_t<T>>{}(std::get<0>(tup));
 
         auto t_tup_args = index_apply<N>([&tup](auto... Ixs) {
             return std::make_tuple(std::get<Ixs + 1>(tup)...);
         });
         auto tup_args =
-          flatten_impl<tupletools::remove_cvref_t<decltype(t_tup_args)>>{}(
-            t_tup_args);
+            flatten_impl<tupletools::remove_cvref_t<decltype(t_tup_args)>>{}(
+                t_tup_args);
 
-        return std::tuple_cat(make_tuple_if(tup_first),
-                              make_tuple_if(tup_args));
+        return std::
+            tuple_cat(make_tuple_if(tup_first), make_tuple_if(tup_args));
     }
 };
 
@@ -385,11 +396,106 @@ constexpr auto
 flatten(Tup&& tup)
 {
     return flatten_impl<tupletools::remove_cvref_t<Tup>>{}(
-      std::forward<Tup>(tup));
+        std::forward<Tup>(tup));
 }
 }; // namespace tupletools
 
 namespace itertools {
+
+namespace detail {
+template<class Func, class Range>
+class transmog_impl;
+
+template<class Func, class Range>
+class transmog_iterator
+{
+public:
+    using iterator_category = std::forward_iterator_tag;
+
+    explicit constexpr transmog_iterator(Func&& func, Range&& rng) noexcept
+      : range{rng}
+      , func{func}
+    {}
+
+    constexpr auto operator++()
+    {
+        ++this->range;
+        return *this;
+    }
+
+    template<class Ranged>
+    constexpr bool operator==(transmog_iterator<Func, Ranged>& rhs)
+    {
+        return this->range == rhs.range;
+    }
+
+    template<class Ranged>
+    constexpr bool operator!=(transmog_iterator<Func, Ranged>& rhs)
+    {
+        return !(*this == rhs);
+    }
+
+    constexpr auto operator*() noexcept
+    {
+        return *(this->range);
+    }
+
+    Func func;
+    Range range;
+};
+
+template<class Func, class Range>
+class [[nodiscard]] transmog_impl
+{
+public:
+    using rng_it_begin = decltype(std::declval<Range>().begin());
+    using rng_it_end = decltype(std::declval<Range>().end());
+
+    using it_begin = transmog_iterator<Func, rng_it_begin>;
+    using it_end = transmog_iterator<Func, rng_it_end>;
+
+    explicit constexpr transmog_impl(Func && func, Range && rng)
+      : _begin{std::forward<Func>(func),
+               std::forward<rng_it_begin>(rng.begin())}
+      , _end{std::forward<Func>(func), std::forward<rng_it_end>(rng.end())}
+      , range{rng}
+      , func{func} {};
+
+    transmog_impl& operator=(const transmog_impl& rhs) = default;
+
+    ~transmog_impl() = default;
+
+    it_begin begin()
+    {
+        return _begin;
+    }
+    it_end end()
+    {
+        return _end;
+    }
+
+private:
+    Func func;
+    Range range;
+
+    it_begin _begin;
+    it_end _end;
+};
+}; // namespace detail
+
+/*
+Concatenates an arbitrary number of iterables together into one iterable
+container. Each iterable herein must provide begin and end member functions
+(whereof are used to iterate upon each iterable within the container).
+ */
+template<class Func, class Range>
+constexpr auto
+transmog(Func&& func, Range&& rng)
+{
+    return detail::transmog_impl<
+        Func,
+        Range>(std::forward<Func>(func), std::forward<Range>(rng));
+}
 
 namespace detail {
 
@@ -423,18 +529,17 @@ Notice the hereinbefore shown containers were of unequal length:
 the zip iterator automatically scales downward to the smallest of the given
 container sizes.
  */
-template<class Func, class... Args>
+template<class... Args>
 class zip_impl;
 
-template<class Func, class Tup>
+template<class Tup>
 class zip_iterator
 {
-  public:
+public:
     using iterator_category = std::forward_iterator_tag;
 
-    explicit constexpr zip_iterator(Func&& func, Tup&& tup_args) noexcept
-      : func{func}
-      , tup_args{tup_args}
+    explicit constexpr zip_iterator(Tup&& tup_args) noexcept
+      : tup_args{tup_args}
     {}
 
     constexpr auto operator++()
@@ -443,68 +548,72 @@ class zip_iterator
         return *this;
     }
 
-    template<class Funk, class Tupe>
-    constexpr bool operator==(zip_iterator<Funk, Tupe>& rhs)
+    template<class Tupe>
+    constexpr bool operator==(zip_iterator<Tupe>& rhs)
     {
-        return any_where([](auto& x, auto& y) { return x == y; },
-                         this->tup_args,
-                         rhs.tup_args);
+        return any_where(
+            [](auto& x, auto& y) { return x == y; },
+            this->tup_args,
+            rhs.tup_args);
     }
 
-    template<class Funk, class Tupe>
-    constexpr bool operator!=(zip_iterator<Funk, Tupe>& rhs)
+    template<class Tupe>
+    constexpr bool operator!=(zip_iterator<Tupe>& rhs)
     {
         return !(*this == rhs);
     }
 
     constexpr auto operator*() noexcept
     {
-        return func(deref_copy(this->tup_args));
+        return deref_copy(this->tup_args);
     }
-    constexpr auto operator-> () noexcept { return this->tup_args; }
+    constexpr auto operator-> () noexcept
+    {
+        return this->tup_args;
+    }
 
     Tup tup_args;
-    Func func;
 };
 
-template<class Func, class... Args>
+template<class... Args>
 class [[nodiscard]] zip_impl
 {
     static constexpr size_t N = sizeof...(Args);
     static_assert(N > 0, "!");
 
-  public:
+public:
     using tup_it_begin = std::tuple<decltype(std::declval<Args>().begin())...>;
     using tup_it_end = std::tuple<decltype(std::declval<Args>().end())...>;
 
-    using it_begin = zip_iterator<Func, tup_it_begin>;
-    using it_end = zip_iterator<Func, tup_it_end>;
+    using it_begin = zip_iterator<tup_it_begin>;
+    using it_end = zip_iterator<tup_it_end>;
 
-    explicit constexpr zip_impl(Func && func, Args && ... args)
-      : _begin{std::forward<Func>(func), std::forward_as_tuple(args.begin()...)}
-      , _end{std::forward<Func>(func), std::forward_as_tuple(args.end()...)}
-      , tup_args{args...}
-      , func{func} {};
+    explicit constexpr zip_impl(Args && ... args)
+      : _begin{std::forward_as_tuple(args.begin()...)}
+      , _end{std::forward_as_tuple(args.end()...)}
+      , tup_args{args...} {};
 
     zip_impl& operator=(const zip_impl& rhs) = default;
 
     template<class Funky>
     auto operator|(Funky funk)
     {
-        return tupletools::index_apply<N>([&](auto... Ixs) {
-            return zip_impl<Funky, Args...>(std::forward<Funky>(funk),
-                                            std::forward<Args>(
-                                              std::get<Ixs>(tup_args))...);
-        });
+        return zip(transmog_impl<Funky, decltype(*this)>(
+            std::forward<Funky>(funk), std::forward<decltype(*this)>(*this)));
     }
 
     ~zip_impl() = default;
 
-    it_begin begin() { return _begin; }
-    it_end end() { return _end; }
+    it_begin begin()
+    {
+        return _begin;
+    }
+    it_end end()
+    {
+        return _end;
+    }
 
-  private:
-    Func func;
+private:
     std::tuple<Args...> tup_args;
 
     it_begin _begin;
@@ -518,36 +627,37 @@ Zips an arbitrary number of iterables together into one iterable container. Each
 iterable herein must provide begin and end member functions (whereof are used to
 iterate upon each iterable within the container).
  */
-template<class... Args,
-         std::enable_if_t<!(tupletools::is_tupleoid_v<Args> || ...), int> = 0>
+template<
+    class... Args,
+    std::enable_if_t<!(tupletools::is_tupleoid_v<Args> || ...), int> = 0>
 constexpr auto
 zip(Args&&... args)
 {
-    auto func = [](auto tup) { return tup; };
-    return detail::zip_impl<decltype(func),
-                            Args...>(std::forward<decltype(func)>(func),
-                                     std::forward<Args>(args)...);
+    return detail::zip_impl<Args...>(std::forward<Args>(args)...);
 }
 
 namespace detail {
-template<class Func, class... Args>
+template<class... Args>
 class concat_impl;
 
-template<class Func, class Tup>
+template<class Tup>
 class concat_iterator
 {
-  public:
+public:
     using iterator_category = std::forward_iterator_tag;
 
-    explicit constexpr concat_iterator(Func&& func, Tup&& tup_args) noexcept
-      : func{func}
-      , tup_args{tup_args}
+    explicit constexpr concat_iterator(Tup&& tup_args) noexcept
+      : tup_args{tup_args}
     {}
 
-    constexpr auto operator++() { ++std::get<0>(tup_args); }
+    constexpr auto operator++()
+    {
+        ++std::get<0>(tup_args);
+        return *this;
+    }
 
-    template<class Funk, class Tupe>
-    constexpr bool operator==(concat_iterator<Funk, Tupe>& rhs)
+    template<class Tupe>
+    constexpr bool operator==(concat_iterator<Tupe>& rhs)
     {
         auto b = std::get<0>(this->tup_args) == std::get<0>(rhs.tup_args);
 
@@ -560,8 +670,8 @@ class concat_iterator
         return b;
     }
 
-    template<class Funk, class Tupe>
-    constexpr bool operator!=(concat_iterator<Funk, Tupe>& rhs)
+    template<class Tupe>
+    constexpr bool operator!=(concat_iterator<Tupe>& rhs)
     {
         return !(*this == rhs);
     }
@@ -569,52 +679,55 @@ class concat_iterator
     constexpr auto operator*() noexcept
     {
         // Potentially forward this.
-        return func(*std::get<0>(this->tup_args));
+        return *std::get<0>(this->tup_args);
     }
-    constexpr auto operator-> () noexcept { return this->tup_args; }
+    constexpr auto operator-> () noexcept
+    {
+        return this->tup_args;
+    }
 
     Tup tup_args;
-    Func func;
 };
 
-template<class Func, class... Args>
+template<class... Args>
 class [[nodiscard]] concat_impl
 {
     static constexpr size_t N = sizeof...(Args);
     static_assert(N > 0, "!");
 
-  public:
+public:
     using tup_it_begin = std::tuple<decltype(std::declval<Args>().begin())...>;
     using tup_it_end = std::tuple<decltype(std::declval<Args>().end())...>;
 
-    using it_begin = concat_iterator<Func, tup_it_begin>;
-    using it_end = concat_iterator<Func, tup_it_end>;
+    using it_begin = concat_iterator<tup_it_begin>;
+    using it_end = concat_iterator<tup_it_end>;
 
-    explicit constexpr concat_impl(Func && func, Args && ... args)
-      : _begin{std::forward<Func>(func), std::forward_as_tuple(args.begin()...)}
-      , _end{std::forward<Func>(func), std::forward_as_tuple(args.end()...)}
-      , tup_args{args...}
-      , func{func} {};
+    explicit constexpr concat_impl(Args && ... args)
+      : _begin{std::forward_as_tuple(args.begin()...)}
+      , _end{std::forward_as_tuple(args.end()...)}
+      , tup_args{args...} {};
 
     concat_impl& operator=(const concat_impl& rhs) = default;
 
     template<class Funky>
     auto operator|(Funky funk)
     {
-        return tupletools::index_apply<N>([&](auto... Ixs) {
-            return concat_impl<Funky, Args...>(std::forward<Funky>(funk),
-                                               std::forward<Args>(
-                                                 std::get<Ixs>(tup_args))...);
-        });
+        return zip(transmog_impl<Funky, decltype(*this)>(
+            std::forward<Funky>(funk), std::forward<decltype(*this)>(*this)));
     }
 
     ~concat_impl() = default;
 
-    it_begin begin() { return _begin; }
-    it_end end() { return _end; }
+    it_begin begin()
+    {
+        return _begin;
+    }
+    it_end end()
+    {
+        return _end;
+    }
 
-  private:
-    Func func;
+private:
     std::tuple<Args...> tup_args;
 
     it_begin _begin;
@@ -627,15 +740,13 @@ Concatenates an arbitrary number of iterables together into one iterable
 container. Each iterable herein must provide begin and end member functions
 (whereof are used to iterate upon each iterable within the container).
  */
-template<class... Args,
-         std::enable_if_t<!(tupletools::is_tupleoid_v<Args> || ...), int> = 0>
+template<
+    class... Args,
+    std::enable_if_t<!(tupletools::is_tupleoid_v<Args> || ...), int> = 0>
 constexpr auto
 concat(Args&&... args)
 {
-    auto func = [](auto tup) { return tup; };
-    return detail::concat_impl<decltype(func),
-                               Args...>(std::forward<decltype(func)>(func),
-                                        std::forward<Args>(args)...);
+    return detail::concat_impl<Args...>(std::forward<Args>(args)...);
 }
 
 /*
@@ -677,7 +788,7 @@ class range;
 template<typename T = size_t>
 class range_iterator : public std::iterator<std::forward_iterator_tag, T>
 {
-  public:
+public:
     using iterator_category = std::forward_iterator_tag;
 
     constexpr explicit range_iterator(range<T>& seq)
@@ -690,19 +801,28 @@ class range_iterator : public std::iterator<std::forward_iterator_tag, T>
         return *this;
     }
 
-    constexpr bool operator==(T rhs) { return _seq._current == rhs; }
-    constexpr bool operator!=(T rhs) { return !(*this == rhs); }
+    constexpr bool operator==(T rhs)
+    {
+        return _seq._current == rhs;
+    }
+    constexpr bool operator!=(T rhs)
+    {
+        return !(*this == rhs);
+    }
 
-    constexpr const T& operator*() noexcept { return _seq._current; }
+    constexpr const T& operator*() noexcept
+    {
+        return _seq._current;
+    }
 
-  private:
+private:
     range<T> _seq;
 };
 
 template<typename T>
 class [[nodiscard]] range
 {
-  public:
+public:
     using iterator = range_iterator<T>;
 
     constexpr explicit range(T stop)
@@ -731,16 +851,37 @@ class [[nodiscard]] range
       , _current(_start)
     {}
 
-    T start() { return _start; }
-    T stop() { return _stop; }
-    T stride() { return _stride; }
-    T& current() { return _current; }
-    size_t size() const { return _size; }
+    T start()
+    {
+        return _start;
+    }
+    T stop()
+    {
+        return _stop;
+    }
+    T stride()
+    {
+        return _stride;
+    }
+    T& current()
+    {
+        return _current;
+    }
+    size_t size() const
+    {
+        return _size;
+    }
 
-    iterator begin() { return iterator(*this); }
-    T end() { return _stop; }
+    iterator begin()
+    {
+        return iterator(*this);
+    }
+    T end()
+    {
+        return _stop;
+    }
 
-  private:
+private:
     friend class range_iterator<T>;
     T _start, _stop, _stride, _current;
     size_t _size = 0;
@@ -767,16 +908,18 @@ to continue onward.
 
 @returns iter
  */
-template<class Iterable,
-         class BinaryFunction,
-         class IterableValue = tupletools::container_iterator_value_t<Iterable>>
+template<
+    class Iterable,
+    class BinaryFunction,
+    class IterableValue = tupletools::container_iterator_value_t<Iterable>>
 constexpr Iterable
 for_each(Iterable&& iter, BinaryFunction&& func)
 {
     for (auto [n, i] : enumerate(iter)) {
-        std::invoke(std::forward<BinaryFunction>(func),
-                    std::forward<decltype(n)>(n),
-                    std::forward<decltype(i)>(i));
+        std::invoke(
+            std::forward<BinaryFunction>(func),
+            std::forward<decltype(n)>(n),
+            std::forward<decltype(i)>(i));
     }
     return iter;
 }
@@ -796,22 +939,16 @@ template<typename ReductionValue, class Iterable>
 constexpr ReductionValue
 sum(Iterable&& iter)
 {
-    return itertools::reduce<ReductionValue>(iter,
-                                             0,
-                                             [](auto n, auto v, auto i) {
-                                                 return i + v;
-                                             });
+    return itertools::reduce<
+        ReductionValue>(iter, 0, [](auto n, auto v, auto i) { return i + v; });
 }
 
 template<typename ReductionValue, class Iterable>
 constexpr ReductionValue
 mul(Iterable&& iter)
 {
-    return itertools::reduce<ReductionValue>(iter,
-                                             1,
-                                             [](auto n, auto v, auto i) {
-                                                 return i * v;
-                                             });
+    return itertools::reduce<
+        ReductionValue>(iter, 1, [](auto n, auto v, auto i) { return i * v; });
 }
 
 template<class Iterable>
@@ -894,12 +1031,11 @@ time_multiple(size_t iterations, Funcs&&... funcs)
         std::sort(value.begin(), value.end());
 
         integral_time_t avg =
-          itertools::reduce<integral_time_t>(value,
-                                             0,
-                                             [](auto n, auto v, auto i) {
-                                                 return v.count() + i;
-                                             }) /
-          iterations;
+            itertools::reduce<integral_time_t>(
+                value,
+                0,
+                [](auto n, auto v, auto i) { return v.count() + i; }) /
+            iterations;
 
         extremal_times[key] = {value[0].count(),
                                value[value.size() - 1].count(),
@@ -915,8 +1051,9 @@ struct get_ndim_impl
 {
     size_t _ndim = 0;
 
-    template<class Iterable,
-             std::enable_if_t<tupletools::is_iterable_v<Iterable>, int> = 0>
+    template<
+        class Iterable,
+        std::enable_if_t<tupletools::is_iterable_v<Iterable>, int> = 0>
     constexpr void recurse(Iterable&& iter)
     {
         _ndim = 0;
@@ -926,8 +1063,9 @@ struct get_ndim_impl
         _ndim++;
     }
 
-    template<class Tup,
-             std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0>
+    template<
+        class Tup,
+        std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0>
     constexpr void recurse(Tup&& tup)
     {
         tupletools::for_each(tup, [&](auto&& n, auto&& v) {
@@ -935,10 +1073,12 @@ struct get_ndim_impl
         });
     }
 
-    template<class Iterable,
-             std::enable_if_t<!tupletools::is_iterable_v<Iterable> &&
-                                !tupletools::is_tupleoid_v<Iterable>,
-                              int> = 0>
+    template<
+        class Iterable,
+        std::enable_if_t<
+            !tupletools::is_iterable_v<Iterable> &&
+                !tupletools::is_tupleoid_v<Iterable>,
+            int> = 0>
     constexpr void recurse(Iterable&& iter)
     {}
 
@@ -960,8 +1100,8 @@ get_ndim(Iterable&& iter)
 
 template<typename Char, typename Traits, typename Allocator>
 std::basic_string<Char, Traits, Allocator> operator*(
-  const std::basic_string<Char, Traits, Allocator> s,
-  size_t n)
+    const std::basic_string<Char, Traits, Allocator> s,
+    size_t n)
 {
     std::basic_string<Char, Traits, Allocator> tmp = "";
     for (auto i : range(n)) {
@@ -972,8 +1112,8 @@ std::basic_string<Char, Traits, Allocator> operator*(
 
 template<typename Char, typename Traits, typename Allocator>
 std::basic_string<Char, Traits, Allocator> operator*(
-  size_t n,
-  const std::basic_string<Char, Traits, Allocator>& s)
+    size_t n,
+    const std::basic_string<Char, Traits, Allocator>& s)
 {
     return s * n;
 }
@@ -1001,11 +1141,11 @@ ltrim(std::string s)
 std::string
 rtrim(std::string s)
 {
-    s.erase(std::find_if(s.rbegin(),
-                         s.rend(),
-                         [](int ch) { return !std::isspace(ch); })
-              .base(),
-            s.end());
+    s.erase(
+        std::find_if(
+            s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); })
+            .base(),
+        s.end());
     return s;
 }
 
@@ -1020,10 +1160,11 @@ trim(std::string s)
 namespace detail {
 
 constexpr int
-bidirectional_match(const std::string& buff,
-                    const std::string& token,
-                    size_t pos = 0,
-                    bool backwards = false)
+bidirectional_match(
+    const std::string& buff,
+    const std::string& token,
+    size_t pos = 0,
+    bool backwards = false)
 {
     int neg = 1;
     int end = buff.size();
@@ -1054,10 +1195,11 @@ bidirectional_match(const std::string& buff,
 }
 
 std::string
-summarize_string(const std::string& buff,
-                 const std::string& sep,
-                 size_t max_items = 3,
-                 size_t max_len = 80)
+summarize_string(
+    const std::string& buff,
+    const std::string& sep,
+    size_t max_items = 3,
+    size_t max_len = 80)
 {
     if (buff.size() < max_len) {
         return buff;
@@ -1104,9 +1246,10 @@ struct to_string_impl
     std::string _sep, _trim_sep;
 
     template<class Iterable>
-    explicit constexpr to_string_impl(Iterable&& iter,
-                                      Formatter&& formatter,
-                                      std::string& sep)
+    explicit constexpr to_string_impl(
+        Iterable&& iter,
+        Formatter&& formatter,
+        std::string& sep)
 
       : _formatter{formatter}
       , _sep{sep}
@@ -1138,7 +1281,7 @@ struct to_string_impl
     std::string format_newline(std::string& buff, size_t line_count)
     {
         std::string new_line =
-          std::string("\n") * (line_count < 0 ? 0 : line_count);
+            std::string("\n") * (line_count < 0 ? 0 : line_count);
         std::string spacing = _trim_sep + new_line;
         buff += spacing;
         _prev_len = spacing.size();
@@ -1160,9 +1303,10 @@ struct to_string_impl
         return buff;
     }
 
-    template<class Tup,
-             std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0,
-             const size_t N = tupletools::tuple_size_v<Tup>>
+    template<
+        class Tup,
+        std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0,
+        const size_t N = tupletools::tuple_size_v<Tup>>
     std::string formatter_wrap(Tup&& tup, size_t ix)
     {
         std::string buff;
@@ -1170,21 +1314,21 @@ struct to_string_impl
         bool nested_tupleoid = false;
 
         tupletools::
-          for_each(std::forward<Tup>(tup), [&](auto n, auto&& iter_n) {
-              t_buff =
-                to_string_impl{std::forward<decltype(iter_n)>(iter_n),
-                               std::forward<Formatter>(_formatter),
-                               _sep}(std::forward<decltype(iter_n)>(iter_n));
-              if (n < N - 1) {
-                  t_buff += _sep;
-                  if (nested_tupleoid || is_iterable_v<decltype(iter_n)> ||
-                      is_tupleoid_v<decltype(iter_n)>) {
-                      t_buff += '\n';
-                      nested_tupleoid = true;
-                  }
-              }
-              buff += t_buff;
-          });
+            for_each(std::forward<Tup>(tup), [&](auto n, auto&& iter_n) {
+                t_buff = to_string_impl{std::forward<decltype(iter_n)>(iter_n),
+                                        std::forward<Formatter>(_formatter),
+                                        _sep}(
+                    std::forward<decltype(iter_n)>(iter_n));
+                if (n < N - 1) {
+                    t_buff += _sep;
+                    if (nested_tupleoid || is_iterable_v<decltype(iter_n)> ||
+                        is_tupleoid_v<decltype(iter_n)>) {
+                        t_buff += '\n';
+                        nested_tupleoid = true;
+                    }
+                }
+                buff += t_buff;
+            });
 
         buff = "(" + format_indent(buff) + ")";
         if (ix > 0) {
@@ -1194,23 +1338,26 @@ struct to_string_impl
         return buff;
     }
 
-    template<class Iterable,
-             std::enable_if_t<!tupletools::is_tupleoid_v<Iterable>, int> = 0>
+    template<
+        class Iterable,
+        std::enable_if_t<!tupletools::is_tupleoid_v<Iterable>, int> = 0>
     std::string formatter_wrap(Iterable&& iter, size_t ix)
     {
-        return std::invoke(std::forward<Formatter>(_formatter),
-                           std::forward<Iterable>(iter));
+        return std::invoke(
+            std::forward<Formatter>(_formatter), std::forward<Iterable>(iter));
     }
 
-    template<class Iterable,
-             std::enable_if_t<!tupletools::is_iterable_v<Iterable>, int> = 0>
+    template<
+        class Iterable,
+        std::enable_if_t<!tupletools::is_iterable_v<Iterable>, int> = 0>
     std::string recurse(Iterable&& iter, size_t ix)
     {
         return formatter_wrap(std::forward<Iterable>(iter), ix);
     }
 
-    template<class Iterable,
-             std::enable_if_t<tupletools::is_iterable_v<Iterable>, int> = 0>
+    template<
+        class Iterable,
+        std::enable_if_t<tupletools::is_iterable_v<Iterable>, int> = 0>
     std::string recurse(Iterable&& iter, size_t ix)
     {
         _prev_ix = ix;
