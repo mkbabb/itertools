@@ -1,15 +1,16 @@
 ﻿---
 BasedOnStyle: Mozilla
-AlignAfterOpenBracket: Align
+AccessModifierOffset: -4
+AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: 'false'
 AlignConsecutiveDeclarations: 'false'
 AllowAllParametersOfDeclarationOnNextLine: 'false'
 AlignTrailingComments: 'true'
-AllowShortBlocksOnASingleLine: 'true'
-AllowShortCaseLabelsOnASingleLine: 'true'
-AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: 'true'
-AllowShortLoopsOnASingleLine: 'true'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortCaseLabelsOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: 'false'
+AllowShortLoopsOnASingleLine: 'false'
 AlwaysBreakAfterReturnType: TopLevel
 BinPackArguments: 'false'
 BinPackParameters: 'false'
@@ -17,10 +18,11 @@ BreakBeforeBraces: Mozilla
 BreakBeforeTernaryOperators: 'true'
 ColumnLimit: '80'
 CompactNamespaces: 'true'
+ContinuationIndentWidth: '4'
 Cpp11BracedListStyle: 'true'
 ExperimentalAutoDetectBinPacking: 'false'
 IncludeBlocks: Regroup
-IndentWidth: 4
+IndentWidth: '4'
 ReflowComments: 'true'
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
