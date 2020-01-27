@@ -452,7 +452,7 @@ public:
 
     auto operator++()
     {
-        std::advance(this->range, 1);
+        ++this->range;
         return *this;
     }
 
@@ -497,6 +497,85 @@ public:
         return std::invoke(this->func, *(this->range));
     }
 };
+
+template<class Func, class Range>
+class block_iterator : public range_function_iterator<Func, Range>
+{
+public:
+    using IteratorValue = tupletools::iterator_t<Range>;
+    std::vector<IteratorValue> ret;
+
+    block_iterator(Func&& func, Range&& rng) noexcept
+      : range_function_iterator<
+            Func,
+            Range>(std::forward<Func>(func), std::forward<Range>(rng))
+    {
+        this->block_size = func(0);
+        ret.reserve(block_size);
+    }
+
+    auto operator++()
+    {
+        auto i = 0;
+        while (i++ < block_size) {
+            ret.pop_back();
+        }
+        return *this;
+    }
+
+    auto operator*() noexcept
+    {
+        auto i = 0;
+        while (i++ < block_size) {
+            ret.push_back(*(this->range));
+            ++(this->range);
+        }
+        return ret;
+    }
+    size_t block_size;
+};
+
+template<class Func, class Range>
+class filter_iterator : public range_function_iterator<Func, Range>
+{
+public:
+    filter_iterator(Func&& func, Range&& rng) noexcept
+      : range_function_iterator<
+            Func,
+            Range>(std::forward<Func>(func), std::forward<Range>(rng))
+    {}
+
+    auto operator*() noexcept
+    {
+        while (!this->func(*(this->range))) {
+            ++(this->range);
+        }
+        return *(this->range);
+    }
+};
+
+template<class Func, class Range>
+constexpr auto
+filter(Func&& func, Range&& rng)
+{
+    return range_function<
+        Func,
+        Range,
+        filter_iterator>(std::forward<Func>(func), std::forward<Range>(rng));
+}
+
+template<class Range>
+constexpr auto
+block(Range&& rng, size_t block_size)
+{
+    auto func = [&](auto&& v) { return block_size; };
+    using Func = decltype(func);
+
+    return range_function<
+        Func,
+        Range,
+        block_iterator>(std::forward<Func>(func), std::forward<Range>(rng));
+}
 
 template<class Func, class Range>
 constexpr auto
@@ -806,7 +885,7 @@ to continue onward.
 template<
     class Iterable,
     class BinaryFunction,
-    class IterableValue = tupletools::container_iterator_value_t<Iterable>>
+    class IterableValue = tupletools::iterable_t<Iterable>>
 constexpr Iterable
 for_each(Iterable&& iter, BinaryFunction&& func)
 {
@@ -1293,7 +1372,9 @@ std::string
 to_string(Iterable&& iter)
 {
     std::string sep = ", ";
-    auto formatter = [](auto&& s) -> std::string { return std::to_string(s); };
+    auto formatter = [](auto&& s) -> std::string {
+        return std::string(fmt::format("{}", s));
+    };
     return detail::to_string_impl{std::forward<Iterable>(iter),
                                   std::forward<decltype(formatter)>(formatter),
                                   sep}(iter);

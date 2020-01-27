@@ -791,21 +791,21 @@ main()
     reduction_tests();
     generator_tests();
     // time_multiple_tests();
-    to_string_tests();
+    // to_string_tests();
 
     frexp_tests();
 
-    // std::vector<int> v1 = {1, 2, 3, 4, 5};
-    // std::vector<int> v2 = {10, 9, 8, 7, 6};
-    // std::vector<int> v3 = {100, 200, 300, 400, 500};
+    std::vector<int> v1 = {1, 2, 3, 4, 5};
+    std::vector<int> v2 = {10, 9, 8, 7, 6};
+    std::vector<int> v3 = {100, 200, 300, 400, 500};
 
-    // auto l1 = std::list<float>{1.2, 1.2, 1.2};
+    auto l1 = std::list<float>{1.2, 1.2, 1.2};
 
-    // auto v1_enum = itertools::enumerate(v1);
+    auto v1_enum = itertools::enumerate(v1);
 
-    // auto f = [](auto v) { return v + 1; };
+    auto f = [](auto v) { return v + 1; };
 
-    // // auto vv = itertools::detail::transmog_impl(f, v1);
+    // auto vv = itertools::detail::transmog_impl(f, v1);
     // auto ww = itertools::transmog(f, v3);
     // auto concatted = itertools::concat(v1, v2, v3);
 
@@ -814,6 +814,26 @@ main()
     //     std::get<0>(t) = 20;
     //     std::cout << "HI" << std::endl;
     // }
+
+    // auto tf = [](auto&& v) {
+    //     std::get<0>(v) = 999;
+    //     return v;
+    // };
+
+    // auto zp = itertools::zip(v1, v2, v3);
+    // auto ts = itertools::transmog(tf, zp);
+
+    // for (auto t : ts) {
+    //     std::cout << "MIJN" << std::endl;
+    // }
+
+    auto pred = [](auto&& v) { return v > 10; };
+
+    auto b = itertools::filter(pred, v1);
+
+    for (auto v : b) {
+        std::cout << "JI" << std::endl;
+    }
 
     // auto multi_zip = itertools::zip(v1, l1, itertools::enumerate(v2)) |
     //                  [](auto r) { return r; };
