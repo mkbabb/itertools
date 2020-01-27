@@ -782,34 +782,38 @@ int
 main()
 {
 
-    // zip_tests();
-    // any_tests();
-    // enumerate_tests();
-    // range_tests();
-    // itertools_tests();
-    // tupletools_tests();
-    // reduction_tests();
-    // generator_tests();
+    zip_tests();
+    any_tests();
+    enumerate_tests();
+    range_tests();
+    itertools_tests();
+    tupletools_tests();
+    reduction_tests();
+    generator_tests();
     // time_multiple_tests();
-    // to_string_tests();
+    to_string_tests();
 
-    // frexp_tests();
+    frexp_tests();
 
-    std::vector<int> v1 = {1, 2, 3, 4, 5};
-    std::vector<int> v2 = {10, 9, 8, 7, 6};
-    std::vector<int> v3 = {100, 200, 300, 400, 500};
+    // std::vector<int> v1 = {1, 2, 3, 4, 5};
+    // std::vector<int> v2 = {10, 9, 8, 7, 6};
+    // std::vector<int> v3 = {100, 200, 300, 400, 500};
 
-    auto l1 = std::list<float>{1.2, 1.2, 1.2};
+    // auto l1 = std::list<float>{1.2, 1.2, 1.2};
 
-    auto v1_enum = itertools::enumerate(v1);
+    // auto v1_enum = itertools::enumerate(v1);
 
-    auto f = [](auto v) { return v + 1; };
+    // auto f = [](auto v) { return v + 1; };
 
-    auto vv = itertools::detail::transmog_impl(f, v1);
+    // // auto vv = itertools::detail::transmog_impl(f, v1);
+    // auto ww = itertools::transmog(f, v3);
+    // auto concatted = itertools::concat(v1, v2, v3);
 
-    for (auto t : vv) {
-        std::cout << "HI" << std::endl;
-    }
+    // auto vv = itertools::zip(v1, v2, v3, ww, concatted);
+    // for (auto t : vv) {
+    //     std::get<0>(t) = 20;
+    //     std::cout << "HI" << std::endl;
+    // }
 
     // auto multi_zip = itertools::zip(v1, l1, itertools::enumerate(v2)) |
     //                  [](auto r) { return r; };
