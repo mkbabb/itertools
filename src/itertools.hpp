@@ -402,68 +402,61 @@ flatten(Tup&& tup)
 
 namespace itertools {
 
-namespace detail {
 template<class Func, class Range>
-class transmog_impl;
-
-template<class Func, class Range>
-class transmog_iterator
+class range_function_iterator
 {
 public:
     using iterator_category = std::forward_iterator_tag;
 
-    explicit constexpr transmog_iterator(Func&& func, Range&& rng) noexcept
+    explicit range_function_iterator(Func&& func, Range&& rng) noexcept
       : range{rng}
       , func{func}
     {}
 
-    constexpr auto operator++()
+    auto operator++()
     {
-        ++this->range;
+        std::advance(this->range, 1);
         return *this;
     }
 
+    auto operator*() noexcept = delete;
+
     template<class Ranged>
-    constexpr bool operator==(transmog_iterator<Func, Ranged>& rhs)
+    bool operator==(range_function_iterator<Func, Ranged>& rhs)
     {
         return this->range == rhs.range;
     }
 
     template<class Ranged>
-    constexpr bool operator!=(transmog_iterator<Func, Ranged>& rhs)
+    bool operator!=(range_function_iterator<Func, Ranged>& rhs)
     {
         return !(*this == rhs);
-    }
-
-    constexpr auto operator*() noexcept
-    {
-        return *(this->range);
     }
 
     Func func;
     Range range;
 };
 
-template<class Func, class Range>
-class [[nodiscard]] transmog_impl
+template<class Func, class Range, template<typename... Ts> class Iterator>
+class range_function
 {
 public:
     using rng_it_begin = decltype(std::declval<Range>().begin());
     using rng_it_end = decltype(std::declval<Range>().end());
 
-    using it_begin = transmog_iterator<Func, rng_it_begin>;
-    using it_end = transmog_iterator<Func, rng_it_end>;
+    using it_begin = Iterator<Func, rng_it_begin>;
+    using it_end = Iterator<Func, rng_it_end>;
 
-    explicit constexpr transmog_impl(Func && func, Range && rng)
+    range_function(Func&& func, Range&& rng)
       : _begin{std::forward<Func>(func),
                std::forward<rng_it_begin>(rng.begin())}
       , _end{std::forward<Func>(func), std::forward<rng_it_end>(rng.end())}
       , range{rng}
       , func{func} {};
 
-    transmog_impl& operator=(const transmog_impl& rhs) = default;
+    range_function& operator=(const range_function& rhs) = default;
 
-    ~transmog_impl() = default;
+    ~range_function() = default;
 
     it_begin begin()
     {
@@ -474,31 +467,43 @@ public:
         return _end;
     }
 
-private:
     Func func;
     Range range;
 
     it_begin _begin;
     it_end _end;
 };
-}; // namespace detail
-
-/*
-Concatenates an arbitrary number of iterables together into one iterable
-container. Each iterable herein must provide begin and end member functions
-(whereof are used to iterate upon each iterable within the container).
- */
-template<class Func, class Range>
-constexpr auto
-transmog(Func&& func, Range&& rng)
-{
-    return detail::transmog_impl<
-        Func,
-        Range>(std::forward<Func>(func), std::forward<Range>(rng));
-}
 
 namespace detail {
 
+template<class Func, class Range>
+class transmog_iterator : public range_function_iterator<Func, Range>
+{
+public:
+    explicit transmog_iterator(Func&& func, Range&& rng) noexcept
+      : range_function_iterator<
+            Func,
+            Range>(std::forward<Func>(func), std::forward<Range>(rng))
+    {}
+
+    auto operator*() noexcept
+    {
+        return std::invoke(this->func, *(this->range));
+    }
+};
+
+template<class Func, class Range>
+class transmog_impl : public range_function<Func, Range, transmog_iterator>
+{
+public:
+    explicit transmog_impl(Func func, Range rng)
+      : range_function<Func, Range, transmog_iterator>(
+            std::forward<Func>(func),
+            std::forward<Range>(rng)){};
+};
+}; // namespace detail
+
+namespace detail {
 using namespace tupletools;
 /*
 The zip and zip-iterator classes, respectively.
@@ -576,7 +581,7 @@ public:
 };
 
 template<class... Args>
-class [[nodiscard]] zip_impl
+class zip_impl
 {
     static constexpr size_t N = sizeof...(Args);
     static_assert(N > 0, "!");
@@ -588,7 +593,7 @@ public:
     using it_begin = zip_iterator<tup_it_begin>;
     using it_end = zip_iterator<tup_it_end>;
 
-    explicit constexpr zip_impl(Args && ... args)
+    explicit constexpr zip_impl(Args&&... args)
       : _begin{std::forward_as_tuple(args.begin()...)}
       , _end{std::forward_as_tuple(args.end()...)}
       , tup_args{args...} {};
@@ -598,8 +603,9 @@ public:
     template<class Funky>
     auto operator|(Funky funk)
     {
-        return zip(transmog_impl<Funky, decltype(*this)>(
-            std::forward<Funky>(funk), std::forward<decltype(*this)>(*this)));
+        // return zip(transmog_impl<Funky, decltype(*this)>(
+        //     std::forward<Funky>(funk),
+        //     std::forward<decltype(*this)>(*this)));
     }
 
     ~zip_impl() = default;
@@ -712,8 +718,9 @@ public:
     template<class Funky>
     auto operator|(Funky funk)
     {
-        return zip(transmog_impl<Funky, decltype(*this)>(
-            std::forward<Funky>(funk), std::forward<decltype(*this)>(*this)));
+        // return zip(transmog_impl<Funky, decltype(*this)>(
+        //     std::forward<Funky>(funk),
+        //     std::forward<decltype(*this)>(*this)));
     }
 
     ~concat_impl() = default;

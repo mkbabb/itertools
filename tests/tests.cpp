@@ -782,18 +782,18 @@ int
 main()
 {
 
-    zip_tests();
-    any_tests();
-    enumerate_tests();
-    range_tests();
-    itertools_tests();
-    tupletools_tests();
-    reduction_tests();
-    generator_tests();
-    time_multiple_tests();
-    to_string_tests();
+    // zip_tests();
+    // any_tests();
+    // enumerate_tests();
+    // range_tests();
+    // itertools_tests();
+    // tupletools_tests();
+    // reduction_tests();
+    // generator_tests();
+    // time_multiple_tests();
+    // to_string_tests();
 
-    frexp_tests();
+    // frexp_tests();
 
     std::vector<int> v1 = {1, 2, 3, 4, 5};
     std::vector<int> v2 = {10, 9, 8, 7, 6};
@@ -803,21 +803,29 @@ main()
 
     auto v1_enum = itertools::enumerate(v1);
 
-    auto multi_zip = itertools::zip(v1, l1, itertools::enumerate(v2)) |
-                     [](auto r) { return r; } | [](auto r) { return r; };
+    auto f = [](auto v) { return v + 1; };
 
-    for (auto z : multi_zip) {
-        std::cout << "iter" << std::endl;
+    auto vv = itertools::detail::transmog_impl(f, v1);
+
+    for (auto t : vv) {
+        std::cout << "HI" << std::endl;
     }
 
-    auto concatted = itertools::concat(v1_enum, itertools::enumerate(v2)) |
-                     [](auto t) { return t; };
+    // auto multi_zip = itertools::zip(v1, l1, itertools::enumerate(v2)) |
+    //                  [](auto r) { return r; };
 
-    auto multi_zip_concat = itertools::zip(l1, concatted, multi_zip);
+    // for (auto z : multi_zip) {
+    //     std::cout << "iter" << std::endl;
+    // }
 
-    for (auto z : multi_zip_concat) {
-        std::cout << "iter" << std::endl;
-    };
+    // auto concatted = itertools::concat(v1_enum, itertools::enumerate(v2)) |
+    //                  [](auto t) { return t; };
+
+    // auto multi_zip_concat = itertools::zip(l1, concatted, multi_zip);
+
+    // for (auto z : multi_zip_concat) {
+    //     std::cout << "iter" << std::endl;
+    // };
 
     fmt::print("tests complete\n");
     return 0;

@@ -1,0 +1,108 @@
+namespace detail {
+template<class Func, class Range>
+class filter_impl;
+
+template<class Func, class Range>
+class filter_iterator
+{
+public:
+    using iterator_category = std::forward_iterator_tag;
+
+    explicit constexpr filter_iterator(Func&& func, Range&& rng) noexcept
+      : range{rng}
+      , func{func}
+    {}
+
+    constexpr auto operator++()
+    {
+        do {
+            ++this->range;
+        } while (!func(*this->range));
+        return *this;
+    }
+
+    template<class Ranged>
+    constexpr bool operator==(filter_iterator<Func, Ranged>& rhs)
+    {
+        return this->range == rhs.range;
+    }
+
+    template<class Ranged>
+    constexpr bool operator!=(filter_iterator<Func, Ranged>& rhs)
+    {
+        return !(*this == rhs);
+    }
+
+    constexpr auto operator*() noexcept
+    {
+        return *(this->range);
+    }
+
+    Func func;
+    Range range;
+};
+
+template<class Func, class Range>
+class [[nodiscard]] filter_impl
+{
+public:
+    using rng_it_begin = decltype(std::declval<Range>().begin());
+    using rng_it_end = decltype(std::declval<Range>().end());
+
+    using it_begin = filter_iterator<Func, rng_it_begin>;
+    using it_end = filter_iterator<Func, rng_it_end>;
+
+    explicit constexpr filter_impl(Func && func, Range && rng)
+      : _begin{std::forward<Func>(func),
+               std::forward<rng_it_begin>(rng.begin())}
+      , _end{std::forward<Func>(func), std::forward<rng_it_end>(rng.end())}
+      , range{rng}
+      , func{func} {};
+
+    template<class Funky>
+    auto operator|(Funky funk)
+    {
+        return zip(transmog_impl<
+                   Func,
+                   Funky>(std::forward<Func>(func), std::forward<Funky>(funk)));
+    }
+
+    filter_impl& operator=(const filter_impl& rhs) = default;
+
+    ~filter_impl() = default;
+
+    it_begin begin()
+    {
+        return _begin;
+    }
+    it_end end()
+    {
+        return _end;
+    }
+
+private:
+    Func func;
+    Range range;
+
+    it_begin _begin;
+    it_end _end;
+};
+
+template<class Func>
+class range_filter
+{
+    explicit constexpr range_filter(Func&& func)
+      : func{func} {};
+    Func func;
+}
+
+}; // namespace detail
+
+namespace detail {
+
+template<class Func>
+constexpr auto
+filter(Func&& func)
+{
+    return detail::filter_impl<Func>(std::forward<Func>(func));
+}
