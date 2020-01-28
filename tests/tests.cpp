@@ -791,7 +791,7 @@ main()
     reduction_tests();
     generator_tests();
     // time_multiple_tests();
-    to_string_tests();
+    // to_string_tests();
     frexp_tests();
 
     std::vector<int> v1 = {1, 2, 3, 4, 5};
@@ -807,11 +807,11 @@ main()
         return v;
     };
 
-    auto zipped = itertools::
-        zip(v1,
-            v1_enum,
-            itertools::zip(
-                itertools::zip(itertools::zip(itertools::enumerate(l1), v2))));
+    auto zipped = itertools::zip_ref(
+        v1,
+        v1_enum,
+        itertools::zip(
+            itertools::zip(itertools::zip(itertools::enumerate(l1), v2))));
     auto td = itertools::transmog(f, zipped);
 
     for (auto t : zipped) {
@@ -821,10 +821,22 @@ main()
         std::cout << "HELLOW" << std::endl;
     }
 
-    itertools::map(v1, [](auto n, auto&& v) { return 999; });
+    // itertools::map(v1, [](auto n, auto v) { return 999; });
     auto vo = itertools::map(std::vector<int>(10), [](auto n, auto&& v) {
         return 999;
     });
+
+    auto ff = [](auto v) { return std::get<0>(v) > 3; };
+
+    auto pip = itertools::piper(ff, itertools::filter);
+
+    auto zp = itertools::zip(v1, v2) | pip;
+
+    std::cout << itertools::to_string(zp) << std::endl;
+
+    // auto zp_v = itertools::to_vector(zp);
+
+    // itertools::for_each(zp_v, [](auto n, auto v) { std::get<0>(v) = 72; });
 
     fmt::print("tests complete\n");
     return 0;
