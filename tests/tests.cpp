@@ -782,17 +782,16 @@ int
 main()
 {
 
-    // zip_tests();
-    // any_tests();
-    // enumerate_tests();
-    // range_tests();
-    // itertools_tests();
-    // tupletools_tests();
-    // reduction_tests();
-    // generator_tests();
+    zip_tests();
+    any_tests();
+    enumerate_tests();
+    range_tests();
+    itertools_tests();
+    tupletools_tests();
+    reduction_tests();
+    generator_tests();
     // time_multiple_tests();
-    // to_string_tests();
-
+    to_string_tests();
     frexp_tests();
 
     std::vector<int> v1 = {1, 2, 3, 4, 5};
@@ -803,62 +802,20 @@ main()
 
     auto v1_enum = itertools::enumerate(v1);
 
-    auto f = [](auto v) { return v > 2; };
-    auto f2 = [](auto v) { return 2; };
+    auto f = [](auto v) { return v; };
 
-    // auto vv = itertools::block(v1, 2);
-    auto vv = itertools::concat(v1, v2, v3);
-    auto ko = itertools::transmog(f2, vv);
+    auto pred = [](auto&& v) {
+        return std::get<0>(v) == 1 || std::get<0>(v) == 3;
+    };
 
-    for (auto t : itertools::zip(v1, v2, v3)) {
+    auto concatted = itertools::concat(v1, v2, v3);
+    auto zipped = itertools::zip(v1, v2, concatted, v1_enum);
+    auto mogged = itertools::transmog(f, zipped);
+    auto filtered = itertools::filter(pred, mogged);
+
+    for (auto t : filtered) {
         std::cout << "HELLOW" << std::endl;
     }
-
-    // auto vv = itertools::detail::transmog_impl(f, v1);
-    // auto ww = itertools::transmog(f, v3);
-    // auto concatted = itertools::concat(v1, v2, v3);
-
-    // auto vv = itertools::zip(v1, v2, v3, ww, concatted);
-    // for (auto t : vv) {
-    //     std::get<0>(t) = 20;
-    //     std::cout << "HI" << std::endl;
-    // }
-
-    // auto tf = [](auto&& v) {
-    //     std::get<0>(v) = 999;
-    //     return v;
-    // };
-
-    // auto zp = itertools::zip(v1, v2, v3);
-    // auto ts = itertools::transmog(tf, zp);
-
-    // for (auto t : ts) {
-    //     std::cout << "MIJN" << std::endl;
-    // }
-
-    // auto pred = [](auto&& v) { return v > 10; };
-
-    // auto b = itertools::filter(pred, v1);
-
-    // for (auto v : b) {
-    //     std::cout << "JI" << std::endl;
-    // }
-
-    // auto multi_zip = itertools::zip(v1, l1, itertools::enumerate(v2)) |
-    //                  [](auto r) { return r; };
-
-    // for (auto z : multi_zip) {
-    //     std::cout << "iter" << std::endl;
-    // }
-
-    // auto concatted = itertools::concat(v1_enum, itertools::enumerate(v2)) |
-    //                  [](auto t) { return t; };
-
-    // auto multi_zip_concat = itertools::zip(l1, concatted, multi_zip);
-
-    // for (auto z : multi_zip_concat) {
-    //     std::cout << "iter" << std::endl;
-    // };
 
     fmt::print("tests complete\n");
     return 0;

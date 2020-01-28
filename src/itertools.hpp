@@ -532,13 +532,19 @@ public:
       , func{func}
     {}
 
-    auto operator*() noexcept
+    auto operator++() noexcept
     {
-        while (this->is_complete() && !this->func(*(this->begin_iter))) {
-            ++(this->begin_iter);
-        }
-        return *(this->begin_iter);
+        do {
+            if (this->is_complete()) {
+                break;
+            } else {
+                ++(this->begin_iter);
+            }
+        } while (!this->func(*(this->begin_iter)));
+
+        return *this;
     }
+
     Func func;
 };
 
@@ -591,6 +597,40 @@ block(Range&& rng, F block_size)
         size_t>(std::forward<Range>(rng), block_size);
 }
 
+template<template<typename... Ts> class Iterator, class... Args>
+class range_tuple
+{
+    static constexpr size_t N = sizeof...(Args);
+    static_assert(N > 0, "!");
+
+public:
+    using Range = std::tuple<Args...>;
+    using BeginIter = std::tuple<decltype(std::declval<Args>().begin())...>;
+    using EndIter = std::tuple<decltype(std::declval<Args>().end())...>;
+
+    using iterator = Iterator<Range, BeginIter, EndIter>;
+
+    range_tuple(Args&&... args)
+      : iter{std::forward_as_tuple(args...),
+             std::forward_as_tuple(std::begin(args)...),
+             std::forward_as_tuple(std::end(args)...)}
+      , range{args...}
+    {}
+
+    iterator begin()
+    {
+        return iter;
+    }
+
+    auto end()
+    {
+        return range_container_terminus{true};
+    }
+
+    Range range;
+    iterator iter;
+};
+
 template<class Range, class BeginIter, class EndIter>
 class range_tuple_iterator
   : public range_container_iterator<Range, BeginIter, EndIter>
@@ -627,42 +667,6 @@ public:
     {
         return tupletools::deref(this->begin_iter);
     }
-};
-
-template<
-    template<typename... Ts> class Iterator = range_tuple_iterator,
-    class... Args>
-class range_tuple
-{
-    static constexpr size_t N = sizeof...(Args);
-    static_assert(N > 0, "!");
-
-public:
-    using Range = std::tuple<Args...>;
-    using BeginIter = std::tuple<decltype(std::declval<Args>().begin())...>;
-    using EndIter = std::tuple<decltype(std::declval<Args>().end())...>;
-
-    using iterator = Iterator<Range, BeginIter, EndIter>;
-
-    range_tuple(Args&&... args)
-      : iter{std::forward_as_tuple(args...),
-             std::forward_as_tuple(std::begin(args)...),
-             std::forward_as_tuple(std::end(args)...)}
-      , range{args...}
-    {}
-
-    iterator begin()
-    {
-        return iter;
-    }
-
-    auto end()
-    {
-        return range_container_terminus{true};
-    }
-
-    Range range;
-    iterator iter;
 };
 
 template<class Range, class BeginIter, class EndIter>
