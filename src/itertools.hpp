@@ -473,7 +473,7 @@ public:
         return this->terminus.complete != rhs.complete;
     }
 
-    auto operator*()
+    auto& operator*()
     {
         return *(this->begin_iter);
     }
@@ -559,7 +559,8 @@ public:
 
     auto operator*() noexcept
     {
-        return std::invoke(func, *(this->begin_iter));
+        return func(
+            std::forward<decltype(*(this->begin_iter))>(*(this->begin_iter)));
     }
     Func func;
 };
@@ -601,7 +602,7 @@ template<template<typename... Ts> class Iterator, class... Args>
 class range_tuple
 {
     static constexpr size_t N = sizeof...(Args);
-    static_assert(N > 0, "!");
+    static_assert(N > 0, "Zip argument count must be larger than 0.");
 
 public:
     using Range = std::tuple<Args...>;
@@ -649,7 +650,7 @@ public:
     bool is_complete()
     {
         auto b = tupletools::any_where(
-            [](auto& x, auto& y) { return x == y; },
+            [](auto&& x, auto&& y) { return x == y; },
             this->begin_iter,
             this->end_iter);
         this->terminus.complete = b;
@@ -718,11 +719,18 @@ zip(Args&&... args)
         std::forward<Args>(args)...);
 }
 
-template<class... Args>
+template<class T, class... Args>
 constexpr auto
-concat(Args&&... args)
+concat(T&& arg, Args&&... args)
 {
-    return range_tuple<concat_iterator, Args...>(std::forward<Args>(args)...);
+    static_assert(
+        tupletools::is_all<T, Args...>::value,
+        "All arguments must be of a homogenous type.");
+
+    return range_tuple<
+        concat_iterator,
+        T,
+        Args...>(std::forward<T>(arg), std::forward<Args>(args)...);
 }
 
 /*
@@ -781,6 +789,7 @@ public:
     {
         return _seq._current == rhs;
     }
+
     constexpr bool operator!=(T rhs)
     {
         return !(*this == rhs);
@@ -796,7 +805,7 @@ private:
 };
 
 template<typename T>
-class [[nodiscard]] range
+class range
 {
 public:
     using iterator = range_iterator<T>;
@@ -868,7 +877,8 @@ constexpr auto
 enumerate(Iterable&& iter)
 {
     auto _range = range<size_t>(iter.size());
-    return zip(_range, std::forward<Iterable>(iter));
+    return zip(
+        std::forward<decltype(_range)>(_range), std::forward<Iterable>(iter));
 }
 
 /*
@@ -891,7 +901,7 @@ template<
 constexpr Iterable
 for_each(Iterable&& iter, BinaryFunction&& func)
 {
-    for (auto [n, i] : enumerate(iter)) {
+    for (auto&& [n, i] : enumerate(iter)) {
         std::invoke(
             std::forward<BinaryFunction>(func),
             std::forward<decltype(n)>(n),
@@ -1099,7 +1109,7 @@ std::string
 join(Iterable&& iter, std::string&& sep)
 {
     std::ostringstream result;
-    for (auto [n, i] : enumerate(iter)) {
+    for (auto&& [n, i] : enumerate(iter)) {
         result << (n > 0 ? sep : "") << i;
     }
     return result.str();

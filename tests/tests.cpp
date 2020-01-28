@@ -802,18 +802,22 @@ main()
 
     auto v1_enum = itertools::enumerate(v1);
 
-    auto f = [](auto v) { return v; };
-
-    auto pred = [](auto&& v) {
-        return std::get<0>(v) == 1 || std::get<0>(v) == 3;
+    auto f = [](auto&& v) {
+        std::cout << "hellows" << std::endl;
+        return v;
     };
 
-    auto concatted = itertools::concat(v1, v2, v3);
-    auto zipped = itertools::zip(v1, v2, concatted, v1_enum);
-    auto mogged = itertools::transmog(f, zipped);
-    auto filtered = itertools::filter(pred, mogged);
+    auto zipped = itertools::
+        zip(v1,
+            v1_enum,
+            itertools::zip(
+                itertools::zip(itertools::zip(itertools::enumerate(l1), v2))));
+    auto td = itertools::transmog(f, zipped);
 
-    for (auto t : filtered) {
+    for (auto t : zipped) {
+        auto&& [i, tup, tt] = t;
+        auto&& [n, j] = tup;
+        std::cout << fmt::format("{}, {}", n, j) << std::endl;
         std::cout << "HELLOW" << std::endl;
     }
 
