@@ -803,7 +803,13 @@ main()
 
     auto v1_enum = itertools::enumerate(v1);
 
-    auto f = [](auto v) { return v + 1; };
+    auto f = [](auto v) { return v > 2; };
+
+    auto vv = itertools::block(v1, 2);
+
+    for (auto t : vv) {
+        std::cout << "HELLOW" << std::endl;
+    }
 
     // auto vv = itertools::detail::transmog_impl(f, v1);
     // auto ww = itertools::transmog(f, v3);
@@ -827,13 +833,13 @@ main()
     //     std::cout << "MIJN" << std::endl;
     // }
 
-    auto pred = [](auto&& v) { return v > 10; };
+    // auto pred = [](auto&& v) { return v > 10; };
 
-    auto b = itertools::filter(pred, v1);
+    // auto b = itertools::filter(pred, v1);
 
-    for (auto v : b) {
-        std::cout << "JI" << std::endl;
-    }
+    // for (auto v : b) {
+    //     std::cout << "JI" << std::endl;
+    // }
 
     // auto multi_zip = itertools::zip(v1, l1, itertools::enumerate(v2)) |
     //                  [](auto r) { return r; };

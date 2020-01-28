@@ -394,50 +394,95 @@ flatten(Tup&& tup)
 
 namespace itertools {
 
+struct range_function_terminus
+{
+    bool complete = false;
+};
+
 template<class Func, class Range>
 class range_function_iterator;
 
-template<
-    class Func,
-    class Range,
-    template<typename... Ts> class Iterator = range_function_iterator>
+template<class Range>
+class range_function_iterator2;
+
+template<class Range, class Iterator, class... Args>
 class range_function
+{
+public:
+    range_function(Range&& rng, Args&&... args)
+      : iter{std::forward<Range>(rng), std::forward<Args>(args)...}
+      , range{rng}
+    {}
+
+    Iterator begin()
+    {
+        return iter;
+    }
+
+    auto end()
+    {
+        return range_function_terminus{true};
+    }
+
+    Range range;
+    Iterator iter;
+};
+
+using namespace tupletools;
+
+template<class Range>
+class range_function_iterator2
 {
 public:
     using rng_it_begin = decltype(std::declval<Range>().begin());
     using rng_it_end = decltype(std::declval<Range>().end());
 
-    using it_begin = Iterator<Func, rng_it_begin>;
-    using it_end = Iterator<Func, rng_it_end>;
+    using iterator_category = std::forward_iterator_tag;
+    range_function_terminus terminus;
 
-    range_function(Func&& func, Range&& rng)
-      : _begin{std::forward<Func>(func),
-               std::forward<rng_it_begin>(rng.begin())}
-      , _end{std::forward<Func>(func), std::forward<rng_it_end>(rng.end())}
-      , range{rng}
-      , func{func} {};
+    explicit range_function_iterator2(Range&& rng) noexcept
+      : begin_iter{std::begin(rng)}
+      , end_iter{std::end(rng)}
+      , terminus{false}
+    {}
 
-    range_function& operator=(const range_function& rhs) = default;
-
-    ~range_function() = default;
-
-    it_begin begin()
+    bool is_complete()
     {
-        return _begin;
-    }
-    it_end end()
-    {
-        return _end;
+        return this->begin_iter == this->end_iter;
     }
 
-    Func func;
-    Range range;
+    auto operator++()
+    {
+        ++this->begin_iter;
+        if (!this->is_complete()) {
+            this->terminus.complete = true;
+        }
+        return *this;
+    }
 
-    it_begin _begin;
-    it_end _end;
+    bool operator==(range_function_terminus rhs)
+    {
+        return this->terminus.complete == rhs.complete;
+    }
+
+    bool operator!=(range_function_terminus rhs)
+    {
+        return this->terminus.complete != rhs.complete;
+    }
+
+    auto operator*()
+    {
+        return *(this->begin_iter);
+    }
+
+    auto operator-> () noexcept
+    {
+        return this->begin_iter;
+    }
+
+    rng_it_begin begin_iter;
+    rng_it_end end_iter;
 };
-
-using namespace tupletools;
 
 template<class Func, class Range>
 class range_function_iterator
@@ -482,42 +527,40 @@ public:
     Range range;
 };
 
-template<class Func, class Range>
-class transmog_iterator : public range_function_iterator<Func, Range>
+// template<class Func, class Range>
+// class transmog_iterator : public range_function_iterator<Func, Range>
+// {
+// public:
+//     explicit transmog_iterator(Func&& func, Range&& rng) noexcept
+//       : range_function_iterator<
+//             Func,
+//             Range>(std::forward<Func>(func), std::forward<Range>(rng))
+//     {}
+
+//     auto operator*() noexcept
+//     {
+//         return std::invoke(this->func, *(this->range));
+//     }
+// };
+
+template<class Range>
+class block_iterator : public range_function_iterator2<Range>
 {
 public:
-    explicit transmog_iterator(Func&& func, Range&& rng) noexcept
-      : range_function_iterator<
-            Func,
-            Range>(std::forward<Func>(func), std::forward<Range>(rng))
-    {}
-
-    auto operator*() noexcept
-    {
-        return std::invoke(this->func, *(this->range));
-    }
-};
-
-template<class Func, class Range>
-class block_iterator : public range_function_iterator<Func, Range>
-{
-public:
-    using IteratorValue = tupletools::iterator_t<Range>;
+    using IteratorValue = tupletools::iterable_t<Range>;
     std::vector<IteratorValue> ret;
 
-    block_iterator(Func&& func, Range&& rng) noexcept
-      : range_function_iterator<
-            Func,
-            Range>(std::forward<Func>(func), std::forward<Range>(rng))
+    block_iterator(Range&& rng, size_t block_size) noexcept
+      : range_function_iterator2<Range>(std::forward<Range>(rng))
     {
-        this->block_size = func(0);
+        this->block_size = block_size;
         ret.reserve(block_size);
     }
 
     auto operator++()
     {
         auto i = 0;
-        while (i++ < block_size) {
+        while (!this->is_complete() && i++ < this->block_size) {
             ret.pop_back();
         }
         return *this;
@@ -526,66 +569,95 @@ public:
     auto operator*() noexcept
     {
         auto i = 0;
-        while (i++ < block_size) {
-            ret.push_back(*(this->range));
-            ++(this->range);
+        while (!this->is_complete() && i++ < this->block_size) {
+            ret.push_back(*(this->begin_iter));
+            ++(this->begin_iter);
         }
         return ret;
     }
+
     size_t block_size;
 };
 
 template<class Func, class Range>
-class filter_iterator : public range_function_iterator<Func, Range>
+class filter_iterator : public range_function_iterator2<Range>
 {
 public:
-    filter_iterator(Func&& func, Range&& rng) noexcept
-      : range_function_iterator<
-            Func,
-            Range>(std::forward<Func>(func), std::forward<Range>(rng))
+    filter_iterator(Range&& rng, Func&& func) noexcept
+      : range_function_iterator2<Range>(std::forward<Range>(rng))
+      , func{func}
     {}
 
     auto operator*() noexcept
     {
-        while (!this->func(*(this->range))) {
-            ++(this->range);
+        while (this->begin_iter != this->end_iter &&
+               !this->func(*(this->begin_iter))) {
+            ++(this->begin_iter);
         }
-        return *(this->range);
+        return *(this->begin_iter);
     }
+    Func func;
 };
+
+template<class Func, class Range>
+class transmog_iterator : public range_function_iterator2<Range>
+{
+public:
+    transmog_iterator(Range&& rng, Func&& func) noexcept
+      : range_function_iterator2<Range>(std::forward<Range>(rng))
+      , func{func}
+    {}
+
+    auto operator*() noexcept
+    {
+        return std::invoke(func, *(this->begin_iter));
+    }
+    Func func;
+};
+
+template<class Func, class Range>
+constexpr auto
+transmog(Func&& func, Range&& rng)
+{
+    using Iterator = transmog_iterator<Func, Range>;
+    return range_function<
+        Range,
+        Iterator,
+        Func>(std::forward<Range>(rng), std::forward<Func>(func));
+}
 
 template<class Func, class Range>
 constexpr auto
 filter(Func&& func, Range&& rng)
 {
+    using Iterator = filter_iterator<Func, Range>;
     return range_function<
-        Func,
         Range,
-        filter_iterator>(std::forward<Func>(func), std::forward<Range>(rng));
+        Iterator,
+        Func>(std::forward<Range>(rng), std::forward<Func>(func));
 }
 
-template<class Range>
+template<class Range, class F = size_t>
 constexpr auto
-block(Range&& rng, size_t block_size)
+block(Range&& rng, F block_size)
 {
-    auto func = [&](auto&& v) { return block_size; };
-    using Func = decltype(func);
-
+    using Iterator = block_iterator<Range>;
     return range_function<
-        Func,
         Range,
-        block_iterator>(std::forward<Func>(func), std::forward<Range>(rng));
+        Iterator,
+        size_t>(std::forward<Range>(rng), block_size);
 }
 
-template<class Func, class Range>
-constexpr auto
-transmog(Func&& func, Range rng)
-{
-    return range_function<
-        Func,
-        Range,
-        transmog_iterator>(std::forward<Func>(func), std::forward<Range>(rng));
-}
+// template<class Func, class Range>
+// constexpr auto
+// transmog(Func&& func, Range rng)
+// {
+//     return range_function<
+//         Func,
+//         Range,
+//         transmog_iterator>(std::forward<Func>(func),
+//         std::forward<Range>(rng));
+// }
 
 template<class Func, class Range>
 class range_tuple_iterator : public range_function_iterator<Func, Range>
