@@ -782,14 +782,14 @@ int
 main()
 {
 
-    zip_tests();
-    any_tests();
-    enumerate_tests();
-    range_tests();
-    itertools_tests();
-    tupletools_tests();
-    reduction_tests();
-    generator_tests();
+    // zip_tests();
+    // any_tests();
+    // enumerate_tests();
+    // range_tests();
+    // itertools_tests();
+    // tupletools_tests();
+    // reduction_tests();
+    // generator_tests();
     // time_multiple_tests();
     // to_string_tests();
 
@@ -804,10 +804,13 @@ main()
     auto v1_enum = itertools::enumerate(v1);
 
     auto f = [](auto v) { return v > 2; };
+    auto f2 = [](auto v) { return 2; };
 
-    auto vv = itertools::block(v1, 2);
+    // auto vv = itertools::block(v1, 2);
+    auto vv = itertools::concat(v1, v2, v3);
+    auto ko = itertools::transmog(f2, vv);
 
-    for (auto t : vv) {
+    for (auto t : itertools::zip(v1, v2, v3)) {
         std::cout << "HELLOW" << std::endl;
     }
 

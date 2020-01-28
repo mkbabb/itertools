@@ -394,22 +394,16 @@ flatten(Tup&& tup)
 
 namespace itertools {
 
-struct range_function_terminus
+struct range_container_terminus
 {
     bool complete = false;
 };
 
-template<class Func, class Range>
-class range_function_iterator;
-
-template<class Range>
-class range_function_iterator2;
-
 template<class Range, class Iterator, class... Args>
-class range_function
+class range_container
 {
 public:
-    range_function(Range&& rng, Args&&... args)
+    range_container(Range&& rng, Args&&... args)
       : iter{std::forward<Range>(rng), std::forward<Args>(args)...}
       , range{rng}
     {}
@@ -421,7 +415,7 @@ public:
 
     auto end()
     {
-        return range_function_terminus{true};
+        return range_container_terminus{true};
     }
 
     Range range;
@@ -430,42 +424,51 @@ public:
 
 using namespace tupletools;
 
-template<class Range>
-class range_function_iterator2
+template<
+    class Range,
+    class BeginIter = decltype(std::declval<Range>().begin()),
+    class EndIter = decltype(std::declval<Range>().end())>
+class range_container_iterator
 {
 public:
-    using rng_it_begin = decltype(std::declval<Range>().begin());
-    using rng_it_end = decltype(std::declval<Range>().end());
-
     using iterator_category = std::forward_iterator_tag;
-    range_function_terminus terminus;
+    range_container_terminus terminus;
 
-    explicit range_function_iterator2(Range&& rng) noexcept
+    explicit range_container_iterator(Range&& rng) noexcept
       : begin_iter{std::begin(rng)}
       , end_iter{std::end(rng)}
       , terminus{false}
     {}
 
+    explicit range_container_iterator(
+        Range&& rng,
+        BeginIter&& begin_iter,
+        EndIter&& end_iter) noexcept
+      : begin_iter{begin_iter}
+      , end_iter{end_iter}
+      , terminus{false}
+    {}
+
     bool is_complete()
     {
-        return this->begin_iter == this->end_iter;
+        auto b = this->begin_iter == this->end_iter;
+        this->terminus.complete = b;
+        return b;
     }
 
     auto operator++()
     {
         ++this->begin_iter;
-        if (!this->is_complete()) {
-            this->terminus.complete = true;
-        }
+        this->is_complete();
         return *this;
     }
 
-    bool operator==(range_function_terminus rhs)
+    bool operator==(range_container_terminus rhs)
     {
         return this->terminus.complete == rhs.complete;
     }
 
-    bool operator!=(range_function_terminus rhs)
+    bool operator!=(range_container_terminus rhs)
     {
         return this->terminus.complete != rhs.complete;
     }
@@ -480,78 +483,19 @@ public:
         return this->begin_iter;
     }
 
-    rng_it_begin begin_iter;
-    rng_it_end end_iter;
+    BeginIter begin_iter;
+    EndIter end_iter;
 };
-
-template<class Func, class Range>
-class range_function_iterator
-{
-public:
-    using iterator_category = std::forward_iterator_tag;
-
-    explicit range_function_iterator(Func&& func, Range&& rng) noexcept
-      : range{std::forward<Range>(rng)}
-      , func{std::forward<Func>(func)}
-    {}
-
-    auto operator++()
-    {
-        ++this->range;
-        return *this;
-    }
-
-    auto operator*()
-    {
-        return *(this->range);
-    }
-
-    auto operator-> () noexcept
-    {
-        return this->range;
-    }
-
-    template<class Ranged>
-    bool operator==(range_function_iterator<Func, Ranged>& rhs)
-    {
-        return this->range == rhs.range;
-    }
-
-    template<class Ranged>
-    bool operator!=(range_function_iterator<Func, Ranged>& rhs)
-    {
-        return !(*this == rhs);
-    }
-
-    Func func;
-    Range range;
-};
-
-// template<class Func, class Range>
-// class transmog_iterator : public range_function_iterator<Func, Range>
-// {
-// public:
-//     explicit transmog_iterator(Func&& func, Range&& rng) noexcept
-//       : range_function_iterator<
-//             Func,
-//             Range>(std::forward<Func>(func), std::forward<Range>(rng))
-//     {}
-
-//     auto operator*() noexcept
-//     {
-//         return std::invoke(this->func, *(this->range));
-//     }
-// };
 
 template<class Range>
-class block_iterator : public range_function_iterator2<Range>
+class block_iterator : public range_container_iterator<Range>
 {
 public:
     using IteratorValue = tupletools::iterable_t<Range>;
     std::vector<IteratorValue> ret;
 
     block_iterator(Range&& rng, size_t block_size) noexcept
-      : range_function_iterator2<Range>(std::forward<Range>(rng))
+      : range_container_iterator<Range>(std::forward<Range>(rng))
     {
         this->block_size = block_size;
         ret.reserve(block_size);
@@ -580,18 +524,17 @@ public:
 };
 
 template<class Func, class Range>
-class filter_iterator : public range_function_iterator2<Range>
+class filter_iterator : public range_container_iterator<Range>
 {
 public:
     filter_iterator(Range&& rng, Func&& func) noexcept
-      : range_function_iterator2<Range>(std::forward<Range>(rng))
+      : range_container_iterator<Range>(std::forward<Range>(rng))
       , func{func}
     {}
 
     auto operator*() noexcept
     {
-        while (this->begin_iter != this->end_iter &&
-               !this->func(*(this->begin_iter))) {
+        while (this->is_complete() && !this->func(*(this->begin_iter))) {
             ++(this->begin_iter);
         }
         return *(this->begin_iter);
@@ -600,11 +543,11 @@ public:
 };
 
 template<class Func, class Range>
-class transmog_iterator : public range_function_iterator2<Range>
+class transmog_iterator : public range_container_iterator<Range>
 {
 public:
     transmog_iterator(Range&& rng, Func&& func) noexcept
-      : range_function_iterator2<Range>(std::forward<Range>(rng))
+      : range_container_iterator<Range>(std::forward<Range>(rng))
       , func{func}
     {}
 
@@ -620,7 +563,7 @@ constexpr auto
 transmog(Func&& func, Range&& rng)
 {
     using Iterator = transmog_iterator<Func, Range>;
-    return range_function<
+    return range_container<
         Range,
         Iterator,
         Func>(std::forward<Range>(rng), std::forward<Func>(func));
@@ -631,7 +574,7 @@ constexpr auto
 filter(Func&& func, Range&& rng)
 {
     using Iterator = filter_iterator<Func, Range>;
-    return range_function<
+    return range_container<
         Range,
         Iterator,
         Func>(std::forward<Range>(rng), std::forward<Func>(func));
@@ -642,55 +585,47 @@ constexpr auto
 block(Range&& rng, F block_size)
 {
     using Iterator = block_iterator<Range>;
-    return range_function<
+    return range_container<
         Range,
         Iterator,
         size_t>(std::forward<Range>(rng), block_size);
 }
 
-// template<class Func, class Range>
-// constexpr auto
-// transmog(Func&& func, Range rng)
-// {
-//     return range_function<
-//         Func,
-//         Range,
-//         transmog_iterator>(std::forward<Func>(func),
-//         std::forward<Range>(rng));
-// }
-
-template<class Func, class Range>
-class range_tuple_iterator : public range_function_iterator<Func, Range>
+template<class Range, class BeginIter, class EndIter>
+class range_tuple_iterator
+  : public range_container_iterator<Range, BeginIter, EndIter>
 {
 public:
-    explicit range_tuple_iterator(Func&& func, Range&& rng) noexcept
-      : range_function_iterator<
-            Func,
-            Range>(std::forward<Func>(func), std::forward<Range>(rng))
+    range_tuple_iterator(
+        Range&& rng,
+        BeginIter&& begin_iter,
+        EndIter&& end_iter) noexcept
+      : range_container_iterator<Range, BeginIter, EndIter>(
+            std::forward<Range>(rng),
+            std::forward<BeginIter>(begin_iter),
+            std::forward<EndIter>(end_iter))
     {}
+
+    bool is_complete()
+    {
+        auto b = tupletools::any_where(
+            [](auto& x, auto& y) { return x == y; },
+            this->begin_iter,
+            this->end_iter);
+        this->terminus.complete = b;
+        return b;
+    }
 
     auto operator++()
     {
-        tupletools::increment_ref(this->range);
+        tupletools::increment_ref(this->begin_iter);
+        this->is_complete();
         return *this;
-    }
-
-    template<class Ranged>
-    bool operator==(range_tuple_iterator<Func, Ranged>& rhs)
-    {
-        return tupletools::any_where(
-            [](auto& x, auto& y) { return x == y; }, this->range, rhs.range);
-    }
-
-    template<class Ranged>
-    bool operator!=(range_tuple_iterator<Func, Ranged>& rhs)
-    {
-        return !(*this == rhs);
     }
 
     auto operator*() noexcept
     {
-        return tupletools::deref(this->range);
+        return tupletools::deref(this->begin_iter);
     }
 };
 
@@ -701,84 +636,77 @@ class range_tuple
 {
     static constexpr size_t N = sizeof...(Args);
     static_assert(N > 0, "!");
-    static constexpr auto func = [](auto&& v) { return v; };
 
 public:
-    using Func = decltype(func);
+    using Range = std::tuple<Args...>;
+    using BeginIter = std::tuple<decltype(std::declval<Args>().begin())...>;
+    using EndIter = std::tuple<decltype(std::declval<Args>().end())...>;
 
-    using rng_it_begin = std::tuple<decltype(std::declval<Args>().begin())...>;
-    using rng_it_end = std::tuple<decltype(std::declval<Args>().end())...>;
+    using iterator = Iterator<Range, BeginIter, EndIter>;
 
-    using it_begin = Iterator<Func, rng_it_begin>;
-    using it_end = Iterator<Func, rng_it_end>;
-
-    explicit constexpr range_tuple(Args&&... args)
-      : _begin{std::forward<Func>(func),
-               std::forward_as_tuple(std::begin(args)...)}
-      , _end{std::forward<Func>(func), std::forward_as_tuple(std::end(args)...)}
-      , range{args...} {};
-
-    it_begin begin()
-    {
-        return _begin;
-    }
-    it_end end()
-    {
-        return _end;
-    }
-
-    std::tuple<Args...> range;
-
-    it_begin _begin;
-    it_end _end;
-};
-
-template<class Func, class Range>
-class concat_iterator : public range_tuple_iterator<Func, Range>
-{
-public:
-    explicit concat_iterator(Func&& func, Range&& rng) noexcept
-      : range_tuple_iterator<
-            Func,
-            Range>(std::forward<Func>(func), std::forward<Range>(rng))
+    range_tuple(Args&&... args)
+      : iter{std::forward_as_tuple(args...),
+             std::forward_as_tuple(std::begin(args)...),
+             std::forward_as_tuple(std::end(args)...)}
+      , range{args...}
     {}
 
-    constexpr auto operator++()
+    iterator begin()
     {
-        ++std::get<0>(this->range);
-        return *this;
+        return iter;
     }
 
-    template<class Ranged>
-    bool operator==(concat_iterator<Func, Ranged>& rhs)
+    auto end()
     {
-        auto b = std::get<0>(this->range) == std::get<0>(rhs.range);
+        return range_container_terminus{true};
+    }
+
+    Range range;
+    iterator iter;
+};
+
+template<class Range, class BeginIter, class EndIter>
+class concat_iterator : public range_tuple_iterator<Range, BeginIter, EndIter>
+{
+public:
+    concat_iterator(
+        Range&& rng,
+        BeginIter&& begin_iter,
+        EndIter&& end_iter) noexcept
+      : range_tuple_iterator<Range, BeginIter, EndIter>(
+            std::forward<Range>(rng),
+            std::forward<BeginIter>(begin_iter),
+            std::forward<EndIter>(end_iter))
+    {}
+
+    bool is_complete()
+    {
+        auto b = std::get<0>(this->begin_iter) == std::get<0>(this->end_iter);
 
         if (b) {
-            tupletools::roll(this->range, true);
-            tupletools::roll(rhs.range, true);
+            tupletools::roll(this->begin_iter, true);
+            tupletools::roll(this->end_iter, true);
 
-            b = std::get<0>(this->range) == std::get<0>(rhs.range);
+            b = std::get<0>(this->begin_iter) == std::get<0>(this->end_iter);
         }
+        this->terminus.complete = b;
         return b;
     }
 
-    template<class Ranged>
-    bool operator!=(concat_iterator<Func, Ranged>& rhs)
+    auto operator++()
     {
-        return !(*this == rhs);
+        ++std::get<0>(this->begin_iter);
+        this->is_complete();
+        return *this;
     }
 
     auto& operator*() noexcept
     {
-        // Potentially forward this.
-        return *std::get<0>(this->range);
+        return *std::get<0>(this->begin_iter);
     }
 };
 
-template<
-    class... Args,
-    std::enable_if_t<!(tupletools::is_tupleoid_v<Args> || ...), int> = 0>
+template<class... Args>
 constexpr auto
 zip(Args&&... args)
 {
@@ -786,9 +714,7 @@ zip(Args&&... args)
         std::forward<Args>(args)...);
 }
 
-template<
-    class... Args,
-    std::enable_if_t<!(tupletools::is_tupleoid_v<Args> || ...), int> = 0>
+template<class... Args>
 constexpr auto
 concat(Args&&... args)
 {
