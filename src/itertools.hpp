@@ -910,6 +910,22 @@ for_each(Iterable&& iter, BinaryFunction&& func)
     return iter;
 }
 
+template<
+    class Iterable,
+    class BinaryFunction,
+    class IterableValue = tupletools::iterable_t<Iterable>>
+constexpr Iterable
+map(Iterable&& iter, BinaryFunction&& func)
+{
+    for (auto&& [n, i] : enumerate(iter)) {
+        iter[n] = std::invoke(
+            std::forward<BinaryFunction>(func),
+            std::forward<decltype(n)>(n),
+            std::forward<decltype(i)>(i));
+    }
+    return iter;
+}
+
 template<typename ReductionValue = int, class Iterable, class NaryFunction>
 constexpr ReductionValue
 reduce(Iterable&& iter, ReductionValue init, NaryFunction&& func)

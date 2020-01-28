@@ -821,6 +821,11 @@ main()
         std::cout << "HELLOW" << std::endl;
     }
 
+    itertools::map(v1, [](auto n, auto&& v) { return 999; });
+    auto vo = itertools::map(std::vector<int>(10), [](auto n, auto&& v) {
+        return 999;
+    });
+
     fmt::print("tests complete\n");
     return 0;
 }
