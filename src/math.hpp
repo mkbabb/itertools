@@ -1,8 +1,6 @@
-#define FMT_HEADER_ONLY
+#ifndef MATH_H
+#define MATH_H
 
-#include "../external/fmt/format.h"
-#include "../external/random_v/src/random_v.hpp"
-#include "../src/generator.hpp"
 #include "../src/itertools.hpp"
 
 #include <chrono>
@@ -15,6 +13,8 @@
 #include <numeric>
 #include <string>
 #include <vector>
+
+#pragma once
 
 constexpr uint64_t two53 = 9007199254740992;
 constexpr uint64_t two52 = 4503599627370496;
@@ -590,3 +590,4 @@ double_round(T x, int ndigits = 0) -> double
         z *= pow1;
     return z;
 }
+#endif // MATH_H

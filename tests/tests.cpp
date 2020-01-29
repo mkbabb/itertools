@@ -2,7 +2,6 @@
 
 #include "../external/fmt/format.h"
 #include "../external/random_v/src/random_v.hpp"
-#include "../src/generator.hpp"
 #include "../src/itertools.hpp"
 #include "../src/math.hpp"
 
@@ -762,8 +761,8 @@ range_container_tests()
             return 999;
         });
 
-        auto pred = itertools::piper(
-            [](auto v) { return std::get<0>(v) > 3; }, itertools::filter);
+        auto pred = itertools::
+            piper([](auto v) { return std::get<0>(v) > 3; }, itertools::filter);
 
         auto zp = itertools::zip(v1, v2) | pred;
 

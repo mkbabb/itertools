@@ -1,14 +1,10 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <cmath>
-#include <iterator>
-#include <numeric>
-#include <optional>
-#include <string>
 #include <tuple>
 #include <type_traits>
-#include <utility>
+
+#pragma once
 
 namespace tupletools {
 
