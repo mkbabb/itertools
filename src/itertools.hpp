@@ -396,9 +396,9 @@ template<class Range, class Iterator, class... Args>
 class range_container
 {
 public:
-    range_container(Range&& rng, Args&&... args)
-      : iter{std::forward<Range>(rng), std::forward<Args>(args)...}
-      , range{rng}
+    range_container(Range&& range, Args&&... args)
+      : iter{std::forward<Range>(range), std::forward<Args>(args)...}
+      , range{range}
     {}
 
     Iterator begin()
@@ -414,6 +414,12 @@ public:
     auto size()
     {
         return this->range.size();
+    }
+
+    template<class Tfunc>
+    auto operator|(Tfunc tfunc)
+    {
+        return tfunc(*this);
     }
 
     Range range;
@@ -432,14 +438,14 @@ public:
     using iterator_category = std::forward_iterator_tag;
     range_container_terminus terminus;
 
-    explicit range_container_iterator(Range&& rng) noexcept
-      : begin_iter{std::begin(rng)}
-      , end_iter{std::end(rng)}
+    explicit range_container_iterator(Range&& range) noexcept
+      : begin_iter{std::begin(range)}
+      , end_iter{std::end(range)}
       , terminus{false}
     {}
 
     explicit range_container_iterator(
-        Range&& rng,
+        Range&& range,
         BeginIter&& begin_iter,
         EndIter&& end_iter) noexcept
       : begin_iter{begin_iter}
@@ -492,8 +498,8 @@ public:
     using IteratorValue = tupletools::iterable_t<Range>;
     std::vector<IteratorValue> ret;
 
-    block_iterator(Range&& rng, size_t block_size) noexcept
-      : range_container_iterator<Range>(std::forward<Range>(rng))
+    block_iterator(Range&& range, size_t block_size) noexcept
+      : range_container_iterator<Range>(std::forward<Range>(range))
     {
         this->block_size = block_size;
         ret.reserve(block_size);
@@ -525,22 +531,29 @@ template<class Func, class Range>
 class filter_iterator : public range_container_iterator<Range>
 {
 public:
-    filter_iterator(Range&& rng, Func&& func) noexcept
-      : range_container_iterator<Range>(std::forward<Range>(rng))
-      , func{func}
+    using IterableValue = tupletools::iterable_t<Range>;
+
+    filter_iterator(Range&& range, Func&& func) noexcept
+      : range_container_iterator<Range>(std::forward<Range>(range))
+      , func{std::forward<Func>(func)}
     {}
 
     auto operator++() noexcept
     {
-        do {
-            if (this->is_complete()) {
-                break;
-            } else {
-                ++(this->begin_iter);
-            }
-        } while (!this->func(*(this->begin_iter)));
-
+        ++(this->begin_iter);
+        while (!this->is_complete() &&
+               !this->func(std::forward<IterableValue>(*this->begin_iter))) {
+            ++(this->begin_iter);
+        };
         return *this;
+    }
+
+    auto operator*()
+    {
+        if (!this->func(std::forward<IterableValue>(*this->begin_iter))) {
+            ++(*this);
+        }
+        return *(this->begin_iter);
     }
 
     Func func;
@@ -550,8 +563,8 @@ template<class Func, class Range>
 class transmog_iterator : public range_container_iterator<Range>
 {
 public:
-    transmog_iterator(Range&& rng, Func&& func) noexcept
-      : range_container_iterator<Range>(std::forward<Range>(rng))
+    transmog_iterator(Range&& range, Func&& func) noexcept
+      : range_container_iterator<Range>(std::forward<Range>(range))
       , func{func}
     {}
 
@@ -563,25 +576,24 @@ public:
     Func func;
 };
 
-template<class Func, class Range>
-constexpr auto
-transmog(Func&& func, Range&& rng)
-{
+constexpr auto transmog = [](auto&& func, auto&& range) {
+    using Func = decltype(func);
+    using Range = decltype(range);
     using Iterator = transmog_iterator<Func, Range>;
     return range_container<
         Range,
         Iterator,
-        Func>(std::forward<Range>(rng), std::forward<Func>(func));
-}
+        Func>(std::forward<Range>(range), std::forward<Func>(func));
+};
 
-constexpr auto filter = [](auto&& func, auto&& rng) {
+constexpr auto filter = [](auto&& func, auto&& range) {
     using Func = decltype(func);
-    using Range = decltype(rng);
+    using Range = decltype(range);
     using Iterator = filter_iterator<Func, Range>;
     return range_container<
         Range,
         Iterator,
-        Func>(std::forward<Range>(rng), std::forward<Func>(func));
+        Func>(std::forward<Range>(range), std::forward<Func>(func));
 };
 
 constexpr auto block = [](auto&& range, size_t block_size) {
@@ -613,10 +625,10 @@ public:
       , range{args...}
     {}
 
-    template<class T>
-    auto operator|(T t)
+    template<class Tfunc>
+    auto operator|(Tfunc tfunc)
     {
-        return t(*this);
+        return tfunc(*this);
     }
 
     iterator begin()
@@ -631,7 +643,7 @@ public:
 
     auto size()
     {
-        return N;
+        return 1;
     }
 
     Range range;
@@ -644,11 +656,11 @@ class range_tuple_iterator
 {
 public:
     range_tuple_iterator(
-        Range&& rng,
+        Range&& range,
         BeginIter&& begin_iter,
         EndIter&& end_iter) noexcept
       : range_container_iterator<Range, BeginIter, EndIter>(
-            std::forward<Range>(rng),
+            std::forward<Range>(range),
             std::forward<BeginIter>(begin_iter),
             std::forward<EndIter>(end_iter))
     {}
@@ -683,11 +695,11 @@ class range_tuple_iterator_ref
 {
 public:
     range_tuple_iterator_ref(
-        Range&& rng,
+        Range&& range,
         BeginIter&& begin_iter,
         EndIter&& end_iter) noexcept
       : range_tuple_iterator<Range, BeginIter, EndIter>(
-            std::forward<Range>(rng),
+            std::forward<Range>(range),
             std::forward<BeginIter>(begin_iter),
             std::forward<EndIter>(end_iter))
     {}
@@ -704,11 +716,11 @@ class concat_iterator : public range_tuple_iterator<Range, BeginIter, EndIter>
 {
 public:
     concat_iterator(
-        Range&& rng,
+        Range&& range,
         BeginIter&& begin_iter,
         EndIter&& end_iter) noexcept
       : range_tuple_iterator<Range, BeginIter, EndIter>(
-            std::forward<Range>(rng),
+            std::forward<Range>(range),
             std::forward<BeginIter>(begin_iter),
             std::forward<EndIter>(end_iter))
     {}
@@ -771,12 +783,26 @@ concat(T&& arg, Args&&... args)
 }
 
 template<class Func, class Piped>
-auto
+constexpr auto
 piper(Func&& func, Piped piped)
 {
     return [func = std::forward<Func>(func),
             piped = std::forward<Piped>(piped)](auto&& v) {
         return piped(func, v);
+    };
+}
+
+template<class Range, class IterableValue = tupletools::iterable_t<Range>>
+constexpr auto
+spawn(Range&& range)
+{
+    return [bg = range.begin(), ed = range.end()](
+               auto&&... args) mutable -> std::optional<IterableValue> {
+        if (!(bg == ed)) {
+            ++bg;
+            return *bg;
+        }
+        return {};
     };
 }
 
@@ -923,7 +949,7 @@ template<class Iterable>
 constexpr auto
 enumerate(Iterable&& iter)
 {
-    auto _range = range(iter.size());
+    auto _range = range(std::numeric_limits<size_t>::max());
     return zip(
         std::forward<decltype(_range)>(_range), std::forward<Iterable>(iter));
 }
@@ -932,7 +958,7 @@ template<class Iterable>
 constexpr auto
 enumerate_ref(Iterable&& iter)
 {
-    auto _range = range(iter.size());
+    auto _range = range(std::numeric_limits<size_t>::max());
     return zip_ref(
         std::forward<decltype(_range)>(_range), std::forward<Iterable>(iter));
 }
@@ -974,10 +1000,15 @@ constexpr Iterable
 map(Iterable&& iter, BinaryFunction&& func)
 {
     for (auto&& [n, i] : enumerate(iter)) {
-        iter[n] = std::invoke(
+        std::optional<IterableValue> opt = std::invoke(
             std::forward<BinaryFunction>(func),
             std::forward<decltype(n)>(n),
             std::forward<decltype(i)>(i));
+        if (opt) {
+            iter[n] = *opt;
+        } else {
+            break;
+        }
     }
     return iter;
 }
@@ -1014,7 +1045,7 @@ constexpr std::vector<IterableValue>
 to_vector(Iterable&& iter)
 {
     std::vector<IterableValue> vec;
-    for (auto v : iter) {
+    for (auto&& v : iter) {
         vec.push_back(v);
     }
     return vec;
@@ -1436,8 +1467,8 @@ struct to_string_impl
         _prev_ix = ix;
         std::string buff = "";
         size_t ndim = iter.size();
-        auto n = 0;
 
+        auto n = 0;
         for (auto&& iter_n : iter) {
             buff += recurse(std::forward<decltype(iter_n)>(iter_n), ix + 1);
 

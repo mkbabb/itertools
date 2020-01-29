@@ -563,34 +563,6 @@ to_string_tests(bool print = false)
     }
 }
 
-// void
-// concat_adapter_tests()
-// {
-//     std::vector<int> v1 = {1, 2, 3, 4, 5};
-//     std::vector<int> v2 = {10, 9, 8, 7, 6};
-//     std::vector<int> v3 = {100, 200, 300, 400, 500};
-
-//     auto l1 = std::list<float>{1.2, 1.2, 1.2};
-
-//     auto v1_enum = itertools::enumerate(v1);
-
-//     auto multi_zip = itertools::zip(v1, l1, itertools::enumerate(v2)) |
-//                      [](auto t) { return t; };
-
-//     for (auto z : multi_zip) {
-//         std::cout << "iter" << std::endl;
-//     }
-
-//     auto concatted = itertools::concat(v1_enum, itertools::enumerate(v2)) |
-//                      [](auto t) { return t; };
-
-//     auto multi_zip_concat = itertools::zip(l1, concatted, multi_zip);
-
-//     for (auto z : multi_zip_concat) {
-//         std::cout << "iter" << std::endl;
-//     };
-// }
-
 template<typename T>
 constexpr bool
 assert_almost_equal(T v1, T v2, T epsilon = 1e-12)
@@ -754,27 +726,55 @@ frexp_tests()
         assert(tup0 == tup1);
         assert(tup0 == tup2);
         assert(tup0 == tup3);
-
-        // std::cout << itertools::to_string(tup0) << std::endl;
-        // std::cout << itertools::to_string(tup1) << std::endl;
-        // std::cout << itertools::to_string(tup2) << std::endl;
-        // std::cout << itertools::to_string(tup3) << std::endl;
-        // std::cout << std::endl;
     }
 }
 
-class me
-{
-    int id;
-    me(int id)
-      : id{id} {};
-};
-
 void
-get_subset(std::vector<me> in, std::vector<me*> out, int size)
+range_container_tests()
 {
-    for (auto i : itertools::range(size)) {
-        out[i] = &in[i];
+    using namespace itertools;
+    {
+        std::vector<int> v1 = {1, 2, 3, 4, 5};
+        std::vector<int> v2 = {10, 9, 8, 7, 6};
+        std::vector<int> v3 = {100, 200, 300, 400, 500};
+
+        auto l1 = std::list<float>{1.2, 1.2, 1.2};
+        auto l2 = std::list<float>{9.9, 8.8, 7.7};
+
+        auto v1_enum = itertools::enumerate(v1);
+        auto v2_enum = itertools::enumerate(v2);
+
+        auto f = [](auto v) { return v; };
+
+        auto zipped = itertools::zip_ref(
+            v1,
+            v1_enum,
+            itertools::zip(
+                itertools::zip(itertools::zip(itertools::enumerate(l1), v2))));
+
+        for (auto t : zipped | itertools::piper(f, itertools::transmog)) {
+            auto& [i, tup, tt] = t;
+            auto& [n, j] = tup;
+            std::cout << fmt::format("{}, {}", n, j) << std::endl;
+        }
+
+        auto v4 = itertools::map(std::vector<int>(10), [](auto n, auto v) {
+            return 999;
+        });
+
+        auto pred = itertools::piper(
+            [](auto v) { return std::get<0>(v) > 3; }, itertools::filter);
+
+        auto zp = itertools::zip(v1, v2) | pred;
+
+        std::cout << itertools::to_string(zp) << std::endl;
+    }
+    {
+        std::vector<int> v1 = {1, 2, 3, 4, 5};
+        auto v2 = itertools::
+            map(std::vector<int>(10), itertools::spawn(itertools::range(3)));
+
+        std::cout << itertools::to_string(v2) << std::endl;
     }
 }
 
@@ -791,52 +791,10 @@ main()
     reduction_tests();
     generator_tests();
     // time_multiple_tests();
-    // to_string_tests();
+    to_string_tests();
     frexp_tests();
 
-    std::vector<int> v1 = {1, 2, 3, 4, 5};
-    std::vector<int> v2 = {10, 9, 8, 7, 6};
-    std::vector<int> v3 = {100, 200, 300, 400, 500};
-
-    auto l1 = std::list<float>{1.2, 1.2, 1.2};
-
-    auto v1_enum = itertools::enumerate(v1);
-
-    auto f = [](auto&& v) {
-        std::cout << "hellows" << std::endl;
-        return v;
-    };
-
-    auto zipped = itertools::zip_ref(
-        v1,
-        v1_enum,
-        itertools::zip(
-            itertools::zip(itertools::zip(itertools::enumerate(l1), v2))));
-    auto td = itertools::transmog(f, zipped);
-
-    for (auto t : zipped) {
-        auto&& [i, tup, tt] = t;
-        auto&& [n, j] = tup;
-        std::cout << fmt::format("{}, {}", n, j) << std::endl;
-        std::cout << "HELLOW" << std::endl;
-    }
-
-    // itertools::map(v1, [](auto n, auto v) { return 999; });
-    auto vo = itertools::map(std::vector<int>(10), [](auto n, auto&& v) {
-        return 999;
-    });
-
-    auto ff = [](auto v) { return std::get<0>(v) > 3; };
-
-    auto pip = itertools::piper(ff, itertools::filter);
-
-    auto zp = itertools::zip(v1, v2) | pip;
-
-    std::cout << itertools::to_string(zp) << std::endl;
-
-    // auto zp_v = itertools::to_vector(zp);
-
-    // itertools::for_each(zp_v, [](auto n, auto v) { std::get<0>(v) = 72; });
+    range_container_tests();
 
     fmt::print("tests complete\n");
     return 0;
