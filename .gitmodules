@@ -1,0 +1,3 @@
+[submodule "external/random_v"]
+	path = external/random_v
+	url = git@github.com:mkbabb/random_v.git
