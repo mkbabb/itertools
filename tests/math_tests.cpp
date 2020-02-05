@@ -87,7 +87,7 @@ frexp3(double d)
 void
 frexp_tests()
 {
-    random_v::Random rng(0ULL, random_v::lcg_xor_rot, 0);
+    random_v::Random rng(0ULL, random_v::lcg_xor_rot);
     int a = -100'000;
     int b = 100'000;
 

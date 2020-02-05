@@ -1,9 +1,9 @@
 #define FMT_HEADER_ONLY
 
-#include "../external/fmt/format.h"
-#include "../external/random_v/src/random_v.hpp"
 #include "../src/itertools.hpp"
 #include "../src/math.hpp"
+#include "fmt/format.h"
+#include "random_v/random_v.hpp"
 
 #include <chrono>
 #include <deque>
@@ -577,7 +577,7 @@ assert_almost_equal(T v1, T v2, T epsilon = 1e-12)
 void
 exp_tests()
 {
-    random_v::Random rng(0ULL, random_v::lcg_xor_rot, 0);
+    random_v::Random rng(0ULL, random_v::lcg_xor_rot);
     int a = -100;
     int b = 100;
 
@@ -598,7 +598,7 @@ exp_tests()
 void
 pow_tests()
 {
-    random_v::Random rng(0ULL, random_v::lcg_xor_rot, 0);
+    random_v::Random rng(0ULL, random_v::lcg_xor_rot);
     int a1 = 1;
     int b1 = 100;
 
@@ -710,7 +710,7 @@ frexp3(double d)
 void
 frexp_tests()
 {
-    random_v::Random rng(0ULL, random_v::lcg_xor_rot, 0);
+    random_v::Random rng(0ULL, random_v::lcg_xor_rot);
     int a = -100'000;
     int b = 100'000;
 
