@@ -314,6 +314,12 @@ public:
     Func func;
 };
 
+constexpr auto range_container_v = [](auto&& range) {
+    using Range = decltype(range);
+    using Iterator = range_container_iterator<Range>;
+    return range_container<Range, Iterator>(std::forward<Range>(range));
+};
+
 constexpr auto transmog = [](auto&& func, auto&& range) {
     using Func = decltype(func);
     using Range = decltype(range);

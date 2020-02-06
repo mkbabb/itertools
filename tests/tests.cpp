@@ -795,6 +795,19 @@ main()
 
     range_container_tests();
 
+    std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
+
+    auto piper = itertools::
+        piper([](auto v) { return fmt::format("{}", v); }, itertools::transmog);
+
+    auto range = itertools::range_container_v(v1) | piper;
+    auto ranges = std::vector{range, range, range};
+    auto ranger = itertools::range_container_v(ranges);
+    int j = 0;
+    for (auto i : ranger) {
+        j++;
+    }
+
     fmt::print("tests complete\n");
     return 0;
 }
