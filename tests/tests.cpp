@@ -797,15 +797,25 @@ main()
 
     std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
 
-    auto piper = itertools::
-        piper([](auto v) { return fmt::format("{}", v); }, itertools::transmog);
+    auto piper = itertools::piper(
+        [](auto v) { return itertools::to_string(v); }, itertools::transmog);
 
-    auto range = itertools::range_container_v(v1) | piper;
-    auto ranges = std::vector{range, range, range};
-    auto ranger = itertools::range_container_v(ranges);
-    int j = 0;
-    for (auto i : ranger) {
-        j++;
+    // auto range = itertools::to_range(v1) | [](auto v) {
+    //     auto vec = itertools::to_vector(v);
+    //     std::sort(begin(vec), end(vec));
+    //     return itertools::to_range(vec);
+    // };
+
+    auto range =
+        itertools::to_range(v1) | itertools::piper(
+                                               [](auto&& v) {
+                                                   std::sort(begin(v), end(v));
+                                                   return v;
+                                               },
+                                               itertools::transmog_hasty);
+
+    for (auto i : range) {
+        std::cout << i << std::endl;
     }
 
     fmt::print("tests complete\n");

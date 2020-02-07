@@ -16,6 +16,17 @@
 namespace itertools {
 using namespace tupletools;
 
+template<class Iterable, class IterableValue = tupletools::iterable_t<Iterable>>
+constexpr std::vector<IterableValue>
+to_vector(Iterable&& iter)
+{
+    std::vector<IterableValue> vec;
+    for (auto&& v : iter) {
+        vec.push_back(v);
+    }
+    return vec;
+}
+
 // The base iterators whereof all is built.
 
 struct range_container_terminus
@@ -314,15 +325,18 @@ public:
     Func func;
 };
 
-constexpr auto range_container_v = [](auto&& range) {
-    using Range = decltype(range);
+template<typename R>
+constexpr auto
+to_range(R&& range)
+{
+    using Range = tupletools::remove_cvref_t<decltype(range)>;
     using Iterator = range_container_iterator<Range>;
     return range_container<Range, Iterator>(std::forward<Range>(range));
-};
+}
 
 constexpr auto transmog = [](auto&& func, auto&& range) {
     using Func = decltype(func);
-    using Range = decltype(range);
+    using Range = tupletools::remove_cvref_t<decltype(range)>;
     using Iterator = transmog_iterator<Func, Range>;
     return range_container<
         Range,
@@ -330,9 +344,21 @@ constexpr auto transmog = [](auto&& func, auto&& range) {
         Func>(std::forward<Range>(range), std::forward<Func>(func));
 };
 
+constexpr auto transmog_hasty = [](auto&& func, auto&& range) {
+    using Func = decltype(func);
+    using Range = tupletools::remove_cvref_t<decltype(range)>;
+    using IterableValue = tupletools::iterable_t<Range>;
+
+    auto&& vec = itertools::to_vector(std::forward<Range>(range));
+    auto&& t_vec =
+        std::invoke(std::forward<Func>(func), std::forward<decltype(vec)>(vec));
+
+    return itertools::to_range(std::forward<decltype(t_vec)>(t_vec));
+};
+
 constexpr auto filter = [](auto&& func, auto&& range) {
     using Func = decltype(func);
-    using Range = decltype(range);
+    using Range = tupletools::remove_cvref_t<decltype(range)>;
     using Iterator = filter_iterator<Func, Range>;
     return range_container<
         Range,
@@ -341,7 +367,7 @@ constexpr auto filter = [](auto&& func, auto&& range) {
 };
 
 constexpr auto block = [](auto&& range, size_t block_size) {
-    using Range = decltype(range);
+    using Range = tupletools::remove_cvref_t<decltype(range)>;
     using Iterator = block_iterator<Range>;
     return range_container<
         Range,
@@ -443,6 +469,18 @@ piper(Func&& func, Piped piped)
             piped = std::forward<Piped>(piped)](auto&& v) {
         return piped(func, v);
     };
+}
+
+template<class Range>
+constexpr auto
+sort(Range&& range)
+{
+    return itertools::to_range(range) | itertools::piper(
+                                            [](auto&& v) {
+                                                std::sort(begin(v), end(v));
+                                                return v;
+                                            },
+                                            itertools::transmog_hasty);
 }
 
 /**

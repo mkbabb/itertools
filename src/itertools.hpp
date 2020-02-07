@@ -93,17 +93,6 @@ mul(Iterable&& iter)
         ReductionValue>(iter, 1, [](auto n, auto v, auto i) { return i * v; });
 }
 
-template<class Iterable, class IterableValue = tupletools::iterable_t<Iterable>>
-constexpr std::vector<IterableValue>
-to_vector(Iterable&& iter)
-{
-    std::vector<IterableValue> vec;
-    for (auto&& v : iter) {
-        vec.push_back(v);
-    }
-    return vec;
-}
-
 template<class Iterable>
 constexpr Iterable
 swap(Iterable&& iter, int ix1, int ix2)
