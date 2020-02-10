@@ -43,9 +43,12 @@ template<
 class range_base
 {
 public:
+    size_t _size;
+
     range_base(Range&& range, Args&&... args)
       : iter{std::forward<Range>(range), std::forward<Args>(args)...}
       , range{range}
+      , _size{range.size()}
     {}
 
     range_base(Range&& range, BeginIter&& begin_iter, EndIter&& end_iter)
@@ -53,6 +56,7 @@ public:
              std::forward<BeginIter>(begin_iter),
              std::forward<EndIter>(end_iter)}
       , range{range}
+      , _size{1}
     {}
 
     Iterator begin()
@@ -65,9 +69,9 @@ public:
         return range_container_terminus{true};
     }
 
-    auto size()
+    size_t size()
     {
-        return this->range.size();
+        return _size;
     }
 
     template<class Tfunc>
@@ -129,11 +133,6 @@ public:
             std::forward_as_tuple(std::begin(args)...),
             std::forward_as_tuple(std::end(args)...))
     {}
-
-    auto size()
-    {
-        return 1;
-    }
 };
 
 template<
