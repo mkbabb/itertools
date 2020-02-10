@@ -34,12 +34,24 @@ struct range_container_terminus
     bool complete = false;
 };
 
-template<class Range, class Iterator, class... Args>
-class range_container
+template<
+    class Range,
+    class Iterator,
+    class BeginIter,
+    class EndIter,
+    class... Args>
+class range_base
 {
 public:
-    range_container(Range&& range, Args&&... args)
+    range_base(Range&& range, Args&&... args)
       : iter{std::forward<Range>(range), std::forward<Args>(args)...}
+      , range{range}
+    {}
+
+    range_base(Range&& range, BeginIter&& begin_iter, EndIter&& end_iter)
+      : iter{std::forward<Range>(range),
+             std::forward<BeginIter>(begin_iter),
+             std::forward<EndIter>(end_iter)}
       , range{range}
     {}
 
@@ -68,49 +80,60 @@ public:
     Iterator iter;
 };
 
+template<class Range, class Iterator, class... Args>
+class range_container
+  : public range_base<
+        Range,
+        Iterator,
+        decltype(std::declval<Range>().begin()),
+        decltype(std::declval<Range>().end()),
+        Args...>
+{
+public:
+    range_container(Range&& range, Args&&... args)
+      : range_base<
+            Range,
+            Iterator,
+            decltype(std::declval<Range>().begin()),
+            decltype(std::declval<Range>().end()),
+            Args...>(std::forward<Range>(range), std::forward<Args>(args)...)
+    {}
+};
+
 template<template<typename... Ts> class Iterator, class... Args>
 class range_tuple
+  : public range_base<
+        std::tuple<Args...>,
+        Iterator<
+            std::tuple<Args...>,
+            std::tuple<decltype(std::declval<Args>().begin())...>,
+            std::tuple<decltype(std::declval<Args>().end())...>>,
+        std::tuple<decltype(std::declval<Args>().begin())...>,
+        std::tuple<decltype(std::declval<Args>().end())...>>
 {
     static constexpr size_t N = sizeof...(Args);
     static_assert(N > 0, "Zip argument count must be larger than 0.");
 
 public:
-    using Range = std::tuple<Args...>;
-    using BeginIter = std::tuple<decltype(std::declval<Args>().begin())...>;
-    using EndIter = std::tuple<decltype(std::declval<Args>().end())...>;
-
-    using iterator = Iterator<Range, BeginIter, EndIter>;
-
     range_tuple(Args&&... args)
-      : iter{std::forward_as_tuple(args...),
-             std::forward_as_tuple(std::begin(args)...),
-             std::forward_as_tuple(std::end(args)...)}
-      , range{args...}
+      : range_base<
+            std::tuple<Args...>,
+            Iterator<
+                std::tuple<Args...>,
+                std::tuple<decltype(std::declval<Args>().begin())...>,
+                std::tuple<decltype(std::declval<Args>().end())...>>,
+            std::tuple<decltype(std::declval<Args>().begin())...>,
+            std::tuple<decltype(std::declval<Args>().end())...>>(
+
+            std::forward_as_tuple(args...),
+            std::forward_as_tuple(std::begin(args)...),
+            std::forward_as_tuple(std::end(args)...))
     {}
-
-    template<class Tfunc>
-    auto operator|(Tfunc&& tfunc)
-    {
-        return tfunc(*this);
-    }
-
-    iterator begin()
-    {
-        return iter;
-    }
-
-    auto end()
-    {
-        return range_container_terminus{true};
-    }
 
     auto size()
     {
         return 1;
     }
-
-    Range range;
-    iterator iter;
 };
 
 template<
@@ -123,13 +146,13 @@ public:
     using iterator_category = std::forward_iterator_tag;
     range_container_terminus terminus;
 
-    explicit range_container_iterator(Range&& range) noexcept
+    range_container_iterator(Range&& range) noexcept
       : begin_iter{std::begin(range)}
       , end_iter{std::end(range)}
       , terminus{false}
     {}
 
-    explicit range_container_iterator(
+    range_container_iterator(
         Range&& range,
         BeginIter&& begin_iter,
         EndIter&& end_iter) noexcept
@@ -184,7 +207,7 @@ public:
     range_tuple_iterator(
         Range&& range,
         BeginIter&& begin_iter,
-        EndIter&& end_iter) noexcept
+        EndIter&& end_iter)
       : range_container_iterator<Range, BeginIter, EndIter>(
             std::forward<Range>(range),
             std::forward<BeginIter>(begin_iter),
