@@ -28,27 +28,21 @@ zip_tests()
         };
     }
     {
-        std::vector<std::string> sv1 = {"\nThis",
-                                        "but",
-                                        "different",
-                                        "containers,"};
+        std::vector<std::string> sv1 =
+            {"\nThis", "but", "different", "containers,"};
         std::vector<std::string> sv2 = {"is", "can", "types", "too?"};
-        std::vector<std::string> sv3 = {"cool,",
-                                        "we iterate through",
-                                        "of",
-                                        "...\n"};
+        std::vector<std::string> sv3 =
+            {"cool,", "we iterate through", "of", "...\n"};
 
         for (auto [i, j, k] : itertools::zip(sv1, sv2, sv3)) {
         };
     }
     {
 
-        std::list<std::string> sl1 = {"Yes, we can!",
-                                      "Some more numbers:",
-                                      "More numbers!"};
-        std::vector<std::string> sv1 = {"Different types, too!",
-                                        "Ints and doubles.",
-                                        ""};
+        std::list<std::string> sl1 =
+            {"Yes, we can!", "Some more numbers:", "More numbers!"};
+        std::vector<std::string> sv1 =
+            {"Different types, too!", "Ints and doubles.", ""};
         std::list<int> iv1 = {1, 2, 3};
         std::vector<double> dv1{3.141592653589793238, 1.6181, 2.71828};
 
@@ -82,10 +76,8 @@ tupletools_tests()
         assert(tupletools::tuple_size<decltype(tup1)>::value == 20);
     }
     {
-        std::vector<std::tuple<int, int>> tv1 = {{1, 2},
-                                                 {3, 4},
-                                                 {5, 6},
-                                                 {7, 8}};
+        std::vector<std::tuple<int, int>> tv1 =
+            {{1, 2}, {3, 4}, {5, 6}, {7, 8}};
         for (auto v : itertools::enumerate(tv1)) {
             auto [n, i, j] = tupletools::flatten(v);
             fmt::print("{} {} {}\n", n, i, j);
@@ -258,72 +250,12 @@ range_tests()
     }
 }
 
-itertools::generator<int>
-inc(int n)
-{
-    for (int i = 0; i < n; i++) {
-        co_yield i;
-    };
-};
-
-itertools::generator<int>
-rec(int n)
-{
-    co_yield n;
-    if (n > 0) {
-        co_yield rec(n - 1);
-    }
-    co_return;
-};
-
-void
-rec2(int n)
-{
-    std::vector<int> t = {1, 2, 3, 4, 5, 6, 7, 8};
-    int to = 0;
-    for (auto i : itertools::range(1000)) {
-        to++;
-    }
-    for (auto i : itertools::enumerate(t)) {
-        to++;
-    }
-    if (n < 1'000) {
-        rec2(n + 1);
-    }
-};
-
-void
-generator_tests()
-{
-    {
-        int n = 7'000;
-        auto gen = rec(n);
-        for (auto i : gen) {
-            assert((n--) == i);
-        }
-    }
-    {
-        int n = 500'000;
-        auto gen = inc(n);
-        n = 0;
-        for (auto i : gen) {
-            assert((n++) == i);
-        }
-    }
-    {
-        rec2(0);
-    }
-}
-
 void
 reduction_tests()
 {
     {
-        std::vector<std::tuple<int, int>> iter = {{0, 1},
-                                                  {1, 2},
-                                                  {3, 4},
-                                                  {5, 6},
-                                                  {7, 8}};
+        std::vector<std::tuple<int, int>> iter =
+            {{0, 1}, {1, 2}, {3, 4}, {5, 6}, {7, 8}};
 
         int sm = itertools::reduce<int>(iter, 0, [](auto n, auto v, auto i) {
             return std::get<0>(v) + i;
@@ -458,8 +390,8 @@ to_string_tests(bool print = false)
         }
     }
     {
-        std::vector<std::map<int, int>> iter = {{{1, 2}, {3, 4}},
-                                                {{5, 6}, {7, 8}}};
+        std::vector<std::map<int, int>> iter =
+            {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
         auto ndim = itertools::get_ndim(iter);
         std::string s = itertools::to_string(iter);
         if (print) {
@@ -478,37 +410,38 @@ to_string_tests(bool print = false)
     {
         std::vector<
             std::list<std::vector<std::list<std::vector<std::deque<int>>>>>>
-            iter = {{{{{{0, 1}, {2, 3}},
+            iter =
+                {{{{{{0, 1}, {2, 3}},
 
-                       {{4, 5}, {6, 7}}},
+                    {{4, 5}, {6, 7}}},
 
-                      {{{8, 9}, {10, 11}},
+                   {{{8, 9}, {10, 11}},
 
-                       {{12, 13}, {14, 15}}}},
+                    {{12, 13}, {14, 15}}}},
 
-                     {{{{16, 17}, {18, 19}},
+                  {{{{16, 17}, {18, 19}},
 
-                       {{20, 21}, {22, 23}}},
+                    {{20, 21}, {22, 23}}},
 
-                      {{{24, 25}, {26, 27}},
+                   {{{24, 25}, {26, 27}},
 
-                       {{28, 29}, {30, 31}}}}},
+                    {{28, 29}, {30, 31}}}}},
 
-                    {{{{{32, 33}, {34, 35}},
+                 {{{{{32, 33}, {34, 35}},
 
-                       {{36, 37}, {38, 39}}},
+                    {{36, 37}, {38, 39}}},
 
-                      {{{40, 41}, {42, 43}},
+                   {{{40, 41}, {42, 43}},
 
-                       {{44, 45}, {46, 47}}}},
+                    {{44, 45}, {46, 47}}}},
 
-                     {{{{48, 49}, {50, 51}},
+                  {{{{48, 49}, {50, 51}},
 
-                       {{52, 53}, {54, 55}}},
+                    {{52, 53}, {54, 55}}},
 
-                      {{{56, 57}, {58, 59}},
+                   {{{56, 57}, {58, 59}},
 
-                       {{60, 61}, {62, 63}}}}}};
+                    {{60, 61}, {62, 63}}}}}};
         auto ndim = itertools::get_ndim(iter);
         std::string s = itertools::to_string(iter);
         if (print) {
@@ -520,18 +453,19 @@ to_string_tests(bool print = false)
             std::list<std::vector<std::vector<int>>>,
             int,
             std::map<int, std::tuple<int, int, int>>>>
-            iter = {{{{{1, 2}}, {{3, 4}}},
-                     1,
-                     {{1, {0, 1, 2}},
-                      {2, {1, 2, 3}},
-                      {3, {2, 3, 4}},
-                      {4, {3, 4, 5}}}},
-                    {{{{5, 6}}, {{7, 8}}},
-                     4,
-                     {{1, {0, 1, 2}},
-                      {2, {1, 2, 3}},
-                      {3, {2, 3, 4}},
-                      {4, {3, 4, 5}}}}};
+            iter =
+                {{{{{1, 2}}, {{3, 4}}},
+                  1,
+                  {{1, {0, 1, 2}},
+                   {2, {1, 2, 3}},
+                   {3, {2, 3, 4}},
+                   {4, {3, 4, 5}}}},
+                 {{{{5, 6}}, {{7, 8}}},
+                  4,
+                  {{1, {0, 1, 2}},
+                   {2, {1, 2, 3}},
+                   {3, {2, 3, 4}},
+                   {4, {3, 4, 5}}}}};
         auto ndim = itertools::get_ndim(iter);
         std::string s = itertools::to_string(iter);
         if (print) {

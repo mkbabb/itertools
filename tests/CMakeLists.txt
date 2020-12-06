@@ -1,7 +1,7 @@
 project(itertools)
 cmake_minimum_required(VERSION 3.2)
 
-set(CMAKE_CXX_COMPILER "/usr/local/Cellar/llvm/9.0.0_1/bin/clang++")
+set(CMAKE_CXX_COMPILER "clang++")
 
 add_compile_options(-fcoroutines-ts -stdlib=libc++ -std=c++2a -ggdb3)
 

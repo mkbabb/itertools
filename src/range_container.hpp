@@ -1,7 +1,6 @@
 #ifndef RANGE_CONTAINER_H
 #define RANGE_CONTAINER_H
 
-#include "generator.hpp"
 #include "tupletools.hpp"
 #include "types.hpp"
 
@@ -52,9 +51,7 @@ public:
     {}
 
     range_base(Range&& range, BeginIter&& begin_iter, EndIter&& end_iter)
-      : iter{std::forward<Range>(range),
-             std::forward<BeginIter>(begin_iter),
-             std::forward<EndIter>(end_iter)}
+      : iter{std::forward<Range>(range), std::forward<BeginIter>(begin_iter), std::forward<EndIter>(end_iter)}
       , range{range}
       , _size{1}
     {}
@@ -189,7 +186,7 @@ public:
         return *(this->begin_iter);
     }
 
-    auto operator-> () noexcept
+    auto operator->() noexcept
     {
         return this->begin_iter;
     }
@@ -651,39 +648,6 @@ enumerate_ref(Iterable&& iter)
     auto _range = range(std::numeric_limits<size_t>::max());
     return zip_ref(
         std::forward<decltype(_range)>(_range), std::forward<Iterable>(iter));
-}
-
-/*
-
-Coroutine generator function. Works with both negative and positive stride
-values.
-
-@param start: T starting value.
-@param stop: T stopping value.
-@param stride: T stride value whereof start is incremented.
-
-@co_yield: incremented starting value of type T.
- */
-template<typename T = size_t>
-generator<T>
-grange(T start, T stop, T stride = 1)
-{
-    stride = start > stop ? -1 : 1;
-    do {
-        co_yield start;
-        start += stride;
-    } while (start < stop);
-}
-
-template<typename T = size_t>
-generator<T>
-grange(T stop)
-{
-    T start = 0;
-    if (start > stop) {
-        std::swap(start, stop);
-    }
-    return grange<T>(start, stop);
 }
 
 } // namespace itertools

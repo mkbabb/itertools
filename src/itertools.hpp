@@ -1,7 +1,6 @@
 #ifndef ITERTOOLS_H
 #define ITERTOOLS_H
 
-#include "generator.hpp"
 #include "range_container.hpp"
 #include "tupletools.hpp"
 #include "types.hpp"
@@ -97,7 +96,6 @@ template<class Iterable>
 constexpr Iterable
 swap(Iterable&& iter, int ix1, int ix2)
 {
-    assert(ix1 < iter.size() && ix2 < iter.size());
     auto t = iter[ix1];
     iter[ix1] = iter[ix2];
     iter[ix2] = t;
