@@ -811,8 +811,8 @@ main()
     // auto range =
     //     itertools::to_range(v1) | itertools::piper(
     //                                            [](auto&& v) {
-    //                                                std::sort(begin(v), end(v));
-    //                                                return v;
+    //                                                std::sort(begin(v),
+    //                                                end(v)); return v;
     //                                            },
     //                                            itertools::transmog_hasty);
 
