@@ -6,13 +6,25 @@
     "configurations": [
         {
             "name": "(lldb) Launch",
-            "type": "lldb",
+            "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/${workspaceFolderBasename}",
             "args": [],
             "cwd": "${workspaceFolder}",
             "terminal": "integrated",
             "preLaunchTask": "Conan Build",
+        },
+        {
+            "name": "launch cmake",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/${workspaceFolderBasename}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "lldb",
         },
         {
             "name": "Python: Current File with Directory",

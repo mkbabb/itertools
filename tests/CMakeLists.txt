@@ -9,7 +9,7 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
 conan_basic_setup()
 
-add_executable(${PROJECT_NAME} tests.cpp)
+add_executable(${PROJECT_NAME} toasts.cpp)
 target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})
 
 

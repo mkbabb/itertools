@@ -1,5 +1,5 @@
 from conans import ConanFile, CMake, tools
-from parktoma.vscconan import update_cpp_tools
+# from parktoma.vscconan import update_cpp_tools
 
 
 class ItertoolsConan(ConanFile):
@@ -18,8 +18,9 @@ class ItertoolsConan(ConanFile):
         return super().configure()
 
     def imports(self):
-        update_cpp_tools(
-            self, c_cpp_properties_path="../.vscode/c_cpp_properties.json")
+        pass
+        # update_cpp_tools(
+        #     self, c_cpp_properties_path="../.vscode/c_cpp_properties.json")
 
     def build(self):
         cmake = CMake(self, build_type="Debug")
