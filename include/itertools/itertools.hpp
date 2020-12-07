@@ -1,9 +1,9 @@
 #ifndef ITERTOOLS_H
 #define ITERTOOLS_H
 
-#include "range_container.hpp"
-#include "tupletools.hpp"
-#include "types.hpp"
+#include "itertools/range_container.hpp"
+#include "itertools/tupletools.hpp"
+#include "itertools/types.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -80,16 +80,18 @@ template<typename ReductionValue, class Iterable>
 constexpr ReductionValue
 sum(Iterable&& iter)
 {
-    return itertools::reduce<
-        ReductionValue>(iter, 0, [](auto n, auto v, auto i) { return i + v; });
+    return itertools::reduce<ReductionValue>(iter, 0, [](auto n, auto v, auto i) {
+        return i + v;
+    });
 }
 
 template<typename ReductionValue, class Iterable>
 constexpr ReductionValue
 mul(Iterable&& iter)
 {
-    return itertools::reduce<
-        ReductionValue>(iter, 1, [](auto n, auto v, auto i) { return i * v; });
+    return itertools::reduce<ReductionValue>(iter, 1, [](auto n, auto v, auto i) {
+        return i * v;
+    });
 }
 
 template<class Iterable>
@@ -172,14 +174,10 @@ time_multiple(size_t iterations, Funcs&&... funcs)
 
         integral_time_t avg =
             itertools::reduce<integral_time_t>(
-                value,
-                0,
-                [](auto n, auto v, auto i) { return v.count() + i; }) /
+                value, 0, [](auto n, auto v, auto i) { return v.count() + i; }) /
             iterations;
 
-        extremal_times[key] = {value[0].count(),
-                               value[value.size() - 1].count(),
-                               avg};
+        extremal_times[key] = {value[0].count(), value[value.size() - 1].count(), avg};
         return false;
     });
     return std::make_tuple(times, extremal_times);
@@ -203,9 +201,7 @@ struct get_ndim_impl
         _ndim++;
     }
 
-    template<
-        class Tup,
-        std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0>
+    template<class Tup, std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0>
     constexpr void recurse(Tup&& tup)
     {
         tupletools::for_each(tup, [&](auto&& n, auto&& v) {
@@ -239,9 +235,8 @@ get_ndim(Iterable&& iter)
 }
 
 template<typename Char, typename Traits, typename Allocator>
-std::basic_string<Char, Traits, Allocator> operator*(
-    const std::basic_string<Char, Traits, Allocator> s,
-    size_t n)
+std::basic_string<Char, Traits, Allocator>
+operator*(const std::basic_string<Char, Traits, Allocator> s, size_t n)
 {
     std::basic_string<Char, Traits, Allocator> tmp = "";
     for (auto i : range(n)) {
@@ -251,9 +246,8 @@ std::basic_string<Char, Traits, Allocator> operator*(
 }
 
 template<typename Char, typename Traits, typename Allocator>
-std::basic_string<Char, Traits, Allocator> operator*(
-    size_t n,
-    const std::basic_string<Char, Traits, Allocator>& s)
+std::basic_string<Char, Traits, Allocator>
+operator*(size_t n, const std::basic_string<Char, Traits, Allocator>& s)
 {
     return s * n;
 }
@@ -282,8 +276,7 @@ std::string
 rtrim(std::string s)
 {
     s.erase(
-        std::find_if(
-            s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); })
+        std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); })
             .base(),
         s.end());
     return s;
@@ -372,8 +365,8 @@ summarize_string(
     if (begin == 0 || end == buff.size() - 1) {
         return buff;
     } else {
-        std::string summary = buff.substr(0, begin - 1) + " ... " +
-                              buff.substr(end, buff.size() - 1);
+        std::string summary =
+            buff.substr(0, begin - 1) + " ... " + buff.substr(end, buff.size() - 1);
         return summary;
     }
 }
@@ -420,8 +413,7 @@ struct to_string_impl
 
     std::string format_newline(std::string& buff, size_t line_count)
     {
-        std::string new_line =
-            std::string("\n") * (line_count < 0 ? 0 : line_count);
+        std::string new_line = std::string("\n") * (line_count < 0 ? 0 : line_count);
         std::string spacing = _trim_sep + new_line;
 
         buff += spacing;
@@ -454,25 +446,24 @@ struct to_string_impl
         std::string t_buff;
         bool nested_tupleoid = false;
 
-        tupletools::
-            for_each(std::forward<Tup>(tup), [&](auto n, auto&& iter_n) {
-                t_buff = to_string_impl{std::forward<decltype(iter_n)>(iter_n),
-                                        std::forward<Formatter>(_formatter),
-                                        _sep}(
-                    std::forward<decltype(iter_n)>(iter_n));
+        tupletools::for_each(std::forward<Tup>(tup), [&](auto n, auto&& iter_n) {
+            t_buff = to_string_impl{
+                std::forward<decltype(iter_n)>(iter_n),
+                std::forward<Formatter>(_formatter),
+                _sep}(std::forward<decltype(iter_n)>(iter_n));
 
-                if (n < N - 1) {
-                    t_buff += _sep;
+            if (n < N - 1) {
+                t_buff += _sep;
 
-                    if (nested_tupleoid || is_iterable_v<decltype(iter_n)> ||
-                        is_tupleoid_v<decltype(iter_n)>) {
-                        t_buff += '\n';
-                        nested_tupleoid = true;
-                    }
+                if (nested_tupleoid || is_iterable_v<decltype(iter_n)> ||
+                    is_tupleoid_v<decltype(iter_n)>) {
+                    t_buff += '\n';
+                    nested_tupleoid = true;
                 }
+            }
 
-                buff += t_buff;
-            });
+            buff += t_buff;
+        });
 
         buff = "(" + format_indent(buff) + ")";
         if (ix > 0) {
@@ -487,8 +478,8 @@ struct to_string_impl
         std::enable_if_t<!tupletools::is_tupleoid_v<Iterable>, int> = 0>
     std::string formatter_wrap(Iterable&& iter, size_t ix)
     {
-        return std::invoke(
-            std::forward<Formatter>(_formatter), std::forward<Iterable>(iter));
+        return std::
+            invoke(std::forward<Formatter>(_formatter), std::forward<Iterable>(iter));
     }
 
     template<
@@ -512,8 +503,7 @@ struct to_string_impl
         for (auto&& iter_n : iter) {
             buff += recurse(std::forward<decltype(iter_n)>(iter_n), ix + 1);
 
-            if (!is_iterable_v<decltype(iter_n)> &&
-                !is_tupleoid_v<decltype(iter_n)>) {
+            if (!is_iterable_v<decltype(iter_n)> && !is_tupleoid_v<decltype(iter_n)>) {
                 buff += n < ndim - 1 ? _sep : "";
             }
 
@@ -536,9 +526,8 @@ template<class Iterable, class Formatter>
 std::string
 to_string_f(Iterable&& iter, Formatter&& formatter, std::string&& sep = ", ")
 {
-    return detail::to_string_impl{std::forward<Iterable>(iter),
-                                  std::forward<Formatter>(formatter),
-                                  sep}(iter);
+    return detail::to_string_impl{
+        std::forward<Iterable>(iter), std::forward<Formatter>(formatter), sep}(iter);
 }
 
 template<class Iterable>
@@ -548,9 +537,10 @@ to_string(Iterable&& iter)
     std::string sep = ", ";
     auto formatter = [](auto&& s) -> std::string { return std::to_string(s); };
 
-    return detail::to_string_impl{std::forward<Iterable>(iter),
-                                  std::forward<decltype(formatter)>(formatter),
-                                  sep}(iter);
+    return detail::to_string_impl{
+        std::forward<Iterable>(iter),
+        std::forward<decltype(formatter)>(formatter),
+        sep}(iter);
 }
 };     // namespace itertools
 #endif // ITERTOOLS_H
