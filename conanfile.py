@@ -5,7 +5,7 @@ class ItertoolsConan(ConanFile):
     name = "itertools"
     version = "0.1"
 
-    exports_sources = "src/*"
+    exports_sources = "include/*"
     no_copy_source = True
 
     def requirements(self):
