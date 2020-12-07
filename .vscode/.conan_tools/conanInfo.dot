@@ -1,4 +1,0 @@
-digraph {
-    "random_v/0.1" -> {"fmt/6.0.0@bincrafters/stable"}
-    "conanfile.py (itertools/0.1)" -> {"random_v/0.1"}
-}
