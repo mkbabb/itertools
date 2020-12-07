@@ -135,6 +135,7 @@ public:
     {
         auto complete = this->begin_it == this->end_it;
         this->terminus.complete = complete;
+
         return complete;
     }
 
