@@ -1,0 +1,38 @@
+{
+ "graph_lock": {
+  "nodes": {
+   "0": {
+    "ref": "itertools/0.1",
+    "options": "fmt:fPIC=True\nfmt:header_only=False\nfmt:shared=False\nfmt:with_fmt_alias=False",
+    "requires": [
+     "1",
+     "2"
+    ],
+    "path": "conanfile.py",
+    "context": "host"
+   },
+   "1": {
+    "ref": "random_v/0.1",
+    "options": "fmt:fPIC=True\nfmt:header_only=False\nfmt:shared=False\nfmt:with_fmt_alias=False",
+    "package_id": "94dbadc1fb7518cfd9d0f31a36b85479c3816e77",
+    "prev": "0",
+    "modified": true,
+    "requires": [
+     "2"
+    ],
+    "context": "host"
+   },
+   "2": {
+    "ref": "fmt/7.1.2",
+    "options": "fPIC=True\nheader_only=False\nshared=False\nwith_fmt_alias=False",
+    "package_id": "407bc6dfc3b539e8fb6e77be46793e6e16fbd64d",
+    "prev": "0",
+    "modified": true,
+    "context": "host"
+   }
+  },
+  "revisions_enabled": false
+ },
+ "version": "0.4",
+ "profile_host": "[settings]\narch=x86_64\narch_build=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.libcxx=libstdc++\ncompiler.version=10.2\nos=Macos\nos_build=Macos\n[options]\n[build_requires]\n[env]\nCC=/usr/local/opt/gcc/bin/gcc-10\nCXX=/usr/local/opt/gcc/bin/g++-10"
+}

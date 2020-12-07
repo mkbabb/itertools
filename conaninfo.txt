@@ -1,0 +1,29 @@
+[settings]
+
+
+[requires]
+    fmt/7.Y.Z
+    random_v/0.1
+
+[options]
+
+
+[full_settings]
+
+
+[full_requires]
+    fmt/7.1.2:407bc6dfc3b539e8fb6e77be46793e6e16fbd64d
+    random_v/0.1:94dbadc1fb7518cfd9d0f31a36b85479c3816e77
+
+[full_options]
+    fmt:fPIC=True
+    fmt:header_only=False
+    fmt:shared=False
+    fmt:with_fmt_alias=False
+
+[recipe_hash]
+
+
+[env]
+    CC=/usr/local/opt/gcc/bin/gcc-10
+    CXX=/usr/local/opt/gcc/bin/g++-10
