@@ -29,14 +29,13 @@ main()
 
     for (auto&& [i, j] : vv1) {
         std::cout << "hi" << std::endl;
-        i = 1000;
     }
 
     for (auto i : views::concat(v1, v2)) {
         std::cout << "loco" << std::endl;
     }
 
-    for (auto i : to_range(v1) | views::slice(3, 5) | views::stride(1)) {
+    for (auto i : to_range(v1) | views::stride(2)) {
         std::cout << i << std::endl;
     }
 

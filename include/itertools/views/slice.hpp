@@ -10,8 +10,9 @@ constexpr auto
 slice(Range&& range, size_t start = 0, size_t stop = std::numeric_limits<size_t>::max())
 {
     auto pred = [=, pos = 0UL](auto&&) mutable {
-        auto b = (pos >= start and pos < stop);
+        auto b = (pos >= start and pos <= stop);
         pos += 1;
+        
         return b;
     };
     using Pred = decltype(pred);
