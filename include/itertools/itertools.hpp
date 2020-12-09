@@ -292,7 +292,7 @@ trim(std::string s)
 
 namespace detail {
 
-constexpr int
+int
 bidirectional_match(
     const std::string& buff,
     const std::string& token,
