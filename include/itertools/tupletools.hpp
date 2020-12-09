@@ -20,16 +20,15 @@ template<size_t... Ixs, class Func>
 constexpr auto
 index_apply_impl(Func&& func, std::index_sequence<Ixs...>)
 {
-    return std::invoke(
-        std::forward<Func>(func), std::integral_constant<size_t, Ixs>{}...);
+    return std::
+        invoke(std::forward<Func>(func), std::integral_constant<size_t, Ixs>{}...);
 }
 
 template<size_t N, class Func>
 constexpr auto
 index_apply(Func&& func)
 {
-    return index_apply_impl(
-        std::forward<Func>(func), std::make_index_sequence<N>{});
+    return index_apply_impl(std::forward<Func>(func), std::make_index_sequence<N>{});
 }
 
 /*
@@ -41,8 +40,8 @@ constexpr auto
 apply(Func&& func, Tup&& tup)
 {
     return index_apply<N>([&](auto... Ixs) {
-        return std::invoke(
-            std::forward<Func>(func), std::get<Ixs>(std::forward<Tup>(tup))...);
+        return std::
+            invoke(std::forward<Func>(func), std::get<Ixs>(std::forward<Tup>(tup))...);
     });
 }
 
@@ -58,11 +57,11 @@ constexpr auto
 make_tuple_of(T value)
 {
     auto func = [&value](auto t) { return value; };
-    auto tup = index_apply<N>(
-        [&value](auto... Ixs) { return std::make_tuple(Ixs...); });
-    return index_apply<N>([&](auto... Ixs) {
-        return std::make_tuple(func(std::get<Ixs>(tup))...);
-    });
+    auto tup =
+        index_apply<N>([&value](auto... Ixs) { return std::make_tuple(Ixs...); });
+
+    return index_apply<N>(
+        [&](auto... Ixs) { return std::make_tuple(func(std::get<Ixs>(tup))...); });
 }
 
 /*
@@ -87,9 +86,7 @@ void
 for_each(Tup&& tup, Func&& func)
 {
     index_apply<N>([func = std::forward<Func>(func), &tup](auto... Ixs) {
-        (func(
-             Ixs,
-             std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
+        (func(Ixs, std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
          ...);
     });
     return;
@@ -100,10 +97,10 @@ constexpr auto
 transform(Func&& func, Tup&& tup)
 {
     auto f = [func = std::forward<Func>(func)](auto&&... args) {
-        return std::forward_as_tuple(
-            func(std::forward<decltype(args)>(args))...);
+        return std::forward_as_tuple(func(std::forward<decltype(args)>(args))...);
     };
-    return tupletools::apply(f, std::forward<Tup>(tup));
+    using F = decltype(f);
+    return tupletools::apply(std::forward<F>(f), std::forward<Tup>(tup));
 }
 
 template<class Func, class Tup>
@@ -113,7 +110,8 @@ transform_copy(Func&& func, Tup&& tup)
     auto f = [func = std::forward<Func>(func)](auto&&... args) {
         return std::make_tuple(func(std::forward<decltype(args)>(args))...);
     };
-    return tupletools::apply(f, std::forward<Tup>(tup));
+    using F = decltype(f);
+    return tupletools::apply(std::forward<F>(f), std::forward<Tup>(tup));
 }
 
 template<class Tup, const size_t N = tuple_size<Tup>::value>
@@ -141,28 +139,22 @@ roll(Tup&& tup, bool reverse = false)
 {
     if (reverse) {
         tupletools::for_each(tup, [&](const auto n, auto v) {
-            swap<0, N - (n + 1)>(tup);
+            swap<0, N - (n + 1)>(std::forward<Tup>(tup));
         });
     } else {
-
         tupletools::for_each(tup, [&](const auto n, auto v) {
-            swap<n, N - 1>(tup);
+            swap<n, N - 1>(std::forward<Tup>(tup));
         });
     }
     return tup;
 }
 
-template<
-    class... Tuples,
-    const size_t N = std::min({std::tuple_size<Tuples>{}...})>
+template<class... Tuples, const size_t N = std::min({std::tuple_size<Tuples>{}...})>
 constexpr auto
 transpose(Tuples&&... tups)
 {
-    auto row = [&](auto Ixs) {
-        return std::make_tuple(std::get<Ixs>(tups)...);
-    };
-    return index_apply<N>(
-        [&](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
+    auto row = [&](auto Ixs) { return std::make_tuple(std::get<Ixs>(tups)...); };
+    return index_apply<N>([&](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
 }
 
 template<
@@ -175,6 +167,7 @@ constexpr auto
 where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
+
     return index_apply<N>([&](auto... Ixs) {
         auto tup = std::make_tuple(std::invoke(
             std::forward<Pred>(pred),
@@ -237,12 +230,13 @@ std::string
 to_string(Tup&& tup)
 {
     std::string s = "(";
-    tupletools::
-        for_each(std::forward<Tup>(tup), [&tup, &s](auto&& n, auto&& v) {
-            s += std::to_string(v);
-            s += n < N - 1 ? ", " : "";
-            return false;
-        });
+
+    tupletools::for_each(std::forward<Tup>(tup), [&tup, &s](auto&& n, auto&& v) {
+        s += std::to_string(v);
+        s += n < N - 1 ? ", " : "";
+        return false;
+    });
+
     return s + ")";
 }
 
@@ -258,8 +252,7 @@ any_of(Tup&& tup)
         }
         return false;
     };
-    tupletools::
-        for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
+    tupletools::for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
     return b;
 }
 
@@ -275,8 +268,7 @@ all_of(Tup&& tup)
         }
         return false;
     };
-    tupletools::
-        for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
+    tupletools::for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
     return b;
 }
 
@@ -286,6 +278,7 @@ disjunction_of(Tup&& tup)
 {
     bool b = true;
     bool prev_b = true;
+
     auto func = [&](auto&& n, auto&& v) -> bool {
         if (!prev_b && v) {
             b = false;
@@ -295,8 +288,8 @@ disjunction_of(Tup&& tup)
             return false;
         }
     };
-    tupletools::
-        for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
+
+    tupletools::for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
     return b;
 }
 
@@ -334,7 +327,7 @@ struct flatten_impl<std::tuple<T>>
     template<class Tup>
     constexpr auto operator()(Tup&& tup)
     {
-        return flatten_impl<tupletools::remove_cvref_t<T>>{}(std::get<0>(tup));
+        return flatten_impl<std::remove_cvref_t<T>>{}(std::get<0>(tup));
     }
 };
 
@@ -347,18 +340,14 @@ struct flatten_impl<std::tuple<T, Ts...>>
         std::enable_if_t<(N >= 1), int> = 0>
     constexpr auto operator()(Tup&& tup)
     {
-        auto tup_first =
-            flatten_impl<tupletools::remove_cvref_t<T>>{}(std::get<0>(tup));
+        auto tup_first = flatten_impl<std::remove_cvref_t<T>>{}(std::get<0>(tup));
 
-        auto t_tup_args = index_apply<N>([&tup](auto... Ixs) {
-            return std::make_tuple(std::get<Ixs + 1>(tup)...);
-        });
+        auto t_tup_args = index_apply<N>(
+            [&tup](auto... Ixs) { return std::make_tuple(std::get<Ixs + 1>(tup)...); });
         auto tup_args =
-            flatten_impl<tupletools::remove_cvref_t<decltype(t_tup_args)>>{}(
-                t_tup_args);
+            flatten_impl<std::remove_cvref_t<decltype(t_tup_args)>>{}(t_tup_args);
 
-        return std::
-            tuple_cat(make_tuple_if(tup_first), make_tuple_if(tup_args));
+        return std::tuple_cat(make_tuple_if(tup_first), make_tuple_if(tup_args));
     }
 };
 
@@ -366,8 +355,7 @@ template<class Tup>
 constexpr auto
 flatten(Tup&& tup)
 {
-    return flatten_impl<tupletools::remove_cvref_t<Tup>>{}(
-        std::forward<Tup>(tup));
+    return flatten_impl<std::remove_cvref_t<Tup>>{}(std::forward<Tup>(tup));
 }
 };     // namespace tupletools
 #endif // TUPLETOOLS_H
