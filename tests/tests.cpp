@@ -1,13 +1,10 @@
 #define FMT_HEADER_ONLY
 
-#include "../src/itertools.hpp"
-#include "../src/math.hpp"
 #include "fmt/format.h"
-#include "random_v/random_v.hpp"
+#include "itertools/itertools.hpp"
 
 #include <chrono>
 #include <deque>
-#include <experimental/coroutine>
 #include <iostream>
 #include <limits>
 #include <list>
@@ -28,11 +25,9 @@ zip_tests()
         };
     }
     {
-        std::vector<std::string> sv1 =
-            {"\nThis", "but", "different", "containers,"};
+        std::vector<std::string> sv1 = {"\nThis", "but", "different", "containers,"};
         std::vector<std::string> sv2 = {"is", "can", "types", "too?"};
-        std::vector<std::string> sv3 =
-            {"cool,", "we iterate through", "of", "...\n"};
+        std::vector<std::string> sv3 = {"cool,", "we iterate through", "of", "...\n"};
 
         for (auto [i, j, k] : itertools::zip(sv1, sv2, sv3)) {
         };
@@ -50,14 +45,11 @@ zip_tests()
         }
     }
     {
-        std::map<int, int> id1 =
-            {{0, 10}, {1, 11}, {2, 12}, {3, 13}, {4, 14}, {5, 15}};
-        std::list<std::string> sv1 =
-            {"1", "mijn", "worten", "2", "helm", "dearth"};
+        std::map<int, int> id1 = {{0, 10}, {1, 11}, {2, 12}, {3, 13}, {4, 14}, {5, 15}};
+        std::list<std::string> sv1 = {"1", "mijn", "worten", "2", "helm", "dearth"};
         std::vector<double> dv1 = {1.2, 3.4, 5.6, 6.7, 7.8, 8.9, 9.0};
 
-        for (auto [i, j, k, l] :
-             itertools::zip(id1, sv1, dv1, itertools::range(7))) {
+        for (auto [i, j, k, l] : itertools::zip(id1, sv1, dv1, itertools::range(7))) {
             auto [key, value] = i;
             fmt::print("{}: {}, {}, {}, {}\n", key, value, j, k, l);
         }
@@ -76,8 +68,7 @@ tupletools_tests()
         assert(tupletools::tuple_size<decltype(tup1)>::value == 20);
     }
     {
-        std::vector<std::tuple<int, int>> tv1 =
-            {{1, 2}, {3, 4}, {5, 6}, {7, 8}};
+        std::vector<std::tuple<int, int>> tv1 = {{1, 2}, {3, 4}, {5, 6}, {7, 8}};
         for (auto v : itertools::enumerate(tv1)) {
             auto [n, i, j] = tupletools::flatten(v);
             fmt::print("{} {} {}\n", n, i, j);
@@ -116,8 +107,8 @@ any_tests()
         auto tup1 = std::make_tuple(1, 2, 3, 4, 5, 6);
         auto tup2 = std::make_tuple(33, 44, 77, 4, 5, 99);
 
-        auto tup_bool = tupletools::
-            where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+        auto tup_bool =
+            tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
         bool bool1 = tupletools::any_of(tup_bool);
         bool bool2 = tupletools::
             any_where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
@@ -141,8 +132,8 @@ any_tests()
         auto tup1 = std::make_tuple(1, 2, 3, 4, 5, 6);
         auto tup2 = std::make_tuple(1, 2, 3, 4, 5, 6);
 
-        auto tup_bool = tupletools::
-            where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+        auto tup_bool =
+            tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
         bool bool1 = tupletools::all_of(tup_bool);
         bool bool2 = tupletools::
             all_where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
@@ -166,8 +157,8 @@ any_tests()
         auto tup1 = std::make_tuple(1, 2, 3, 4);
         auto tup2 = std::make_tuple(1, 2, 7, 4);
 
-        auto ilist = tupletools::
-            where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+        auto ilist =
+            tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
 
         bool bool1 = tupletools::disjunction_of(ilist);
         assert(bool1 == false);
@@ -270,15 +261,14 @@ reduction_tests()
         assert(ml == 384);
     }
     {
-        std::vector<int> iter = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
-                                 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-                                 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
-                                 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
-                                 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-                                 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
-                                 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
-                                 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
-                                 96, 97, 98, 99};
+        std::vector<int> iter = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                                 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                                 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+                                 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+                                 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64,
+                                 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+                                 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
+                                 91, 92, 93, 94, 95, 96, 97, 98, 99};
 
         int sm = itertools::sum<int>(iter);
 
@@ -311,8 +301,7 @@ time_multiple_tests()
             return t;
         };
 
-        auto [times, extremal_times] =
-            itertools::time_multiple(N, func1, func2);
+        auto [times, extremal_times] = itertools::time_multiple(N, func1, func2);
         for (auto [key, value] : times) {
             fmt::print("function {}:\n", key);
             for (auto i : extremal_times[key]) {
@@ -335,8 +324,7 @@ time_multiple_tests()
         auto func2 = [&]() {
             std::vector<int> iv1(M, 1);
             std::string h = "";
-            for (auto [n, i] :
-                 itertools::zip(itertools::range(iv1.size()), iv1)) {
+            for (auto [n, i] : itertools::zip(itertools::range(iv1.size()), iv1)) {
                 h = std::to_string(n);
                 h = std::to_string(i);
             };
@@ -353,8 +341,7 @@ time_multiple_tests()
             };
         };
 
-        auto [times, extremal_times] =
-            itertools::time_multiple(N, func1, func2, func3);
+        auto [times, extremal_times] = itertools::time_multiple(N, func1, func2, func3);
         for (auto [key, value] : times) {
             fmt::print("function {}:\n", key);
             for (auto i : extremal_times[key]) {
@@ -381,17 +368,15 @@ to_string_tests(bool print = false)
             std::make_tuple(1, 2, 3, 4, 5, 6),
             std::make_tuple(1, 2, 3, 4, 5, 6));
         auto ndim = itertools::get_ndim(iter);
-        std::string s =
-            itertools::to_string_f(iter, [](auto&& v) -> std::string {
-                return " " + std::to_string(v) + " ";
-            });
+        std::string s = itertools::to_string_f(iter, [](auto&& v) -> std::string {
+            return " " + std::to_string(v) + " ";
+        });
         if (print) {
             std::cout << s << std::endl;
         }
     }
     {
-        std::vector<std::map<int, int>> iter =
-            {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+        std::vector<std::map<int, int>> iter = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
         auto ndim = itertools::get_ndim(iter);
         std::string s = itertools::to_string(iter);
         if (print) {
@@ -399,8 +384,8 @@ to_string_tests(bool print = false)
         }
     }
     {
-        std::vector<std::tuple<std::vector<std::vector<std::vector<int>>>, int>>
-            iter = {{{{{1, 2}}, {{3, 4}}}, 1}, {{{{5, 6}}, {{7, 8}}}, 4}};
+        std::vector<std::tuple<std::vector<std::vector<std::vector<int>>>, int>> iter =
+            {{{{{1, 2}}, {{3, 4}}}, 1}, {{{{5, 6}}, {{7, 8}}}, 4}};
         auto ndim = itertools::get_ndim(iter);
         std::string s = itertools::to_string(iter);
         if (print) {
@@ -408,8 +393,7 @@ to_string_tests(bool print = false)
         }
     }
     {
-        std::vector<
-            std::list<std::vector<std::list<std::vector<std::deque<int>>>>>>
+        std::vector<std::list<std::vector<std::list<std::vector<std::deque<int>>>>>>
             iter =
                 {{{{{{0, 1}, {2, 3}},
 
@@ -456,16 +440,10 @@ to_string_tests(bool print = false)
             iter =
                 {{{{{1, 2}}, {{3, 4}}},
                   1,
-                  {{1, {0, 1, 2}},
-                   {2, {1, 2, 3}},
-                   {3, {2, 3, 4}},
-                   {4, {3, 4, 5}}}},
+                  {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}},
                  {{{{5, 6}}, {{7, 8}}},
                   4,
-                  {{1, {0, 1, 2}},
-                   {2, {1, 2, 3}},
-                   {3, {2, 3, 4}},
-                   {4, {3, 4, 5}}}}};
+                  {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}}};
         auto ndim = itertools::get_ndim(iter);
         std::string s = itertools::to_string(iter);
         if (print) {
@@ -474,191 +452,23 @@ to_string_tests(bool print = false)
     }
     {
         std::vector<std::vector<int>> iter =
-            {{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
-              15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-              30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44,
-              45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-              60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-              75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
-              90, 91, 92, 93, 94, 95, 96, 97, 98, 99},
-             {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
-              15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-              30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44,
-              45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-              60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-              75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
-              90, 91, 92, 93, 94, 95, 96, 97, 98, 99}};
+            {{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16,
+              17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+              34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+              51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67,
+              68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84,
+              85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99},
+             {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16,
+              17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+              34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+              51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67,
+              68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84,
+              85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99}};
         auto ndim = itertools::get_ndim(iter);
         std::string s = itertools::to_string(iter);
         if (print) {
             std::cout << s << std::endl;
         }
-    }
-}
-
-template<typename T>
-constexpr bool
-assert_almost_equal(T v1, T v2, T epsilon = 1e-12)
-{
-    auto delta = abs(v1 - v2);
-    if (delta < epsilon) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void
-exp_tests()
-{
-    random_v::Random rng(0ULL, random_v::lcg_xor_rot);
-    int a = -100;
-    int b = 100;
-
-    for (double i : itertools::range(100'000)) {
-        double d = static_cast<double>(rng.randrange(a, b)) / pi;
-
-        auto v1 = expc(d);
-        auto v2 = exp(d);
-
-        bool b = assert_almost_equal(v1, v2, 1e-4);
-
-        if (!b) {
-            throw 2;
-        }
-    }
-}
-
-void
-pow_tests()
-{
-    random_v::Random rng(0ULL, random_v::lcg_xor_rot);
-    int a1 = 1;
-    int b1 = 100;
-
-    int a2 = 1;
-    int b2 = 10;
-
-    for (double i : itertools::range(100'000)) {
-        double x = static_cast<double>(rng.randrange(a1, b1)) / pi;
-        double a = static_cast<double>(rng.randrange(a2, b2)) / pi;
-
-        int p = 0;
-
-        auto v = frexp(x, &p);
-
-        fmt::print("{}, {}, {}", x, p, v);
-
-        auto v1 = powc(x, a);
-        auto v2 = pow(x, a);
-        fmt::print("{:.52f}\n{:.52f}\n", v1, v2);
-    }
-}
-
-union double_bits
-{
-    double value;
-    uint64_t ivalue;
-
-    constexpr double_bits(double d)
-      : value(d){};
-};
-
-std::tuple<uint, int, uint64_t>
-frexp0(double d)
-{
-    uint sign = 0;
-    int exponent;
-
-    double dmantissa = frexp(d, &exponent);
-
-    if (dmantissa < 0) {
-        dmantissa *= -1;
-        sign = 1;
-    }
-
-    uint64_t mantissa = dmantissa * two53;
-
-    return {sign, exponent, mantissa};
-}
-
-constexpr std::tuple<uint, int, uint64_t>
-frexp1(double d)
-{
-    uint64_t ivalue = 0;
-
-    double_bits db(d);
-
-    uint sign = db.ivalue >> 63;
-    int exponent = (db.ivalue << 1) >> 53;
-    uint64_t mantissa = (db.ivalue << 12) >> 12;
-
-    if (exponent == 0) {
-        exponent++;
-    } else {
-        mantissa |= (1L << 52);
-    }
-    exponent -= 1022;
-
-    return {sign, exponent, mantissa};
-}
-
-std::tuple<uint, int, uint64_t>
-frexp3(double d)
-{
-    uint64_t ivalue = *((uint64_t*) (&d));
-
-    double mantissa = 1.0;
-
-    uint sign = ivalue >> 63;
-    int exponent = (int) ((ivalue >> 52) & 0x7ffL);
-    uint64_t imantissa = ivalue & 0xfffffffffffffL;
-
-    if (exponent == 0) {
-        exponent++;
-    } else {
-        imantissa |= (1L << 52);
-    }
-
-    // bias the exponent - actually biased by 1023.
-    // we are treating the mantissa as m.0 instead of 0.m
-    //  so subtract another 52.
-    exponent -= 1075;
-    mantissa = imantissa;
-    uint64_t mant = imantissa;
-
-    // normalize
-    while (mantissa >= 1.0) {
-        imantissa >>= 1;
-        mantissa /= 2.;
-        exponent++;
-    }
-
-    if (sign) {
-        mantissa *= -1;
-    }
-
-    return {sign, exponent, mant};
-}
-
-void
-frexp_tests()
-{
-    random_v::Random rng(0ULL, random_v::lcg_xor_rot);
-    int a = -100'000;
-    int b = 100'000;
-
-    for (double i : itertools::range(100'000)) {
-        double d = static_cast<double>(rng.randrange(a, b)) / 10000.0;
-
-        auto tup0 = cfrexp(d);
-        auto tup1 = frexp0(d);
-        auto tup2 = frexp1(d);
-        auto tup3 = frexp3(d);
-
-        assert(tup0 == tup1);
-        assert(tup0 == tup2);
-        assert(tup0 == tup3);
     }
 }
 
@@ -679,35 +489,17 @@ range_container_tests()
 
         auto f = [](auto v) { return v; };
 
-        auto zipped = itertools::zip_ref(
-            v1,
-            v1_enum,
-            itertools::zip(
-                itertools::zip(itertools::zip(itertools::enumerate(l1), v2))));
+        auto zipped = itertools::
+            zip(v1,
+                v1_enum,
+                itertools::zip(
+                    itertools::zip(itertools::zip(itertools::enumerate(l1), v2))));
 
-        for (auto t : zipped | itertools::piper(f, itertools::transmog)) {
+        for (auto t : itertools::transform(f, zipped)) {
             auto& [i, tup, tt] = t;
             auto& [n, j] = tup;
             std::cout << fmt::format("{}, {}", n, j) << std::endl;
         }
-
-        auto v4 = itertools::map(std::vector<int>(10), [](auto n, auto v) {
-            return 999;
-        });
-
-        auto pred = itertools::
-            piper([](auto v) { return std::get<0>(v) > 3; }, itertools::filter);
-
-        auto zp = itertools::zip(v1, v2) | pred;
-
-        std::cout << itertools::to_string(zp) << std::endl;
-    }
-    {
-        std::vector<int> v1 = {1, 2, 3, 4, 5};
-        auto v2 = itertools::
-            map(std::vector<int>(10), itertools::spawn(itertools::range(3)));
-
-        std::cout << itertools::to_string(v2) << std::endl;
     }
 }
 
@@ -730,29 +522,16 @@ main()
     // range_container_tests();
 
     std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
+    std::vector<int> v2 = {11, 22, 33, 44, 55, 66};
 
-    auto r1 = itertools::zip(v1, v1);
+    for (auto [x, y] : itertools::zip(v1, v2)) {
+        std::cout << "hi" << std::endl;
+        x = 1000;
+    }
 
-    // auto piper = itertools::piper(
-    //     [](auto v) { return itertools::to_string(v); }, itertools::transmog);
-
-    // auto range = itertools::to_range(v1) | [](auto v) {
-    //     auto vec = itertools::to_vector(v);
-    //     std::sort(begin(vec), end(vec));
-    //     return itertools::to_range(vec);
-    // };
-
-    // auto range =
-    //     itertools::to_range(v1) | itertools::piper(
-    //                                            [](auto&& v) {
-    //                                                std::sort(begin(v),
-    //                                                end(v)); return v;
-    //                                            },
-    //                                            itertools::transmog_hasty);
-
-    // for (auto i : range) {
-    //     std::cout << i << std::endl;
-    // }
+    for (auto x : v1) {
+        std::cout << "hi" << std::endl;
+    }
 
     fmt::print("tests complete\n");
     return 0;

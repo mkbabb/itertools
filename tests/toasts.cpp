@@ -1,12 +1,10 @@
 #define FMT_HEADER_ONLY
 
-#include "../src/math.hpp"
-#include "../src/range_container.hpp"
 #include "fmt/format.h"
+#include "itertools/range_container.hpp"
 
 #include <chrono>
 #include <deque>
-#include <experimental/coroutine>
 #include <iostream>
 #include <limits>
 #include <list>
@@ -22,11 +20,15 @@ main()
     std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
     std::vector<int> v2 = {99, 88, 77};
 
-    auto vv1 = itertools::concat(v1, v2, v2);
+    auto vv1 = itertools::zip(v1, v2);
 
-    for (auto i : vv1) {
-        std::cout << "hi"
-                  << "\n";
+    for (auto&& [i, j] : vv1) {
+        std::cout << "hi" << std::endl;
+        i = 1000;
+    }
+
+    for (auto i : itertools::concat(v1, v2)) {
+        std::cout << "loco" << std::endl;
     }
 
     // auto zipped = itertools::zip(vv1, v2);

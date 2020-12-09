@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.2)
 
 set(CMAKE_CXX_STANDARD 20)
 
-if (MSVC)
-    add_compile_options(/W4 /WX)
-else()
-    add_compile_options(-Wall -Wextra -pedantic -Werror)
-endif()
+# if (MSVC)
+#     add_compile_options(/W4 /WX)
+# else()
+#     add_compile_options(-Wall -Wextra -pedantic -Werror)
+# endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
@@ -18,7 +18,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/conanbuildinfo.cmake)
 
 conan_basic_setup()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(TESTS_NAME test)
 
