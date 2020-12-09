@@ -2,6 +2,10 @@
 
 #include "fmt/format.h"
 #include "itertools/range_container.hpp"
+#include "itertools/views/concat.hpp"
+#include "itertools/views/slice.hpp"
+#include "itertools/views/stride.hpp"
+#include "itertools/views/zip.hpp"
 
 #include <chrono>
 #include <deque>
@@ -16,19 +20,24 @@
 int
 main()
 {
+    using namespace itertools;
 
     std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
     std::vector<int> v2 = {99, 88, 77};
 
-    auto vv1 = itertools::zip(v1, v2);
+    auto vv1 = views::zip(v1, v2);
 
     for (auto&& [i, j] : vv1) {
         std::cout << "hi" << std::endl;
         i = 1000;
     }
 
-    for (auto i : itertools::concat(v1, v2)) {
+    for (auto i : views::concat(v1, v2)) {
         std::cout << "loco" << std::endl;
+    }
+
+    for (auto i : to_range(v1) | views::slice(3, 5) | views::stride(1)) {
+        std::cout << i << std::endl;
     }
 
     // auto zipped = itertools::zip(vv1, v2);

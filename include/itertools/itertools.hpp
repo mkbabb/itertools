@@ -96,16 +96,6 @@ mul(Iterable&& iter)
 
 template<class Iterable>
 constexpr Iterable
-swap(Iterable&& iter, int ix1, int ix2)
-{
-    auto t = iter[ix1];
-    iter[ix1] = iter[ix2];
-    iter[ix2] = t;
-    return iter;
-}
-
-template<class Iterable>
-constexpr Iterable
 roll(Iterable&& iter, int axis = -1)
 {
     if (axis == 0) {
@@ -115,7 +105,8 @@ roll(Iterable&& iter, int axis = -1)
     }
     int i = 0;
     while (i < axis) {
-        itertools::swap(std::forward<Iterable>(iter), axis, i++);
+        std::swap(iter[axis], iter[i]);
+        i += 1;
     };
     return iter;
 }
@@ -129,11 +120,6 @@ struct y_combinator
     {}
     template<class... Args>
     auto operator()(Args&&... args) const
-    {
-        return func(std::ref(*this), std::forward<Args>(args)...);
-    }
-    template<class... Args>
-    auto operator()(Args&&... args)
     {
         return func(std::ref(*this), std::forward<Args>(args)...);
     }
@@ -234,24 +220,6 @@ get_ndim(Iterable&& iter)
     return detail::get_ndim_impl{}(std::forward<Iterable>(iter));
 }
 
-template<typename Char, typename Traits, typename Allocator>
-std::basic_string<Char, Traits, Allocator>
-operator*(const std::basic_string<Char, Traits, Allocator> s, size_t n)
-{
-    std::basic_string<Char, Traits, Allocator> tmp = "";
-    for (auto i : range(n)) {
-        tmp += s;
-    }
-    return tmp;
-}
-
-template<typename Char, typename Traits, typename Allocator>
-std::basic_string<Char, Traits, Allocator>
-operator*(size_t n, const std::basic_string<Char, Traits, Allocator>& s)
-{
-    return s * n;
-}
-
 template<typename Iterable>
 std::string
 join(Iterable&& iter, std::string&& sep)
@@ -266,19 +234,19 @@ join(Iterable&& iter, std::string&& sep)
 std::string
 ltrim(std::string s)
 {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-                return !std::isspace(ch);
-            }));
+    auto end =
+        std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); });
+    s.erase(s.begin(), end);
     return s;
 }
 
 std::string
 rtrim(std::string s)
 {
-    s.erase(
-        std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); })
-            .base(),
-        s.end());
+    auto begin = std::find_if(s.rbegin(), s.rend(), [](int ch) {
+                     return !std::isspace(ch);
+                 }).base();
+    s.erase(begin, s.end());
     return s;
 }
 
