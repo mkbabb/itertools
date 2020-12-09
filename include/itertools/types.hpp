@@ -118,8 +118,7 @@ struct is_container : std::false_type
 {};
 
 template<typename T>
-struct is_container<T, std::void_t<is_tupleoid<T>, is_iterable<T>>>
-  : std::true_type
+struct is_container<T, std::void_t<is_tupleoid<T>, is_iterable<T>>> : std::true_type
 {};
 
 template<typename T>
@@ -128,8 +127,7 @@ constexpr bool is_container_v = is_container<T>::value;
 template<typename T>
 struct tuple_size
 {
-    const static size_t value =
-        std::tuple_size<tupletools::remove_cvref_t<T>>::value;
+    const static size_t value = std::tuple_size<tupletools::remove_cvref_t<T>>::value;
 };
 
 template<typename T>
@@ -154,28 +152,9 @@ template<
     typename T1,
     typename... Ts>
 struct any_of_t<Pred, T0, T1, Ts...>
-  : std::integral_constant<
-        bool,
-        Pred<T0, T1>::value || any_of_t<Pred, T0, Ts...>::value>
+  : std::
+        integral_constant<bool, Pred<T0, T1>::value || any_of_t<Pred, T0, Ts...>::value>
 {};
-
-// const down-and-up-cast: returns "value" with const either removed or added.
-
-template<typename T>
-constexpr auto&&
-const_downcast(T&& value)
-{
-    using downcasted = tupletools::remove_cref_t<T>;
-    return std::forward<downcasted>(const_cast<downcasted>(value));
-}
-
-template<typename T>
-constexpr auto&&
-const_upcast(T&& value)
-{
-    using upcasted = tupletools::add_cref_t<T>;
-    return std::forward<upcasted>(const_cast<upcasted>(value));
-}
 
 };     // namespace tupletools
 #endif // TYPES_H
