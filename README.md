@@ -54,7 +54,7 @@ bring that functionality to C++? The answer is: not that difficult at all! With 
 heavy-handed usage of templates, SFINAE (clang plz finish concepts), and lots of
 `std::tuple`s, we can achieve just that.
 
-# Iterator containers and views
+## Iterator containers and views
 
 ### The base iterator container
 
@@ -91,16 +91,48 @@ assignment (meaning `auto x = std::make_tuple(...)` _always_ copies, and
 `auto x = std::forward_as_tuple(...)` _always_ references); it's a binary thing, so
 returning a reference was chosen.
 
-Which leads us to `tupletools`:
+Which will lead us to `tupletools` in just a moment.
+
+## The rest
+
+A few other Python itertools niceties were implemented/are being implemented.
+
+Here's a list of what's currently available:
+
+#### Infinite iterators
+
+-   [ ] `count`
+-   [ ] `cycle`
+-   [ ] `repeat`
+
+#### Terminating iterators
+
+-   [ ] `accumulate`
+-   [x] `chain`
+-   [ ] `chain.from_iterable`
+-   [ ] `compress`
+-   [x] `dropwhile; filterfalse` (using `views::filter`)
+-   [ ] `groupby`
+-   [x] `slice` (using `views::slice` and `views::stride`)
+-   [ ] `takewhile`
+-   [ ] `tee`
+-   [ ] `zip_longest`
+
+#### Combinatorics
+
+-   [ ] `product`
+-   [ ] `permutations`
+-   [ ] `combinations`
+-   [ ] `combinations_with_replacement`
 
 ## Tupletools
 
 This header provides a series of abstractions to make tuple manipulation easier. The
 driver behind nearly everything is a tuple version of `for_each`, which takes in a
 function and applies it to every argument of the tuple. Similarly to `JavaScript`
-(yeah), the callback function takes both the current index and the current value, which
-can allow for some pretty interesting functionality, like `tupletools::roll`, which
-rolls a tuple either left or right.
+(yeah), the callback function takes both the current index and the current value. Saving
+the index can allow for some pretty interesting functionality, like `tupletools::roll`,
+which rolls a tuple either left or right.
 
 ## Use these instead
 
