@@ -10,6 +10,7 @@ class ItertoolsConan(ConanFile):
 
     def requirements(self):
         self.requires("fmt/7.1.2")
+        self.requires("catch2/2.13.2")
 
     def package(self):
         self.copy("*.hpp")
