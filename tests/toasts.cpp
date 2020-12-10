@@ -2,10 +2,7 @@
 
 #include "fmt/format.h"
 #include "itertools/range_container.hpp"
-#include "itertools/views/concat.hpp"
-#include "itertools/views/slice.hpp"
-#include "itertools/views/stride.hpp"
-#include "itertools/views/zip.hpp"
+#include "itertools/views/all.hpp"
 
 #include <chrono>
 #include <deque>
@@ -35,7 +32,9 @@ main()
     //     std::cout << "loco" << std::endl;
     // }
 
-    for (auto i : to_range(v1) | views::stride(2)) {
+    auto f = [](auto v) { return v; };
+
+    for (auto i : to_range(v1) | views::stride(2) | views::transform(f)) {
         std::cout << i << std::endl;
     }
 
