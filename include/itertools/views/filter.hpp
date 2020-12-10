@@ -78,8 +78,7 @@ constexpr auto
 filter(Func&& func)
 {
     return [func = std::forward<Func>(func)]<class Range>(Range&& range) {
-        return detail::
-            filter<Func, Range>(std::forward<Func>(func), std::forward<Range>(range));
+        return detail::filter(func, std::forward<Range>(range));
     };
 }
 

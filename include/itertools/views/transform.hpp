@@ -28,7 +28,9 @@ template<class Func, class Range>
 constexpr auto
 transform(Func&& func, Range&& range)
 {
-    auto it = transform_iterator(std::forward<Func>(func), std::forward<Range>(range));
+    auto it = transform_iterator<
+        Func,
+        Range>(std::forward<Func>(func), std::forward<Range>(range));
     using Iterator = decltype(it);
 
     return range_container<
@@ -41,10 +43,8 @@ template<class Func>
 constexpr auto
 transform(Func&& func)
 {
-    return [=]<class Range>(Range&& range) {
-        return detail::transform<
-            Func,
-            Range>(std::forward<Func>(func), std::forward<Range>(range));
+    return [func = std::forward<Func>(func)]<class Range>(Range&& range) {
+        return detail::transform(func, std::forward<Range>(range));
     };
 }
 
