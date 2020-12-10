@@ -22,18 +22,18 @@ main()
 {
     using namespace itertools;
 
-    std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
+    std::vector<int> v1 = {1, 5, 9, 2, 8, 77, 88};
     std::vector<int> v2 = {99, 88, 77};
 
     auto vv1 = views::zip(v1, v2);
 
-    for (auto&& [i, j] : vv1) {
-        std::cout << "hi" << std::endl;
-    }
+    // for (auto&& [i, j] : vv1) {
+    //     std::cout << "hi" << std::endl;
+    // }
 
-    for (auto i : views::concat(v1, v2)) {
-        std::cout << "loco" << std::endl;
-    }
+    // for (auto i : views::concat(v1, v2)) {
+    //     std::cout << "loco" << std::endl;
+    // }
 
     for (auto i : to_range(v1) | views::stride(2)) {
         std::cout << i << std::endl;

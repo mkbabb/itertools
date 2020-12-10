@@ -13,13 +13,13 @@ public:
       , func{std::forward<Func>(func)}
     {}
 
-    auto operator*() noexcept
+    auto operator*() -> decltype(auto)
     {
-        return std::invoke(
-            std::forward<Func>(func),
-            std::forward<decltype(this->begin_it)>(this->begin_it));
+        using T = decltype(*this->begin_it);
+        return std::invoke(std::forward<Func>(func), std::forward<T>(*this->begin_it));
     }
 
+private:
     Func func;
 };
 

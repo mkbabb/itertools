@@ -8,19 +8,21 @@ template<class Pred, class Range>
 class filter_iterator : public range_container_iterator<Range>
 {
 public:
-    using IterableValue = tupletools::iterable_t<Range>;
-
     filter_iterator(Pred&& pred, Range&& range) noexcept
       : range_container_iterator<Range>(std::forward<Range>(range))
       , pred{std::forward<Pred>(pred)}
     {}
 
-    auto operator++()
+    bool invoke_predicate()
     {
-        ++this->begin_it;
+        using T = decltype(*this->begin_it);
+        return std::invoke(std::forward<Pred>(pred), std::forward<T>(*this->begin_it));
+    }
 
+    void filter_until()
+    {
         while (!this->is_complete()) {
-            auto good_value = pred(*this->begin_it);
+            auto good_value = invoke_predicate();
 
             if (good_value) {
                 break;
@@ -28,19 +30,30 @@ public:
                 ++this->begin_it;
             }
         };
+    }
 
+    auto operator++()
+    {
+        ++this->begin_it;
+        filter_until();
+        was_incremented = true;
         return *this;
     }
 
     auto operator*()
     {
-        auto good_value = pred(*this->begin_it);
+        // We cache the predicate value of the previous increment call.
+        // If a 'good value' was found, there's no need to check the predicate again.
+        auto good_value = was_incremented || invoke_predicate();
         if (!good_value) {
-            ++(*this);
+            filter_until();
+            was_incremented = false;
         }
         return *this->begin_it;
     }
 
+private:
+    bool was_incremented = false;
     Pred pred;
 };
 
