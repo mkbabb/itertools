@@ -139,9 +139,10 @@ public:
     }
 
     template<class Func>
-    auto operator|(Func&& func)
+    auto operator|(Func&& func) -> decltype(auto)
     {
-        return func(*this);
+        return std::
+            invoke(std::forward<Func>(func), std::forward<decltype(*this)>(*this));
     }
 
     Iterator it;
