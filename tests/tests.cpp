@@ -516,7 +516,7 @@ main()
     zip_tests();
     any_tests();
     enumerate_tests();
-    range_tests();
+    // range_tests();
     itertools_tests();
     tupletools_tests();
     reduction_tests();
@@ -535,7 +535,13 @@ main()
         x = 1000;
     }
 
-    for (auto x : v1) {
+    std::vector<std::tuple<int, std::tuple<int, int>>> tup = {{1, {2, 3}}, {4, {5, 6}}};
+
+    auto f = [](auto x) { return tupletools::flatten(x); };
+
+    auto [n, i, x] = tupletools::flatten(std::make_tuple(1, std::make_tuple(2, 3)));
+
+    for (auto [n, x, y] : views::enumerate(views::zip(v1, v2)) | views::transform(f)) {
         std::cout << "hi" << std::endl;
     }
 

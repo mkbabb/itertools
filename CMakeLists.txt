@@ -22,7 +22,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(TESTS_NAME test)
 
-add_executable(${TESTS_NAME} tests/example.cpp)
+add_executable(${TESTS_NAME} tests/tests.cpp)
 target_link_libraries(${TESTS_NAME} ${CONAN_LIBS})
 
 

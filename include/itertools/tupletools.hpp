@@ -40,8 +40,9 @@ constexpr auto
 apply(Func&& func, Tup&& tup)
 {
     return index_apply<N>([&](auto... Ixs) {
-        return std::
-            invoke(std::forward<Func>(func), std::get<Ixs>(std::forward<Tup>(tup))...);
+        return std::invoke(
+            std::forward<Func>(func),
+            std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))...);
     });
 }
 
@@ -85,8 +86,11 @@ template<class Tup, class Func, const size_t N = tuple_size_v<Tup>>
 void
 for_each(Tup&& tup, Func&& func)
 {
-    index_apply<N>([func = std::forward<Func>(func), &tup](auto... Ixs) {
-        (func(Ixs, std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
+    index_apply<N>([&](auto... Ixs) {
+        (std::invoke(
+             std::forward<Func>(func),
+             Ixs,
+             std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
          ...);
     });
     return;
@@ -96,21 +100,13 @@ template<class Func, class Tup>
 constexpr auto
 transform(Func&& func, Tup&& tup)
 {
-    auto f = [func = std::forward<Func>(func)](auto&&... args) {
-        return std::forward_as_tuple(func(std::forward<decltype(args)>(args))...);
+    auto f = [&]<class... Args>(Args && ... args)
+    {
+        return std::forward_as_tuple(
+            std::invoke(std::forward<Func>(func), std::forward<Args>(args))...);
     };
     using F = decltype(f);
-    return tupletools::apply(std::forward<F>(f), std::forward<Tup>(tup));
-}
 
-template<class Func, class Tup>
-constexpr auto
-transform_copy(Func&& func, Tup&& tup)
-{
-    auto f = [func = std::forward<Func>(func)](auto&&... args) {
-        return std::make_tuple(func(std::forward<decltype(args)>(args))...);
-    };
-    using F = decltype(f);
     return tupletools::apply(std::forward<F>(f), std::forward<Tup>(tup));
 }
 
@@ -118,18 +114,15 @@ template<class Tup, const size_t N = tuple_size<Tup>::value>
 constexpr auto
 reverse(Tup&& tup)
 {
-    return index_apply<N>([&tup](auto... Ixs) {
-        return std::make_tuple(std::get<N - (Ixs + 1)>(tup)...);
-    });
+    return index_apply<N>(
+        [&](auto... Ixs) { return std::make_tuple(std::get<N - (Ixs + 1)>(tup)...); });
 }
 
 template<int Ix1, int Ix2, class Tup, const size_t N = tuple_size<Tup>::value>
 constexpr auto
 swap(Tup&& tup)
 {
-    auto tmp = std::get<Ix1>(tup);
-    std::get<Ix1>(tup) = std::get<Ix2>(tup);
-    std::get<Ix2>(tup) = tmp;
+    std::swap(std::get<Ix1>(tup), std::get<Ix2>(tup));
     return tup;
 }
 
@@ -138,11 +131,11 @@ constexpr auto
 roll(Tup&& tup, bool reverse = false)
 {
     if (reverse) {
-        tupletools::for_each(tup, [&](const auto n, auto v) {
+        tupletools::for_each(tup, [&](auto n, auto&&) {
             swap<0, N - (n + 1)>(std::forward<Tup>(tup));
         });
     } else {
-        tupletools::for_each(tup, [&](const auto n, auto v) {
+        tupletools::for_each(tup, [&](auto n, auto&&) {
             swap<n, N - 1>(std::forward<Tup>(tup));
         });
     }
@@ -154,6 +147,7 @@ constexpr auto
 transpose(Tuples&&... tups)
 {
     auto row = [&](auto Ixs) { return std::make_tuple(std::get<Ixs>(tups)...); };
+
     return index_apply<N>([&](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
 }
 
@@ -231,7 +225,7 @@ to_string(Tup&& tup)
 {
     std::string s = "(";
 
-    tupletools::for_each(std::forward<Tup>(tup), [&tup, &s](auto&& n, auto&& v) {
+    tupletools::for_each(std::forward<Tup>(tup), [&](auto&& n, auto&& v) {
         s += std::to_string(v);
         s += n < N - 1 ? ", " : "";
         return false;
@@ -327,7 +321,8 @@ struct flatten_impl<std::tuple<T>>
     template<class Tup>
     constexpr auto operator()(Tup&& tup)
     {
-        return flatten_impl<std::remove_cvref_t<T>>{}(std::get<0>(tup));
+        return flatten_impl<std::remove_cvref_t<T>>{}(
+            std::get<0>(std::forward<Tup>(tup)));
     }
 };
 
@@ -340,10 +335,12 @@ struct flatten_impl<std::tuple<T, Ts...>>
         std::enable_if_t<(N >= 1), int> = 0>
     constexpr auto operator()(Tup&& tup)
     {
-        auto tup_first = flatten_impl<std::remove_cvref_t<T>>{}(std::get<0>(tup));
+        auto tup_first =
+            flatten_impl<std::remove_cvref_t<T>>{}(std::get<0>(std::forward<Tup>(tup)));
 
-        auto t_tup_args = index_apply<N>(
-            [&tup](auto... Ixs) { return std::make_tuple(std::get<Ixs + 1>(tup)...); });
+        auto t_tup_args = index_apply<N>([&](auto... Ixs) {
+            return std::forward_as_tuple(std::get<Ixs + 1>(std::forward<Tup>(tup))...);
+        });
         auto tup_args =
             flatten_impl<std::remove_cvref_t<decltype(t_tup_args)>>{}(t_tup_args);
 
@@ -355,7 +352,8 @@ template<class Tup>
 constexpr auto
 flatten(Tup&& tup)
 {
-    return flatten_impl<std::remove_cvref_t<Tup>>{}(std::forward<Tup>(tup));
+    using T = std::remove_cvref_t<Tup>;
+    return flatten_impl<T>{}(std::forward<T>(tup));
 }
 };     // namespace tupletools
 #endif // TUPLETOOLS_H
