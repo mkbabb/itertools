@@ -7,5 +7,6 @@
 #include "stride.hpp"
 #include "transform.hpp"
 #include "zip.hpp"
+#include "flatten.hpp"
 
 #pragma once
