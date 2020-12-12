@@ -36,7 +36,7 @@ public:
       , end_it{std::forward<EndIt>(end_it)}
     {}
 
-    bool is_complete()
+    virtual bool is_complete()
     {
         return this->begin_it == this->end_it;
     }
@@ -72,10 +72,10 @@ class range_tuple_iterator : public range_container_iterator<Range, BeginIt, End
 {
 public:
     range_tuple_iterator(Range&& range, BeginIt&& begin_it, EndIt&& end_it)
-      : range_container_iterator<Range, BeginIt, EndIt>{
+      : range_container_iterator<Range, BeginIt, EndIt>(
             std::forward<Range>(range),
             std::forward<BeginIt>(begin_it),
-            std::forward<EndIt>(end_it)}
+            std::forward<EndIt>(end_it))
     {}
 
     bool is_complete()
