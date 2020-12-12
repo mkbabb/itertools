@@ -36,15 +36,9 @@ public:
       , end_it{std::forward<EndIt>(end_it)}
     {}
 
-    virtual bool is_complete()
+    bool operator==(range_container_terminus)
     {
         return this->begin_it == this->end_it;
-    }
-
-    template<class T>
-    bool operator==(T)
-    {
-        return this->is_complete();
     }
 
     auto operator++() -> decltype(auto)
@@ -84,6 +78,11 @@ public:
             [](auto&& x, auto&& y) { return x == y; }, this->begin_it, this->end_it);
     }
 
+    bool operator==(range_container_terminus)
+    {
+        return is_complete();
+    }
+
     auto operator++() -> decltype(auto)
     {
         tupletools::for_each(this->begin_it, [](auto&&, auto&& v) { ++v; });
@@ -102,10 +101,7 @@ public:
     }
 };
 
-template<
-    class Range,
-    class Iterator,
-    std::enable_if_t<tupletools::is_iterator_v<Iterator>, int> = 0>
+template<class Range, class Iterator>
 class range_container
 {
 public:

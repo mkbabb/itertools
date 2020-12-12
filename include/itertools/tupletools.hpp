@@ -177,10 +177,10 @@ constexpr bool
 any_where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
-    return index_apply<N>([&](auto... Ixs) {
+    return index_apply<N>([&tup1, &tup2, pred = std::forward<Pred>(pred)](auto... Ixs) {
         return (
             (std::invoke(
-                std::forward<Pred>(pred),
+                pred,
                 std::get<Ixs>(std::forward<Tup1>(tup1)),
                 std::get<Ixs>(std::forward<Tup2>(tup2)))) ||
             ...);

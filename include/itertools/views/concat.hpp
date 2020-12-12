@@ -32,6 +32,11 @@ public:
         }
     }
 
+    bool operator==(range_container_terminus)
+    {
+        return is_complete();
+    }
+
     auto operator++() -> decltype(auto)
     {
         ++std::get<0>(this->begin_it);
