@@ -1,5 +1,6 @@
 #define FMT_HEADER_ONLY
 
+
 #include "fmt/format.h"
 #include "itertools/itertools.hpp"
 #include "itertools/to_string.hpp"
@@ -421,13 +422,15 @@ main()
         x = 1000;
     }
 
-    // std::vector<std::tuple<int, std::tuple<int, int>>> tup = {{1, {2, 3}}, {4, {5, 6}}};
+    // std::vector<std::tuple<int, std::tuple<int, int>>> tup = {{1, {2, 3}}, {4, {5,
+    // 6}}};
 
     // auto f = [](auto x) { return tupletools::flatten(x); };
 
     // auto [n, i, x] = tupletools::flatten(std::make_tuple(1, std::make_tuple(2, 3)));
 
-    // for (auto [n, x, y] : views::enumerate(views::zip(v1, v2)) | views::transform(f)) {
+    // for (auto [n, x, y] : views::enumerate(views::zip(v1, v2)) | views::transform(f))
+    // {
     //     std::cout << "hi" << std::endl;
     // }
 

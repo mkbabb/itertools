@@ -8,9 +8,7 @@ class ItertoolsConan(ConanFile):
     exports_sources = "include/*"
     no_copy_source = True
 
-    def requirements(self):
-        self.requires("fmt/7.1.2")
-        self.requires("catch2/2.13.2")
+    requires = ["fmt/7.1.2", "catch2/2.13.2"]
 
     def package(self):
         self.copy("*.hpp")

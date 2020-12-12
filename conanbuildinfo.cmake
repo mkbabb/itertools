@@ -36,53 +36,15 @@ endmacro()
 
 
 #################
-###  RANDOM_V
-#################
-set(CONAN_RANDOM_V_ROOT "/Users/mkbabb/.conan/data/random_v/0.1/_/_/package/94dbadc1fb7518cfd9d0f31a36b85479c3816e77")
-set(CONAN_INCLUDE_DIRS_RANDOM_V )
-set(CONAN_LIB_DIRS_RANDOM_V )
-set(CONAN_BIN_DIRS_RANDOM_V )
-set(CONAN_RES_DIRS_RANDOM_V )
-set(CONAN_SRC_DIRS_RANDOM_V )
-set(CONAN_BUILD_DIRS_RANDOM_V "/Users/mkbabb/.conan/data/random_v/0.1/_/_/package/94dbadc1fb7518cfd9d0f31a36b85479c3816e77/")
-set(CONAN_FRAMEWORK_DIRS_RANDOM_V )
-set(CONAN_LIBS_RANDOM_V )
-set(CONAN_PKG_LIBS_RANDOM_V )
-set(CONAN_SYSTEM_LIBS_RANDOM_V )
-set(CONAN_FRAMEWORKS_RANDOM_V )
-set(CONAN_FRAMEWORKS_FOUND_RANDOM_V "")  # Will be filled later
-set(CONAN_DEFINES_RANDOM_V )
-set(CONAN_BUILD_MODULES_PATHS_RANDOM_V )
-# COMPILE_DEFINITIONS are equal to CONAN_DEFINES without -D, for targets
-set(CONAN_COMPILE_DEFINITIONS_RANDOM_V )
-
-set(CONAN_C_FLAGS_RANDOM_V "")
-set(CONAN_CXX_FLAGS_RANDOM_V "")
-set(CONAN_SHARED_LINKER_FLAGS_RANDOM_V "")
-set(CONAN_EXE_LINKER_FLAGS_RANDOM_V "")
-
-# For modern cmake targets we use the list variables (separated with ;)
-set(CONAN_C_FLAGS_RANDOM_V_LIST "")
-set(CONAN_CXX_FLAGS_RANDOM_V_LIST "")
-set(CONAN_SHARED_LINKER_FLAGS_RANDOM_V_LIST "")
-set(CONAN_EXE_LINKER_FLAGS_RANDOM_V_LIST "")
-
-# Apple Frameworks
-conan_find_apple_frameworks(CONAN_FRAMEWORKS_FOUND_RANDOM_V "${CONAN_FRAMEWORKS_RANDOM_V}" "_RANDOM_V" "")
-# Append to aggregated values variable
-set(CONAN_LIBS_RANDOM_V ${CONAN_PKG_LIBS_RANDOM_V} ${CONAN_SYSTEM_LIBS_RANDOM_V} ${CONAN_FRAMEWORKS_FOUND_RANDOM_V})
-
-
-#################
 ###  FMT
 #################
-set(CONAN_FMT_ROOT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/407bc6dfc3b539e8fb6e77be46793e6e16fbd64d")
-set(CONAN_INCLUDE_DIRS_FMT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/407bc6dfc3b539e8fb6e77be46793e6e16fbd64d/include")
-set(CONAN_LIB_DIRS_FMT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/407bc6dfc3b539e8fb6e77be46793e6e16fbd64d/lib")
+set(CONAN_FMT_ROOT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/748830586d70ff03b48148bb25c70b351e059bb7")
+set(CONAN_INCLUDE_DIRS_FMT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/748830586d70ff03b48148bb25c70b351e059bb7/include")
+set(CONAN_LIB_DIRS_FMT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/748830586d70ff03b48148bb25c70b351e059bb7/lib")
 set(CONAN_BIN_DIRS_FMT )
 set(CONAN_RES_DIRS_FMT )
 set(CONAN_SRC_DIRS_FMT )
-set(CONAN_BUILD_DIRS_FMT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/407bc6dfc3b539e8fb6e77be46793e6e16fbd64d/")
+set(CONAN_BUILD_DIRS_FMT "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/748830586d70ff03b48148bb25c70b351e059bb7/")
 set(CONAN_FRAMEWORK_DIRS_FMT )
 set(CONAN_LIBS_FMT fmtd)
 set(CONAN_PKG_LIBS_FMT fmtd)
@@ -111,13 +73,59 @@ conan_find_apple_frameworks(CONAN_FRAMEWORKS_FOUND_FMT "${CONAN_FRAMEWORKS_FMT}"
 set(CONAN_LIBS_FMT ${CONAN_PKG_LIBS_FMT} ${CONAN_SYSTEM_LIBS_FMT} ${CONAN_FRAMEWORKS_FOUND_FMT})
 
 
+#################
+###  CATCH2
+#################
+set(CONAN_CATCH2_ROOT "/Users/mkbabb/.conan/data/catch2/2.13.2/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9")
+set(CONAN_INCLUDE_DIRS_CATCH2 "/Users/mkbabb/.conan/data/catch2/2.13.2/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include")
+set(CONAN_LIB_DIRS_CATCH2 "/Users/mkbabb/.conan/data/catch2/2.13.2/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/lib")
+set(CONAN_BIN_DIRS_CATCH2 )
+set(CONAN_RES_DIRS_CATCH2 )
+set(CONAN_SRC_DIRS_CATCH2 )
+set(CONAN_BUILD_DIRS_CATCH2 "/Users/mkbabb/.conan/data/catch2/2.13.2/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/lib/cmake/Catch2")
+set(CONAN_FRAMEWORK_DIRS_CATCH2 )
+set(CONAN_LIBS_CATCH2 )
+set(CONAN_PKG_LIBS_CATCH2 )
+set(CONAN_SYSTEM_LIBS_CATCH2 )
+set(CONAN_FRAMEWORKS_CATCH2 )
+set(CONAN_FRAMEWORKS_FOUND_CATCH2 "")  # Will be filled later
+set(CONAN_DEFINES_CATCH2 )
+set(CONAN_BUILD_MODULES_PATHS_CATCH2 )
+# COMPILE_DEFINITIONS are equal to CONAN_DEFINES without -D, for targets
+set(CONAN_COMPILE_DEFINITIONS_CATCH2 )
+
+set(CONAN_C_FLAGS_CATCH2 "")
+set(CONAN_CXX_FLAGS_CATCH2 "")
+set(CONAN_SHARED_LINKER_FLAGS_CATCH2 "")
+set(CONAN_EXE_LINKER_FLAGS_CATCH2 "")
+
+# For modern cmake targets we use the list variables (separated with ;)
+set(CONAN_C_FLAGS_CATCH2_LIST "")
+set(CONAN_CXX_FLAGS_CATCH2_LIST "")
+set(CONAN_SHARED_LINKER_FLAGS_CATCH2_LIST "")
+set(CONAN_EXE_LINKER_FLAGS_CATCH2_LIST "")
+
+# Apple Frameworks
+conan_find_apple_frameworks(CONAN_FRAMEWORKS_FOUND_CATCH2 "${CONAN_FRAMEWORKS_CATCH2}" "_CATCH2" "")
+# Append to aggregated values variable
+set(CONAN_LIBS_CATCH2 ${CONAN_PKG_LIBS_CATCH2} ${CONAN_SYSTEM_LIBS_CATCH2} ${CONAN_FRAMEWORKS_FOUND_CATCH2})
+
+
 ### Definition of global aggregated variables ###
 
-set(CONAN_PACKAGE_NAME itertools)
-set(CONAN_PACKAGE_VERSION 0.1)
+set(CONAN_PACKAGE_NAME None)
+set(CONAN_PACKAGE_VERSION None)
 
+set(CONAN_SETTINGS_ARCH "x86_64")
+set(CONAN_SETTINGS_ARCH_BUILD "x86_64")
+set(CONAN_SETTINGS_BUILD_TYPE "Debug")
+set(CONAN_SETTINGS_COMPILER "clang")
+set(CONAN_SETTINGS_COMPILER_LIBCXX "libc++")
+set(CONAN_SETTINGS_COMPILER_VERSION "11")
+set(CONAN_SETTINGS_OS "Macos")
+set(CONAN_SETTINGS_OS_BUILD "Macos")
 
-set(CONAN_DEPENDENCIES random_v fmt)
+set(CONAN_DEPENDENCIES fmt catch2)
 # Storing original command line args (CMake helper) flags
 set(CONAN_CMD_CXX_FLAGS ${CONAN_CXX_FLAGS})
 
@@ -125,8 +133,10 @@ set(CONAN_CMD_SHARED_LINKER_FLAGS ${CONAN_SHARED_LINKER_FLAGS})
 set(CONAN_CMD_C_FLAGS ${CONAN_C_FLAGS})
 # Defining accumulated conan variables for all deps
 
-set(CONAN_INCLUDE_DIRS "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/407bc6dfc3b539e8fb6e77be46793e6e16fbd64d/include" ${CONAN_INCLUDE_DIRS})
-set(CONAN_LIB_DIRS "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/407bc6dfc3b539e8fb6e77be46793e6e16fbd64d/lib" ${CONAN_LIB_DIRS})
+set(CONAN_INCLUDE_DIRS "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/748830586d70ff03b48148bb25c70b351e059bb7/include"
+			"/Users/mkbabb/.conan/data/catch2/2.13.2/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include" ${CONAN_INCLUDE_DIRS})
+set(CONAN_LIB_DIRS "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/748830586d70ff03b48148bb25c70b351e059bb7/lib"
+			"/Users/mkbabb/.conan/data/catch2/2.13.2/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/lib" ${CONAN_LIB_DIRS})
 set(CONAN_BIN_DIRS  ${CONAN_BIN_DIRS})
 set(CONAN_RES_DIRS  ${CONAN_RES_DIRS})
 set(CONAN_FRAMEWORK_DIRS  ${CONAN_FRAMEWORK_DIRS})
@@ -137,8 +147,8 @@ set(CONAN_FRAMEWORKS  ${CONAN_FRAMEWORKS})
 set(CONAN_FRAMEWORKS_FOUND "")  # Will be filled later
 set(CONAN_DEFINES  ${CONAN_DEFINES})
 set(CONAN_BUILD_MODULES_PATHS  ${CONAN_BUILD_MODULES_PATHS})
-set(CONAN_CMAKE_MODULE_PATH "/Users/mkbabb/.conan/data/random_v/0.1/_/_/package/94dbadc1fb7518cfd9d0f31a36b85479c3816e77/"
-			"/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/407bc6dfc3b539e8fb6e77be46793e6e16fbd64d/" ${CONAN_CMAKE_MODULE_PATH})
+set(CONAN_CMAKE_MODULE_PATH "/Users/mkbabb/.conan/data/fmt/7.1.2/_/_/package/748830586d70ff03b48148bb25c70b351e059bb7/"
+			"/Users/mkbabb/.conan/data/catch2/2.13.2/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/lib/cmake/Catch2" ${CONAN_CMAKE_MODULE_PATH})
 
 set(CONAN_CXX_FLAGS " ${CONAN_CXX_FLAGS}")
 set(CONAN_SHARED_LINKER_FLAGS " ${CONAN_SHARED_LINKER_FLAGS}")
@@ -160,76 +170,6 @@ macro(conan_define_targets)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONAN_CMD_CXX_FLAGS}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONAN_CMD_C_FLAGS}")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CONAN_CMD_SHARED_LINKER_FLAGS}")
-
-
-    set(_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES "${CONAN_SYSTEM_LIBS_RANDOM_V} ${CONAN_FRAMEWORKS_FOUND_RANDOM_V} CONAN_PKG::fmt")
-    string(REPLACE " " ";" _CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES}")
-    conan_package_library_targets("${CONAN_PKG_LIBS_RANDOM_V}" "${CONAN_LIB_DIRS_RANDOM_V}"
-                                  CONAN_PACKAGE_TARGETS_RANDOM_V "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES}"
-                                  "" random_v)
-    set(_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_DEBUG "${CONAN_SYSTEM_LIBS_RANDOM_V_DEBUG} ${CONAN_FRAMEWORKS_FOUND_RANDOM_V_DEBUG} CONAN_PKG::fmt")
-    string(REPLACE " " ";" _CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_DEBUG "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_DEBUG}")
-    conan_package_library_targets("${CONAN_PKG_LIBS_RANDOM_V_DEBUG}" "${CONAN_LIB_DIRS_RANDOM_V_DEBUG}"
-                                  CONAN_PACKAGE_TARGETS_RANDOM_V_DEBUG "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_DEBUG}"
-                                  "debug" random_v)
-    set(_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELEASE "${CONAN_SYSTEM_LIBS_RANDOM_V_RELEASE} ${CONAN_FRAMEWORKS_FOUND_RANDOM_V_RELEASE} CONAN_PKG::fmt")
-    string(REPLACE " " ";" _CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELEASE "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELEASE}")
-    conan_package_library_targets("${CONAN_PKG_LIBS_RANDOM_V_RELEASE}" "${CONAN_LIB_DIRS_RANDOM_V_RELEASE}"
-                                  CONAN_PACKAGE_TARGETS_RANDOM_V_RELEASE "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELEASE}"
-                                  "release" random_v)
-    set(_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELWITHDEBINFO "${CONAN_SYSTEM_LIBS_RANDOM_V_RELWITHDEBINFO} ${CONAN_FRAMEWORKS_FOUND_RANDOM_V_RELWITHDEBINFO} CONAN_PKG::fmt")
-    string(REPLACE " " ";" _CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELWITHDEBINFO "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELWITHDEBINFO}")
-    conan_package_library_targets("${CONAN_PKG_LIBS_RANDOM_V_RELWITHDEBINFO}" "${CONAN_LIB_DIRS_RANDOM_V_RELWITHDEBINFO}"
-                                  CONAN_PACKAGE_TARGETS_RANDOM_V_RELWITHDEBINFO "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELWITHDEBINFO}"
-                                  "relwithdebinfo" random_v)
-    set(_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_MINSIZEREL "${CONAN_SYSTEM_LIBS_RANDOM_V_MINSIZEREL} ${CONAN_FRAMEWORKS_FOUND_RANDOM_V_MINSIZEREL} CONAN_PKG::fmt")
-    string(REPLACE " " ";" _CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_MINSIZEREL "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_MINSIZEREL}")
-    conan_package_library_targets("${CONAN_PKG_LIBS_RANDOM_V_MINSIZEREL}" "${CONAN_LIB_DIRS_RANDOM_V_MINSIZEREL}"
-                                  CONAN_PACKAGE_TARGETS_RANDOM_V_MINSIZEREL "${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_MINSIZEREL}"
-                                  "minsizerel" random_v)
-
-    add_library(CONAN_PKG::random_v INTERFACE IMPORTED)
-
-    # Property INTERFACE_LINK_FLAGS do not work, necessary to add to INTERFACE_LINK_LIBRARIES
-    set_property(TARGET CONAN_PKG::random_v PROPERTY INTERFACE_LINK_LIBRARIES ${CONAN_PACKAGE_TARGETS_RANDOM_V} ${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES}
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_RANDOM_V_LIST}>
-
-                                                                 $<$<CONFIG:Release>:${CONAN_PACKAGE_TARGETS_RANDOM_V_RELEASE} ${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELEASE}
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_RELEASE_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_RELEASE_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_RANDOM_V_RELEASE_LIST}>>
-
-                                                                 $<$<CONFIG:RelWithDebInfo>:${CONAN_PACKAGE_TARGETS_RANDOM_V_RELWITHDEBINFO} ${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_RELWITHDEBINFO}
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_RELWITHDEBINFO_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_RELWITHDEBINFO_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_RANDOM_V_RELWITHDEBINFO_LIST}>>
-
-                                                                 $<$<CONFIG:MinSizeRel>:${CONAN_PACKAGE_TARGETS_RANDOM_V_MINSIZEREL} ${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_MINSIZEREL}
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_MINSIZEREL_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_MINSIZEREL_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_RANDOM_V_MINSIZEREL_LIST}>>
-
-                                                                 $<$<CONFIG:Debug>:${CONAN_PACKAGE_TARGETS_RANDOM_V_DEBUG} ${_CONAN_PKG_LIBS_RANDOM_V_DEPENDENCIES_DEBUG}
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_DEBUG_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_RANDOM_V_DEBUG_LIST}>
-                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_RANDOM_V_DEBUG_LIST}>>)
-    set_property(TARGET CONAN_PKG::random_v PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CONAN_INCLUDE_DIRS_RANDOM_V}
-                                                                      $<$<CONFIG:Release>:${CONAN_INCLUDE_DIRS_RANDOM_V_RELEASE}>
-                                                                      $<$<CONFIG:RelWithDebInfo>:${CONAN_INCLUDE_DIRS_RANDOM_V_RELWITHDEBINFO}>
-                                                                      $<$<CONFIG:MinSizeRel>:${CONAN_INCLUDE_DIRS_RANDOM_V_MINSIZEREL}>
-                                                                      $<$<CONFIG:Debug>:${CONAN_INCLUDE_DIRS_RANDOM_V_DEBUG}>)
-    set_property(TARGET CONAN_PKG::random_v PROPERTY INTERFACE_COMPILE_DEFINITIONS ${CONAN_COMPILE_DEFINITIONS_RANDOM_V}
-                                                                      $<$<CONFIG:Release>:${CONAN_COMPILE_DEFINITIONS_RANDOM_V_RELEASE}>
-                                                                      $<$<CONFIG:RelWithDebInfo>:${CONAN_COMPILE_DEFINITIONS_RANDOM_V_RELWITHDEBINFO}>
-                                                                      $<$<CONFIG:MinSizeRel>:${CONAN_COMPILE_DEFINITIONS_RANDOM_V_MINSIZEREL}>
-                                                                      $<$<CONFIG:Debug>:${CONAN_COMPILE_DEFINITIONS_RANDOM_V_DEBUG}>)
-    set_property(TARGET CONAN_PKG::random_v PROPERTY INTERFACE_COMPILE_OPTIONS ${CONAN_C_FLAGS_RANDOM_V_LIST} ${CONAN_CXX_FLAGS_RANDOM_V_LIST}
-                                                                  $<$<CONFIG:Release>:${CONAN_C_FLAGS_RANDOM_V_RELEASE_LIST} ${CONAN_CXX_FLAGS_RANDOM_V_RELEASE_LIST}>
-                                                                  $<$<CONFIG:RelWithDebInfo>:${CONAN_C_FLAGS_RANDOM_V_RELWITHDEBINFO_LIST} ${CONAN_CXX_FLAGS_RANDOM_V_RELWITHDEBINFO_LIST}>
-                                                                  $<$<CONFIG:MinSizeRel>:${CONAN_C_FLAGS_RANDOM_V_MINSIZEREL_LIST} ${CONAN_CXX_FLAGS_RANDOM_V_MINSIZEREL_LIST}>
-                                                                  $<$<CONFIG:Debug>:${CONAN_C_FLAGS_RANDOM_V_DEBUG_LIST}  ${CONAN_CXX_FLAGS_RANDOM_V_DEBUG_LIST}>)
 
 
     set(_CONAN_PKG_LIBS_FMT_DEPENDENCIES "${CONAN_SYSTEM_LIBS_FMT} ${CONAN_FRAMEWORKS_FOUND_FMT} ")
@@ -301,7 +241,77 @@ macro(conan_define_targets)
                                                                   $<$<CONFIG:MinSizeRel>:${CONAN_C_FLAGS_FMT_MINSIZEREL_LIST} ${CONAN_CXX_FLAGS_FMT_MINSIZEREL_LIST}>
                                                                   $<$<CONFIG:Debug>:${CONAN_C_FLAGS_FMT_DEBUG_LIST}  ${CONAN_CXX_FLAGS_FMT_DEBUG_LIST}>)
 
-    set(CONAN_TARGETS CONAN_PKG::random_v CONAN_PKG::fmt)
+
+    set(_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES "${CONAN_SYSTEM_LIBS_CATCH2} ${CONAN_FRAMEWORKS_FOUND_CATCH2} ")
+    string(REPLACE " " ";" _CONAN_PKG_LIBS_CATCH2_DEPENDENCIES "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES}")
+    conan_package_library_targets("${CONAN_PKG_LIBS_CATCH2}" "${CONAN_LIB_DIRS_CATCH2}"
+                                  CONAN_PACKAGE_TARGETS_CATCH2 "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES}"
+                                  "" catch2)
+    set(_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_DEBUG "${CONAN_SYSTEM_LIBS_CATCH2_DEBUG} ${CONAN_FRAMEWORKS_FOUND_CATCH2_DEBUG} ")
+    string(REPLACE " " ";" _CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_DEBUG "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_DEBUG}")
+    conan_package_library_targets("${CONAN_PKG_LIBS_CATCH2_DEBUG}" "${CONAN_LIB_DIRS_CATCH2_DEBUG}"
+                                  CONAN_PACKAGE_TARGETS_CATCH2_DEBUG "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_DEBUG}"
+                                  "debug" catch2)
+    set(_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELEASE "${CONAN_SYSTEM_LIBS_CATCH2_RELEASE} ${CONAN_FRAMEWORKS_FOUND_CATCH2_RELEASE} ")
+    string(REPLACE " " ";" _CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELEASE "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELEASE}")
+    conan_package_library_targets("${CONAN_PKG_LIBS_CATCH2_RELEASE}" "${CONAN_LIB_DIRS_CATCH2_RELEASE}"
+                                  CONAN_PACKAGE_TARGETS_CATCH2_RELEASE "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELEASE}"
+                                  "release" catch2)
+    set(_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELWITHDEBINFO "${CONAN_SYSTEM_LIBS_CATCH2_RELWITHDEBINFO} ${CONAN_FRAMEWORKS_FOUND_CATCH2_RELWITHDEBINFO} ")
+    string(REPLACE " " ";" _CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELWITHDEBINFO "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELWITHDEBINFO}")
+    conan_package_library_targets("${CONAN_PKG_LIBS_CATCH2_RELWITHDEBINFO}" "${CONAN_LIB_DIRS_CATCH2_RELWITHDEBINFO}"
+                                  CONAN_PACKAGE_TARGETS_CATCH2_RELWITHDEBINFO "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELWITHDEBINFO}"
+                                  "relwithdebinfo" catch2)
+    set(_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_MINSIZEREL "${CONAN_SYSTEM_LIBS_CATCH2_MINSIZEREL} ${CONAN_FRAMEWORKS_FOUND_CATCH2_MINSIZEREL} ")
+    string(REPLACE " " ";" _CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_MINSIZEREL "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_MINSIZEREL}")
+    conan_package_library_targets("${CONAN_PKG_LIBS_CATCH2_MINSIZEREL}" "${CONAN_LIB_DIRS_CATCH2_MINSIZEREL}"
+                                  CONAN_PACKAGE_TARGETS_CATCH2_MINSIZEREL "${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_MINSIZEREL}"
+                                  "minsizerel" catch2)
+
+    add_library(CONAN_PKG::catch2 INTERFACE IMPORTED)
+
+    # Property INTERFACE_LINK_FLAGS do not work, necessary to add to INTERFACE_LINK_LIBRARIES
+    set_property(TARGET CONAN_PKG::catch2 PROPERTY INTERFACE_LINK_LIBRARIES ${CONAN_PACKAGE_TARGETS_CATCH2} ${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES}
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_CATCH2_LIST}>
+
+                                                                 $<$<CONFIG:Release>:${CONAN_PACKAGE_TARGETS_CATCH2_RELEASE} ${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELEASE}
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_RELEASE_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_RELEASE_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_CATCH2_RELEASE_LIST}>>
+
+                                                                 $<$<CONFIG:RelWithDebInfo>:${CONAN_PACKAGE_TARGETS_CATCH2_RELWITHDEBINFO} ${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_RELWITHDEBINFO}
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_RELWITHDEBINFO_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_RELWITHDEBINFO_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_CATCH2_RELWITHDEBINFO_LIST}>>
+
+                                                                 $<$<CONFIG:MinSizeRel>:${CONAN_PACKAGE_TARGETS_CATCH2_MINSIZEREL} ${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_MINSIZEREL}
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_MINSIZEREL_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_MINSIZEREL_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_CATCH2_MINSIZEREL_LIST}>>
+
+                                                                 $<$<CONFIG:Debug>:${CONAN_PACKAGE_TARGETS_CATCH2_DEBUG} ${_CONAN_PKG_LIBS_CATCH2_DEPENDENCIES_DEBUG}
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_DEBUG_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:${CONAN_SHARED_LINKER_FLAGS_CATCH2_DEBUG_LIST}>
+                                                                 $<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:${CONAN_EXE_LINKER_FLAGS_CATCH2_DEBUG_LIST}>>)
+    set_property(TARGET CONAN_PKG::catch2 PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CONAN_INCLUDE_DIRS_CATCH2}
+                                                                      $<$<CONFIG:Release>:${CONAN_INCLUDE_DIRS_CATCH2_RELEASE}>
+                                                                      $<$<CONFIG:RelWithDebInfo>:${CONAN_INCLUDE_DIRS_CATCH2_RELWITHDEBINFO}>
+                                                                      $<$<CONFIG:MinSizeRel>:${CONAN_INCLUDE_DIRS_CATCH2_MINSIZEREL}>
+                                                                      $<$<CONFIG:Debug>:${CONAN_INCLUDE_DIRS_CATCH2_DEBUG}>)
+    set_property(TARGET CONAN_PKG::catch2 PROPERTY INTERFACE_COMPILE_DEFINITIONS ${CONAN_COMPILE_DEFINITIONS_CATCH2}
+                                                                      $<$<CONFIG:Release>:${CONAN_COMPILE_DEFINITIONS_CATCH2_RELEASE}>
+                                                                      $<$<CONFIG:RelWithDebInfo>:${CONAN_COMPILE_DEFINITIONS_CATCH2_RELWITHDEBINFO}>
+                                                                      $<$<CONFIG:MinSizeRel>:${CONAN_COMPILE_DEFINITIONS_CATCH2_MINSIZEREL}>
+                                                                      $<$<CONFIG:Debug>:${CONAN_COMPILE_DEFINITIONS_CATCH2_DEBUG}>)
+    set_property(TARGET CONAN_PKG::catch2 PROPERTY INTERFACE_COMPILE_OPTIONS ${CONAN_C_FLAGS_CATCH2_LIST} ${CONAN_CXX_FLAGS_CATCH2_LIST}
+                                                                  $<$<CONFIG:Release>:${CONAN_C_FLAGS_CATCH2_RELEASE_LIST} ${CONAN_CXX_FLAGS_CATCH2_RELEASE_LIST}>
+                                                                  $<$<CONFIG:RelWithDebInfo>:${CONAN_C_FLAGS_CATCH2_RELWITHDEBINFO_LIST} ${CONAN_CXX_FLAGS_CATCH2_RELWITHDEBINFO_LIST}>
+                                                                  $<$<CONFIG:MinSizeRel>:${CONAN_C_FLAGS_CATCH2_MINSIZEREL_LIST} ${CONAN_CXX_FLAGS_CATCH2_MINSIZEREL_LIST}>
+                                                                  $<$<CONFIG:Debug>:${CONAN_C_FLAGS_CATCH2_DEBUG_LIST}  ${CONAN_CXX_FLAGS_CATCH2_DEBUG_LIST}>)
+
+    set(CONAN_TARGETS CONAN_PKG::fmt CONAN_PKG::catch2)
 
 endmacro()
 

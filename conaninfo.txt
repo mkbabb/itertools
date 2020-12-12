@@ -2,8 +2,8 @@
 
 
 [requires]
+    catch2/2.Y.Z
     fmt/7.Y.Z
-    random_v/0.1
 
 [options]
 
@@ -12,8 +12,8 @@
 
 
 [full_requires]
-    fmt/7.1.2:407bc6dfc3b539e8fb6e77be46793e6e16fbd64d
-    random_v/0.1:94dbadc1fb7518cfd9d0f31a36b85479c3816e77
+    catch2/2.13.2:5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9
+    fmt/7.1.2:748830586d70ff03b48148bb25c70b351e059bb7
 
 [full_options]
     fmt:fPIC=True
@@ -25,5 +25,5 @@
 
 
 [env]
-    CC=/usr/local/opt/gcc/bin/gcc-10
-    CXX=/usr/local/opt/gcc/bin/g++-10
+    CC=/usr/local/opt/llvm/bin/clang
+    CXX=/usr/local/opt/llvm/bin/clang++
