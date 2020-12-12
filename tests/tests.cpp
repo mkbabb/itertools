@@ -248,118 +248,6 @@ range_tests()
 }
 
 void
-reduction_tests()
-{
-    {
-        std::vector<std::tuple<int, int>> iter =
-            {{0, 1}, {1, 2}, {3, 4}, {5, 6}, {7, 8}};
-
-        int sm = itertools::reduce<int>(iter, 0, [](auto n, auto v, auto i) {
-            return std::get<0>(v) + i;
-        });
-
-        assert(sm == 16);
-
-        int ml = itertools::reduce<int>(iter, 1, [](auto n, auto v, auto i) {
-            return std::get<1>(v) * i;
-        });
-
-        assert(ml == 384);
-    }
-    {
-        std::vector<int> iter = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
-                                 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-                                 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-                                 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
-                                 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64,
-                                 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
-                                 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
-                                 91, 92, 93, 94, 95, 96, 97, 98, 99};
-
-        int sm = itertools::sum<int>(iter);
-
-        assert(sm == 4950);
-    }
-}
-
-void
-time_multiple_tests()
-{
-    using namespace itertools::views;
-
-    size_t N = 1'000;
-    {
-        size_t M = 10'000;
-
-        auto func1 = [&]() {
-            size_t t = 0;
-            std::string h = "";
-            for (auto i : range(M)) {
-                h = std::to_string(i);
-            };
-            return t;
-        };
-
-        auto func2 = [&]() {
-            size_t t = 0;
-            std::string h = "";
-            for (size_t i = 0; i < M; i++) {
-                h = std::to_string(i);
-            };
-            return t;
-        };
-
-        auto [times, extremal_times] = itertools::time_multiple(N, func1, func2);
-        for (auto [key, value] : times) {
-            fmt::print("function {}:\n", key);
-            for (auto i : extremal_times[key]) {
-                fmt::print("\t{}\n", i);
-            }
-        }
-    }
-    {
-        size_t M = 10'000;
-
-        auto func1 = [&]() {
-            std::vector<int> iv1(M, 1);
-            std::string h = "";
-            for (auto [n, i] : enumerate(iv1)) {
-                h = std::to_string(n);
-                h = std::to_string(i);
-            };
-        };
-
-        auto func2 = [&]() {
-            std::vector<int> iv1(M, 1);
-            std::string h = "";
-            for (auto [n, i] : zip(range(iv1.size()), iv1)) {
-                h = std::to_string(n);
-                h = std::to_string(i);
-            };
-        };
-
-        auto func3 = [&]() {
-            std::vector<int> iv1(M, 1);
-            std::string h = "";
-            size_t n = 0;
-            for (auto i : iv1) {
-                h = std::to_string(n);
-                h = std::to_string(i);
-                n++;
-            };
-        };
-
-        auto [times, extremal_times] = itertools::time_multiple(N, func1, func2, func3);
-        for (auto [key, value] : times) {
-            fmt::print("function {}:\n", key);
-            for (auto i : extremal_times[key]) {
-                fmt::print("\t{}\n", i);
-            }
-        }
-    }
-}
-
-void
 to_string_tests(bool print = false)
 {
     {
@@ -519,8 +407,6 @@ main()
     // range_tests();
     itertools_tests();
     tupletools_tests();
-    reduction_tests();
-    // time_multiple_tests();
     to_string_tests();
 
     range_container_tests();
@@ -535,15 +421,15 @@ main()
         x = 1000;
     }
 
-    std::vector<std::tuple<int, std::tuple<int, int>>> tup = {{1, {2, 3}}, {4, {5, 6}}};
+    // std::vector<std::tuple<int, std::tuple<int, int>>> tup = {{1, {2, 3}}, {4, {5, 6}}};
 
-    auto f = [](auto x) { return tupletools::flatten(x); };
+    // auto f = [](auto x) { return tupletools::flatten(x); };
 
-    auto [n, i, x] = tupletools::flatten(std::make_tuple(1, std::make_tuple(2, 3)));
+    // auto [n, i, x] = tupletools::flatten(std::make_tuple(1, std::make_tuple(2, 3)));
 
-    for (auto [n, x, y] : views::enumerate(views::zip(v1, v2)) | views::transform(f)) {
-        std::cout << "hi" << std::endl;
-    }
+    // for (auto [n, x, y] : views::enumerate(views::zip(v1, v2)) | views::transform(f)) {
+    //     std::cout << "hi" << std::endl;
+    // }
 
     fmt::print("tests complete\n");
     return 0;

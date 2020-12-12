@@ -18,82 +18,6 @@
 #pragma once
 
 namespace itertools {
-/*
-High order functor, whereof: applies a binary function of type BinaryFunction,
-func, over an iterable range of type Iterable, iter. func must accept two
-values of (size_t, IterableValue), wherein IterableValue is the
-iterable's container value.
-
-@param iter: iterable function of type Iterable.
-@param func: low order functor of type BinaryFunction; returns a boolean.
-
-@returns iter
- */
-template<
-    class Iterable,
-    class BinaryFunction,
-    class IterableValue = tupletools::iterable_t<Iterable>>
-constexpr Iterable
-for_each(Iterable&& iter, BinaryFunction&& func)
-{
-    for (auto&& [n, i] : views::enumerate(iter)) {
-        std::invoke(
-            std::forward<BinaryFunction>(func),
-            std::forward<decltype(n)>(n),
-            std::forward<decltype(i)>(i));
-    }
-    return iter;
-}
-
-template<
-    class Iterable,
-    class BinaryFunction,
-    class IterableValue = tupletools::iterable_t<Iterable>>
-constexpr Iterable
-map(Iterable&& iter, BinaryFunction&& func)
-{
-    for (auto&& [n, i] : views::enumerate(iter)) {
-        std::optional<IterableValue> opt = std::invoke(
-            std::forward<BinaryFunction>(func),
-            std::forward<decltype(n)>(n),
-            std::forward<decltype(i)>(i));
-        if (opt) {
-            iter[n] = *opt;
-        } else {
-            break;
-        }
-    }
-    return iter;
-}
-
-template<typename ReductionValue = int, class Iterable, class NaryFunction>
-constexpr ReductionValue
-reduce(Iterable&& iter, ReductionValue init, NaryFunction&& func)
-{
-    itertools::for_each(iter, [&](auto n, auto&& v) {
-        init = func(n, std::forward<decltype(v)>(v), init);
-        return false;
-    });
-    return init;
-}
-
-template<typename ReductionValue, class Iterable>
-constexpr ReductionValue
-sum(Iterable&& iter)
-{
-    return itertools::reduce<ReductionValue>(iter, 0, [](auto n, auto v, auto i) {
-        return i + v;
-    });
-}
-
-template<typename ReductionValue, class Iterable>
-constexpr ReductionValue
-mul(Iterable&& iter)
-{
-    return itertools::reduce<ReductionValue>(iter, 1, [](auto n, auto v, auto i) {
-        return i * v;
-    });
-}
 
 template<class Iterable>
 constexpr Iterable
@@ -125,50 +49,6 @@ struct y_combinator
         return func(std::ref(*this), std::forward<Args>(args)...);
     }
 };
-
-template<class... Funcs, const size_t N = sizeof...(Funcs)>
-auto
-time_multiple(size_t iterations, Funcs&&... funcs)
-{
-    using namespace std::chrono;
-    using integral_time_t = decltype(std::declval<microseconds>().count());
-
-    std::map<int, std::vector<microseconds>> times;
-    std::map<int, std::vector<integral_time_t>> extremal_times;
-
-    for (auto i : views::range(N)) {
-        times[i].reserve(iterations);
-    }
-
-    auto tup = std::make_tuple(std::forward<Funcs>(funcs)...);
-
-    auto func = [&](auto&& n, auto&& v) {
-        auto start = high_resolution_clock::now();
-        v();
-        auto stop = high_resolution_clock::now();
-        auto time = duration_cast<microseconds>(stop - start);
-        times[n].push_back(time);
-        return false;
-    };
-
-    for (auto i : views::range(iterations)) {
-        tupletools::for_each(tup, func);
-    }
-
-    itertools::for_each(times, [&](auto&& n, auto&& v) {
-        auto [key, value] = v;
-        std::sort(value.begin(), value.end());
-
-        integral_time_t avg =
-            itertools::reduce<integral_time_t>(
-                value, 0, [](auto n, auto v, auto i) { return v.count() + i; }) /
-            iterations;
-
-        extremal_times[key] = {value[0].count(), value[value.size() - 1].count(), avg};
-        return false;
-    });
-    return std::make_tuple(times, extremal_times);
-}
 
 namespace detail {
 
