@@ -39,10 +39,9 @@ template<class Tup, class Func, const size_t N = tuple_size<Tup>::value>
 constexpr auto
 apply(Func&& func, Tup&& tup)
 {
-    return index_apply<N>([&](auto... Ixs) {
+    return index_apply<N>([&tup, func = std::forward<Func>(func)](auto... Ixs) {
         return std::invoke(
-            std::forward<Func>(func),
-            std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))...);
+            func, std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))...);
     });
 }
 
@@ -86,11 +85,9 @@ template<class Tup, class Func, const size_t N = tuple_size_v<Tup>>
 void
 for_each(Tup&& tup, Func&& func)
 {
-    index_apply<N>([&](auto... Ixs) {
+    index_apply<N>([&tup, func = std::forward<Func>(func)](auto... Ixs) {
         (std::invoke(
-             std::forward<Func>(func),
-             Ixs,
-             std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
+             func, Ixs, std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
          ...);
     });
     return;
@@ -100,10 +97,9 @@ template<class Func, class Tup>
 constexpr auto
 transform(Func&& func, Tup&& tup)
 {
-    auto f = [&]<class... Args>(Args && ... args)
+    auto f = [func = std::forward<Func>(func)]<class... Args>(Args && ... args)
     {
-        return std::forward_as_tuple(
-            std::invoke(std::forward<Func>(func), std::forward<Args>(args))...);
+        return std::forward_as_tuple(std::invoke(func, std::forward<Args>(args))...);
     };
     using F = decltype(f);
 
