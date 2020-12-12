@@ -16,9 +16,7 @@ namespace itertools {
 using namespace tupletools;
 
 struct range_container_terminus
-{
-    bool complete = false;
-};
+{};
 
 template<
     class Range,
@@ -29,47 +27,38 @@ class range_container_iterator
 public:
     using iterator_category = std::forward_iterator_tag;
 
-    range_container_terminus terminus;
-
     range_container_iterator(Range&& range)
-      : range_container_iterator{
-            std::forward<Range>(range),
-            std::begin(range),
-            std::end(range)}
+      : range_container_iterator{std::forward<Range>(range), range.begin(), range.end()}
     {}
 
     range_container_iterator(Range&& range, BeginIt&& begin_it, EndIt&& end_it)
-      : begin_it{begin_it}
-      , end_it{end_it}
-      , terminus{false}
+      : begin_it{std::forward<BeginIt>(begin_it)}
+      , end_it{std::forward<EndIt>(end_it)}
     {}
 
     bool is_complete()
     {
-        auto complete = this->begin_it == this->end_it;
-        this->terminus.complete = complete;
-
-        return complete;
+        return this->begin_it == this->end_it;
     }
 
-    auto operator++()
+    template<class T>
+    bool operator==(T)
+    {
+        return this->is_complete();
+    }
+
+    auto operator++() -> decltype(auto)
     {
         ++this->begin_it;
-        this->is_complete();
         return *this;
     }
 
-    bool operator==(range_container_terminus rhs)
+    auto operator*() -> decltype(auto)
     {
-        return this->terminus.complete == rhs.complete;
+        return *this->begin_it;
     }
 
-    auto operator*()
-    {
-        return *(this->begin_it);
-    }
-
-    auto operator->() noexcept
+    auto operator->() -> decltype(auto)
     {
         return this->begin_it;
     }
@@ -83,35 +72,40 @@ class range_tuple_iterator : public range_container_iterator<Range, BeginIt, End
 {
 public:
     range_tuple_iterator(Range&& range, BeginIt&& begin_it, EndIt&& end_it)
-      : range_container_iterator<Range, BeginIt, EndIt>(
+      : range_container_iterator<Range, BeginIt, EndIt>{
             std::forward<Range>(range),
             std::forward<BeginIt>(begin_it),
-            std::forward<EndIt>(end_it))
+            std::forward<EndIt>(end_it)}
     {}
 
     bool is_complete()
     {
-        auto complete = tupletools::any_where(
+        return tupletools::any_where(
             [](auto&& x, auto&& y) { return x == y; }, this->begin_it, this->end_it);
-        this->terminus.complete = complete;
-        return complete;
     }
 
-    auto operator++()
+    auto operator++() -> decltype(auto)
     {
         tupletools::for_each(this->begin_it, [](auto&& n, auto&& v) { ++v; });
-        this->is_complete();
         return *this;
     }
 
-    auto operator*()
+    auto operator*() -> decltype(auto)
     {
-        auto func = [](auto&& v) -> decltype(*v) { return *v; };
+        auto func = [](auto&& v) { return *v; };
         return tupletools::transform(func, this->begin_it);
+    }
+
+    auto operator->() -> decltype(auto)
+    {
+        return this->begin_it;
     }
 };
 
-template<class Range, class Iterator>
+template<
+    class Range,
+    class Iterator,
+    std::enable_if_t<tupletools::is_iterator_v<Iterator>, int> = 0>
 class range_container
 {
 public:
@@ -119,7 +113,7 @@ public:
 
     range_container(Range&& range, Iterator&& it)
       : it{std::forward<Iterator>(it)}
-      , range{range}
+      , range{std::forward<Range>(range)}
       , size_{1}
     {}
 
@@ -130,7 +124,7 @@ public:
 
     auto end()
     {
-        return range_container_terminus{true};
+        return range_container_terminus{};
     }
 
     size_t size()
@@ -139,26 +133,39 @@ public:
     }
 
     template<class Func>
-    auto operator|(Func&& func) -> decltype(auto)
+    auto operator|(Func&& rhs) -> decltype(auto)
     {
         return std::
-            invoke(std::forward<Func>(func), std::forward<decltype(*this)>(*this));
+            invoke(std::forward<Func>(rhs), std::forward<decltype(*this)>(*this));
+    }
+
+    template<class Func, class R, class I>
+    friend auto operator|(Func&& lhs, range_container<R, I>&& rhs)
+    {
+        using RR = std::remove_cvref_t<decltype(rhs)>;
+        return std::invoke(std::forward<Func>(lhs), std::forward<RR>(rhs));
     }
 
     Iterator it;
     Range range;
 };
 
+template<class, template<class, class...> class>
+struct is_instance : public std::false_type
+{};
+
+template<class... Ts, template<class, class...> class U>
+struct is_instance<U<Ts...>, U> : public std::true_type
+{};
+
 template<typename Range>
 constexpr auto
 to_range(Range&& range)
 {
-    auto it = range_container_iterator<Range>(range);
-    using Iterator = decltype(it);
+    using Iterator = range_container_iterator<Range>;
 
-    return range_container<
-        Range,
-        Iterator>(std::forward<Range>(range), std::forward<Iterator>(it));
+    auto it = Iterator(std::forward<Range>(range));
+    return range_container(std::forward<Range>(range), std::move(it));
 }
 
 template<template<typename... Ts> class Iterator, class... Args>
