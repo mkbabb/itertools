@@ -86,7 +86,7 @@ public:
 
     auto operator++() -> decltype(auto)
     {
-        tupletools::for_each(this->begin_it, [](auto&& n, auto&& v) { ++v; });
+        tupletools::for_each(this->begin_it, [](auto&&, auto&& v) { ++v; });
         return *this;
     }
 
@@ -139,12 +139,12 @@ public:
             invoke(std::forward<Func>(rhs), std::forward<decltype(*this)>(*this));
     }
 
-    template<class Func, class R, class I>
-    friend auto operator|(Func&& lhs, range_container<R, I>&& rhs)
-    {
-        using RR = std::remove_cvref_t<decltype(rhs)>;
-        return std::invoke(std::forward<Func>(lhs), std::forward<RR>(rhs));
-    }
+    // template<class Func, class R, class I>
+    // friend auto operator|(Func&& lhs, range_container<R, I>&& rhs)
+    // {
+    //     using RR = std::remove_cvref_t<decltype(rhs)>;
+    //     return std::invoke(std::forward<Func>(lhs), std::forward<RR>(rhs));
+    // }
 
     Iterator it;
     Range range;
@@ -157,16 +157,6 @@ struct is_instance : public std::false_type
 template<class... Ts, template<class, class...> class U>
 struct is_instance<U<Ts...>, U> : public std::true_type
 {};
-
-template<typename Range>
-constexpr auto
-to_range(Range&& range)
-{
-    using Iterator = range_container_iterator<Range>;
-
-    auto it = Iterator(std::forward<Range>(range));
-    return range_container(std::forward<Range>(range), std::move(it));
-}
 
 template<template<typename... Ts> class Iterator, class... Args>
 auto
