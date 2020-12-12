@@ -9,25 +9,27 @@ class concat_iterator : public range_tuple_iterator<Range, BeginIt, EndIt>
 {
 public:
     concat_iterator(Range&& range, BeginIt&& begin_it, EndIt&& end_it)
-      : range_tuple_iterator<Range, BeginIt, EndIt>(
+      : range_tuple_iterator<Range, BeginIt, EndIt>{
             std::forward<Range>(range),
             std::forward<BeginIt>(begin_it),
-            std::forward<EndIt>(end_it))
+            std::forward<EndIt>(end_it)}
     {}
+
+    bool is_first_complete()
+    {
+        return std::get<0>(this->begin_it) == std::get<0>(this->end_it);
+    }
 
     bool is_complete()
     {
-        auto complete = std::get<0>(this->begin_it) == std::get<0>(this->end_it);
-
-        if (complete) {
+        if (is_first_complete()) {
             tupletools::roll(this->begin_it, true);
             tupletools::roll(this->end_it, true);
 
-            complete = std::get<0>(this->begin_it) == std::get<0>(this->end_it);
+            return is_first_complete();
+        } else {
+            return false;
         }
-
-        this->terminus.complete = complete;
-        return complete;
     }
 
     auto operator++() -> decltype(auto)

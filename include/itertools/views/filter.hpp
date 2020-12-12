@@ -32,15 +32,16 @@ public:
         };
     }
 
-    auto operator++()
+    auto operator++() -> decltype(auto)
     {
         ++this->begin_it;
         filter_until();
         was_incremented = true;
+
         return *this;
     }
 
-    auto operator*()
+    auto operator*() -> decltype(auto)
     {
         // We cache the predicate value of the previous increment call.
         // If a 'good value' was found, there's no need to check the predicate again.

@@ -15,7 +15,7 @@ public:
 
     auto operator*() -> decltype(auto)
     {
-        using T = decltype(*this->begin_it);
+        using T = std::remove_cvref_t<decltype(*this->begin_it)>;
         return std::invoke(std::forward<Func>(func), std::forward<T>(*this->begin_it));
     }
 
