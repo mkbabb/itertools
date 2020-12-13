@@ -5,6 +5,53 @@
 namespace itertools {
 namespace detail {
 
+using namespace std::string_literals;
+namespace tt = tupletools;
+
+struct get_ndim_impl
+{
+    int ndim = 0;
+
+    template<class Iterable, std::enable_if_t<tt::is_iterable_v<Iterable>, int> = 0>
+    constexpr void recurse(Iterable&& iter)
+    {
+        ndim = 0;
+        recurse(*(++iter.begin()));
+        ndim += 1;
+    }
+
+    template<class Tup, std::enable_if_t<tt::is_tupleoid_v<Tup>, int> = 0>
+    constexpr void recurse(Tup&& tup)
+    {
+        tt::for_each(tup, [this]<class T>(auto&& n, T&& i) {
+            recurse(std::forward<T>(i));
+        });
+        ndim += 1;
+    }
+
+    template<
+        class Iterable,
+        std::enable_if_t<
+            !(tt::is_iterable_v<Iterable> or tt::is_tupleoid_v<Iterable>),
+            int> = 0>
+    constexpr void recurse(Iterable&& iter)
+    {}
+
+    template<class Iterable>
+    constexpr int operator()(Iterable&& iter)
+    {
+        recurse(std::forward<Iterable>(iter));
+        return ndim;
+    }
+};
+
+template<class Iterable>
+constexpr int
+get_ndim(Iterable&& iter)
+{
+    return detail::get_ndim_impl{}(std::forward<Iterable>(iter));
+}
+
 int
 bidirectional_match(
     const std::string& buff,
@@ -87,22 +134,23 @@ summarize_string(
 template<class Formatter>
 struct to_string_impl
 {
-    Formatter _formatter;
-    size_t _prev_ix, _prev_len, _ndim, _max_len = 80;
-    std::string _sep, _trim_sep;
+
+    Formatter formatter;
+    int ndim;
+    int offset;
+    std::string sep;
+    std::string tmp;
 
     template<class Iterable>
     explicit constexpr to_string_impl(
         Iterable&& iter,
         Formatter&& formatter,
-        std::string& sep)
-
-      : _formatter{formatter}
-      , _sep{sep}
-      , _trim_sep{trim(sep)}
-    {
-        _ndim = get_ndim(iter);
-    };
+        std::string& sep,
+        int offset = 0)
+      : formatter{formatter}
+      , sep{sep}
+      , ndim{std::max(0, get_ndim(iter) - 1)}
+      , offset{offset} {};
 
     template<class Iterable>
     std::string operator()(Iterable&& iter)
@@ -110,134 +158,80 @@ struct to_string_impl
         return recurse(std::forward<Iterable>(iter), 0);
     }
 
-    constexpr size_t get_lastline_size(std::string& buff)
-    {
-        size_t line_size = 0;
-        int i = buff.size() - 1;
-        while (i-- > 0) {
-            if (buff[i] == '\n') {
-                return line_size;
-            } else {
-                line_size++;
-            }
-        }
-        return line_size;
-    }
-
-    std::string format_newline(std::string& buff, size_t line_count)
-    {
-        std::string new_line = std::string("\n", line_count < 0 ? 0 : line_count);
-        std::string spacing = _trim_sep + new_line;
-
-        buff += spacing;
-        _prev_len = spacing.size();
-        return buff;
-    }
-
-    std::string format_indent(std::string& buff)
-    {
-        int i = 0;
-        int N = buff.size();
-        while (i++ < N) {
-            if (i < N - 1) {
-                if (buff[i] == '\n' && buff[i + 1] != '\n') {
-                    buff.insert(i + 1, " ");
-                    N++;
-                }
-            }
-        }
-        return buff;
-    }
-
     template<
         class Tup,
-        std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0,
-        const size_t N = tupletools::tuple_size_v<Tup>>
-    std::string formatter_wrap(Tup&& tup, size_t ix)
+        std::enable_if_t<!(tt::is_tupleoid_v<Tup> or tt::is_iterable_v<Tup>), int> = 0>
+    std::string recurse(Tup&& tup, int ix)
     {
-        std::string buff;
-        std::string t_buff;
-        bool nested_tupleoid = false;
+        return formatter(std::forward<Tup>(tup));
+    }
 
-        tupletools::for_each(std::forward<Tup>(tup), [&](auto n, auto&& iter_n) {
-            t_buff = to_string_impl{
-                std::forward<decltype(iter_n)>(iter_n),
-                std::forward<Formatter>(_formatter),
-                _sep}(std::forward<decltype(iter_n)>(iter_n));
+    decltype(auto) create_hanging_indent(int ix)
+    {
+        auto space_count = ndim > 0 ? std::max(0, ix + offset + 1) : 0;
+        std::string spaces(space_count, ' ');
 
-            if (n < N - 1) {
-                t_buff += _sep;
+        std::string new_lines(std::max(0, ndim - ix), '\n');
 
-                if (nested_tupleoid || is_iterable_v<decltype(iter_n)> ||
-                    is_tupleoid_v<decltype(iter_n)>) {
-                    t_buff += '\n';
-                    nested_tupleoid = true;
-                }
+        return new_lines + spaces;
+    }
+
+    template<class Tup, std::enable_if_t<tt::is_tupleoid_v<Tup>, int> = 0>
+    std::string recurse(Tup&& tup, int ix)
+    {
+        std::string buff = "";
+        auto hanging_indent = create_hanging_indent(ix);
+
+        auto size = tt::tuple_size_v<Tup>;
+        tt::for_each(std::forward<Tup>(tup), [&, this]<class T>(auto n, T&& i) {
+            auto t_buff = to_string_impl{
+                std::forward<T>(i),
+                std::forward<Formatter>(formatter),
+                sep,
+                ix + 1}(std::forward<T>(i));
+
+            buff += (n > 0) ? hanging_indent + t_buff : t_buff;
+
+            if (n < size - 1) {
+                buff += sep;
             }
-
-            buff += t_buff;
         });
 
-        buff = "(" + format_indent(buff) + ")";
-        if (ix > 0) {
-            format_newline(buff, 2);
-            _prev_ix = ix + 1;
-        }
-        return buff;
+        return "("s + buff + ")"s;
     }
 
-    template<
-        class Iterable,
-        std::enable_if_t<!tupletools::is_tupleoid_v<Iterable>, int> = 0>
-    std::string formatter_wrap(Iterable&& iter, size_t ix)
+    template<class Iterable, std::enable_if_t<tt::is_iterable_v<Iterable>, int> = 0>
+    std::string recurse(Iterable&& iter, int ix)
     {
-        return std::
-            invoke(std::forward<Formatter>(_formatter), std::forward<Iterable>(iter));
-    }
-
-    template<
-        class Iterable,
-        std::enable_if_t<!tupletools::is_iterable_v<Iterable>, int> = 0>
-    std::string recurse(Iterable&& iter, size_t ix)
-    {
-        return formatter_wrap(std::forward<Iterable>(iter), ix);
-    }
-
-    template<
-        class Iterable,
-        std::enable_if_t<tupletools::is_iterable_v<Iterable>, int> = 0>
-    std::string recurse(Iterable&& iter, size_t ix)
-    {
-        _prev_ix = ix;
         std::string buff = "";
-        size_t ndim = iter.size();
+        auto hanging_indent = create_hanging_indent(ix);
 
         auto n = 0;
-        for (auto&& iter_n : iter) {
-            buff += recurse(std::forward<decltype(iter_n)>(iter_n), ix + 1);
+        for (auto [i] : views::zip(iter)) {
+            using T = decltype(i);
 
-            if (!is_iterable_v<decltype(iter_n)> && !is_tupleoid_v<decltype(iter_n)>) {
-                buff += n < ndim - 1 ? _sep : "";
+            if constexpr (is_iterable_v<T> or is_tupleoid_v<T>) {
+                auto t_buff = recurse(std::forward<T>(i), ix + 1);
+
+                buff += (n > 0) ? hanging_indent + t_buff : t_buff;
+            } else {
+                buff += formatter(std::forward<T>(i));
             }
 
-            n++;
+            if (n < iter.size() - 1) {
+                buff += sep;
+            }
+            n += 1;
         };
 
-        buff = _prev_ix > ix ? buff.substr(0, buff.size() - _prev_len) : buff;
-
-        buff = "[" + format_indent(buff) + "]";
-        if (ix > 0) {
-            format_newline(buff, _ndim - ix);
-            buff = summarize_string(buff, _sep, 80);
-        }
-        return buff;
+        return "["s + buff + "]"s;
     };
 };
 }; // namespace detail
 
 template<class Iterable, class Formatter>
 std::string
-to_string_f(Iterable&& iter, Formatter&& formatter, std::string&& sep = ", ")
+to_string_f(Iterable&& iter, Formatter&& formatter, std::string sep = ", ")
 {
     return detail::to_string_impl{
         std::forward<Iterable>(iter), std::forward<Formatter>(formatter), sep}(iter);
@@ -250,9 +244,7 @@ to_string(Iterable&& iter)
     std::string sep = ", ";
     auto formatter = [](auto&& s) -> std::string { return std::to_string(s); };
 
-    return detail::to_string_impl{
-        std::forward<Iterable>(iter),
-        std::forward<decltype(formatter)>(formatter),
-        sep}(iter);
+    return detail::
+        to_string_impl{std::forward<Iterable>(iter), std::move(formatter), sep}(iter);
 }
 }

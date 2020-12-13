@@ -154,25 +154,23 @@ public:
 };
 
 template<template<typename... Ts> class Iterator, class... Args>
-auto
+decltype(auto)
 make_tuple_iterator(Args&&... args)
 {
-    auto range = std::forward_as_tuple(args...);
-    auto begin_it = std::make_tuple(args.begin()...);
-    auto end_it = std::make_tuple(args.end()...);
+    auto range = std::make_tuple(args...);
+    // auto begin_it = std::make_tuple(args.begin()...);
+    // auto end_it = std::make_tuple(args.end()...);
 
     using Range = decltype(range);
-    using BeginIt = decltype(begin_it);
-    using EndIt = decltype(end_it);
+    // using BeginIt = decltype(begin_it);
+    // using EndIt = decltype(end_it);
 
-    auto it = Iterator<Range, BeginIt, EndIt>(
+    auto it = Iterator(
         std::forward<Range>(range),
-        std::forward<BeginIt>(begin_it),
-        std::forward<EndIt>(end_it));
+        std::make_tuple(args.begin()...),
+        std::make_tuple(args.end()...));
 
-    using It = decltype(it);
-
-    return range_container(std::forward<Range>(range), std::forward<It>(it));
+    return range_container(std::forward<Range>(range), std::move(it));
 }
 
 constexpr auto default_inserter = [](auto&& x, auto&& y) {

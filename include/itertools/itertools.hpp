@@ -51,57 +51,6 @@ struct y_combinator
     }
 };
 
-namespace detail {
-
-struct get_ndim_impl
-{
-    size_t _ndim = 0;
-
-    template<
-        class Iterable,
-        std::enable_if_t<tupletools::is_iterable_v<Iterable>, int> = 0>
-    constexpr void recurse(Iterable&& iter)
-    {
-        _ndim = 0;
-        auto it = std::begin(iter);
-        ++it;
-        recurse(std::forward<decltype(*it)>(*it));
-        _ndim++;
-    }
-
-    template<class Tup, std::enable_if_t<tupletools::is_tupleoid_v<Tup>, int> = 0>
-    constexpr void recurse(Tup&& tup)
-    {
-        tupletools::for_each(tup, [&](auto&& n, auto&& v) {
-            recurse(std::forward<decltype(v)>(v));
-        });
-    }
-
-    template<
-        class Iterable,
-        std::enable_if_t<
-            !tupletools::is_iterable_v<Iterable> &&
-                !tupletools::is_tupleoid_v<Iterable>,
-            int> = 0>
-    constexpr void recurse(Iterable&& iter)
-    {}
-
-    template<class Iterable>
-    constexpr size_t operator()(Iterable&& iter)
-    {
-        recurse(std::forward<Iterable>(iter));
-        return _ndim + 1;
-    }
-};
-}; // namespace detail
-
-template<class Iterable>
-constexpr size_t
-get_ndim(Iterable&& iter)
-{
-    return detail::get_ndim_impl{}(std::forward<Iterable>(iter));
-}
-
 template<typename Iterable>
 std::string
 join(Iterable&& iter, std::string sep = "")
