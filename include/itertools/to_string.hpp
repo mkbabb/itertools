@@ -178,7 +178,7 @@ struct to_string_impl
         return new_lines + spaces;
     }
 
-    template<class Tup, std::enable_if_t<tt::is_tupleoid_v<Tup>, int> = 0>
+    template<Tupleoid Tup>
     std::string recurse(Tup tup, int ix)
     {
         std::string buff = "";

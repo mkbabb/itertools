@@ -149,5 +149,26 @@ struct any_of_t<Pred, T0, T1, Ts...>
         integral_constant<bool, Pred<T0, T1>::value || any_of_t<Pred, T0, Ts...>::value>
 {};
 
+template<typename T>
+concept Tupleoid = is_tupleoid_v<T>;
+
+template<typename T>
+concept Rangeable = requires(T x)
+{
+    x.begin();
+    x.end();
+};
+
+template<typename T>
+concept ForwardIterable = Rangeable<T>&& requires(T iter)
+{
+    ++iter;
+    *iter;
+    iter == iter;
+};
+
+template<Rangeable T>
+using range_value_t = decltype(*std::declval<T>().begin());
+
 };     // namespace tupletools
 #endif // TYPES_H
