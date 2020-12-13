@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <numeric>
 #include <optional>
@@ -103,7 +104,7 @@ get_ndim(Iterable&& iter)
 
 template<typename Iterable>
 std::string
-join(Iterable&& iter, std::string&& sep)
+join(Iterable&& iter, std::string sep = "")
 {
     std::ostringstream result;
     for (auto&& [n, i] : views::enumerate(iter)) {

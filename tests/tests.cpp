@@ -1,6 +1,5 @@
 #define FMT_HEADER_ONLY
 
-
 #include "fmt/format.h"
 #include "itertools/itertools.hpp"
 #include "itertools/to_string.hpp"
@@ -80,7 +79,7 @@ tupletools_tests()
     }
     {
         auto tup1 = std::make_tuple('a', 'b', 'c', 'd');
-        tup1 = tupletools::roll(tup1);
+        tupletools::roll<false>(tup1);
         assert(tup1 == std::make_tuple('d', 'a', 'b', 'c'));
     }
 }
@@ -401,7 +400,8 @@ range_container_tests()
 int
 main()
 {
-
+    using namespace std::string_literals;
+    using namespace itertools;
     zip_tests();
     any_tests();
     enumerate_tests();
@@ -412,15 +412,23 @@ main()
 
     range_container_tests();
 
-    using namespace itertools;
-
-    std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
-    std::vector<int> v2 = {11, 22, 33, 44, 55, 66};
-
-    for (auto [x, y] : views::zip(v1, v2)) {
-        std::cout << "hi" << std::endl;
-        x = 1000;
+    for (auto&& [n, i] : views::enumerate("hello"s)) {
+        std::cout << i << std::endl;
     }
+
+    // std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
+    // std::vector<int> v2 = {11, 22, 33, 44, 55, 66};
+
+    // for (auto [x, y] : views::zip(v1, v2)) {
+    //     std::cout << "hi" << std::endl;
+    //     x = 1000;
+    // }
+
+    // auto vot = views::zip(v1, v2) | to<std::vector>();
+
+    // for (auto&& i : vot) {
+    //     std::cout << "nmo!!" << std::endl;
+    // }
 
     // std::vector<std::tuple<int, std::tuple<int, int>>> tup = {{1, {2, 3}}, {4, {5,
     // 6}}};
@@ -433,6 +441,22 @@ main()
     // {
     //     std::cout << "hi" << std::endl;
     // }
+
+    std::vector<std::tuple<
+        std::list<std::vector<std::vector<int>>>,
+        int,
+        std::map<int, std::tuple<int, int, int>>>>
+        iter =
+            {{{{{1, 2}}, {{3, 4}}},
+              1,
+              {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}},
+             {{{{5, 6}}, {{7, 8}}},
+              4,
+              {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}}};
+    auto ndim = itertools::get_ndim(iter);
+    std::string s = itertools::to_string(iter);
+
+    std::cout << s << std::endl;
 
     fmt::print("tests complete\n");
     return 0;
