@@ -1,5 +1,7 @@
 #include "itertools.hpp"
 
+#include <concepts>
+
 #pragma once
 
 namespace itertools {
@@ -142,7 +144,7 @@ struct to_string_impl
     std::string tmp;
 
     template<class Iterable>
-    explicit constexpr to_string_impl(
+    explicit to_string_impl(
         Iterable&& iter,
         Formatter&& formatter,
         std::string& sep,
@@ -159,11 +161,11 @@ struct to_string_impl
     }
 
     template<
-        class Tup,
-        std::enable_if_t<!(tt::is_tupleoid_v<Tup> or tt::is_iterable_v<Tup>), int> = 0>
-    std::string recurse(Tup&& tup, int ix)
+        class T,
+        std::enable_if_t<!(tt::is_tupleoid_v<T> or tt::is_iterable_v<T>), int> = 0>
+    std::string recurse(T&& t, int ix)
     {
-        return formatter(std::forward<Tup>(tup));
+        return formatter(std::forward<T>(t));
     }
 
     decltype(auto) create_hanging_indent(int ix)
@@ -177,7 +179,7 @@ struct to_string_impl
     }
 
     template<class Tup, std::enable_if_t<tt::is_tupleoid_v<Tup>, int> = 0>
-    std::string recurse(Tup&& tup, int ix)
+    std::string recurse(Tup tup, int ix)
     {
         std::string buff = "";
         auto hanging_indent = create_hanging_indent(ix);
@@ -206,22 +208,20 @@ struct to_string_impl
         std::string buff = "";
         auto hanging_indent = create_hanging_indent(ix);
 
-        auto n = 0;
-        for (auto [i] : views::zip(iter)) {
-            using T = decltype(i);
+        for (auto&& [n, i] : views::enumerate(iter)) {
+            using T = std::remove_cvref_t<decltype(i)>;
 
             if constexpr (is_iterable_v<T> or is_tupleoid_v<T>) {
-                auto t_buff = recurse(std::forward<T>(i), ix + 1);
+                auto t_buff = recurse(i, ix + 1);
 
                 buff += (n > 0) ? hanging_indent + t_buff : t_buff;
             } else {
-                buff += formatter(std::forward<T>(i));
+                buff += formatter(i);
             }
 
             if (n < iter.size() - 1) {
                 buff += sep;
             }
-            n += 1;
         };
 
         return "["s + buff + "]"s;
@@ -242,7 +242,9 @@ std::string
 to_string(Iterable&& iter)
 {
     std::string sep = ", ";
-    auto formatter = [](auto&& s) -> std::string { return std::to_string(s); };
+    auto formatter = []<class T>(T&& s) -> std::string {
+        return fmt::format("{}", std::forward<T>(s));
+    };
 
     return detail::
         to_string_impl{std::forward<Iterable>(iter), std::move(formatter), sep}(iter);

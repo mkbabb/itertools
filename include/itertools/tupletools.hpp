@@ -98,7 +98,7 @@ transform(Func&& func, Tup&& tup)
     {
         return std::forward_as_tuple(std::invoke(func, std::forward<Args>(args))...);
     };
-    return tupletools::apply(f, std::forward<Tup>(tup));
+    return std::apply(f, std::forward<Tup>(tup));
 }
 
 template<class Tup, const size_t N = tuple_size<Tup>::value>

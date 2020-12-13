@@ -29,7 +29,8 @@
 //     {
 //         std::vector<std::string> sv1 = {"\nThis", "but", "different", "containers,"};
 //         std::vector<std::string> sv2 = {"is", "can", "types", "too?"};
-//         std::vector<std::string> sv3 = {"cool,", "we iterate through", "of", "...\n"};
+//         std::vector<std::string> sv3 = {"cool,", "we iterate through", "of",
+//         "...\n"};
 
 //         for (auto [i, j, k] : zip(sv1, sv2, sv3)) {
 //         };
@@ -47,9 +48,9 @@
 //         }
 //     }
 //     {
-//         std::map<int, int> id1 = {{0, 10}, {1, 11}, {2, 12}, {3, 13}, {4, 14}, {5, 15}};
-//         std::list<std::string> sv1 = {"1", "mijn", "worten", "2", "helm", "dearth"};
-//         std::vector<double> dv1 = {1.2, 3.4, 5.6, 6.7, 7.8, 8.9, 9.0};
+//         std::map<int, int> id1 = {{0, 10}, {1, 11}, {2, 12}, {3, 13}, {4, 14}, {5,
+//         15}}; std::list<std::string> sv1 = {"1", "mijn", "worten", "2", "helm",
+//         "dearth"}; std::vector<double> dv1 = {1.2, 3.4, 5.6, 6.7, 7.8, 8.9, 9.0};
 
 //         for (auto [i, j, k, l] : zip(id1, sv1, dv1, range(7))) {
 //             auto [key, value] = i;
@@ -272,7 +273,8 @@
 // //         }
 // //     }
 // //     {
-// //         std::vector<std::map<int, int>> iter = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+// //         std::vector<std::map<int, int>> iter = {{{1, 2}, {3, 4}}, {{5, 6}, {7,
+// 8}}};
 // //         auto ndim = itertools::detail::get_ndim(iter);
 // //         std::string s = itertools::to_string(iter);
 // //         if (print) {
@@ -280,7 +282,8 @@
 // //         }
 // //     }
 // //     {
-// //         std::vector<std::tuple<std::vector<std::vector<std::vector<int>>>, int>> iter
+// //         std::vector<std::tuple<std::vector<std::vector<std::vector<int>>>, int>>
+// iter
 // //         =
 // //             {{{{{1, 2}}, {{3, 4}}}, 1}, {{{{5, 6}}, {{7, 8}}}, 4}};
 // //         auto ndim = itertools::detail::get_ndim(iter);
@@ -290,7 +293,7 @@
 // //         }
 // //     }
 // //     {
-// //         std::vector<std::list<std::vector<std::list<std::vector<std::deque<int>>>>>>
+// // std::vector<std::list<std::vector<std::list<std::vector<std::deque<int>>>>>>
 // //             iter =
 // //                 {{{{{{0, 1}, {2, 3}},
 
@@ -337,10 +340,12 @@
 // //             iter =
 // //                 {{{{{1, 2}}, {{3, 4}}},
 // //                   1,
-// //                   {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}},
+// //                   {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4,
+// 5}}}},
 // //                  {{{{5, 6}}, {{7, 8}}},
 // //                   4,
-// //                   {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}}};
+// //                   {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4,
+// 5}}}}};
 // //         auto ndim = itertools::detail::get_ndim(iter);
 // //         std::string s = itertools::to_string(iter);
 // //         if (print) {
@@ -413,10 +418,23 @@ main()
 
     // range_container_tests();
 
+    int a = 1;
+    int b = 2;
+
     std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
     std::vector<int> v2 = {11, 22, 33, 44, 55, 66};
+    std::vector<std::unique_ptr<int>> v3;
+    v3.push_back(std::make_unique<int>(a));
+    v3.emplace_back(std::make_unique<int>(a));
 
-    std::cout << itertools::to_string(views::zip(v1, v2)) << std::endl;
+    // for (auto [x] : views::zip(views::zip(v1, v2))) {
+    //     auto [i, j] = x;
+    //     i = 999;
+    // }
+
+    auto x = views::zip(v1, v2);
+
+    std::cout << itertools::to_string(x) << std::endl;
 
     // auto vot = views::zip(v1, v2) | to<std::vector>();
 
@@ -456,10 +474,10 @@ main()
 
     // std::vector<std::tuple<std::vector<int>, int>> iter = {{{1, 2}, 1}, {{2, 3}, 2}};
 
-    auto ndim = itertools::detail::get_ndim(iter);
-    std::string s = itertools::to_string(iter);
+    // auto ndim = itertools::detail::get_ndim(iter);
+    // std::string s = itertools::to_string(iter);
 
-    std::cout << s << std::endl;
+    // std::cout << s << std::endl;
 
     fmt::print("tests complete\n");
     return 0;

@@ -10,7 +10,7 @@ constexpr auto
 enumerate(Iterable&& it)
 {
     auto rng = range(std::numeric_limits<size_t>::max());
-    return zip(it);
+    return zip(std::move(rng), std::forward<Iterable>(it));
 }
 
 }}
