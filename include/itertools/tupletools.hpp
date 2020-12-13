@@ -17,7 +17,7 @@ namespace tupletools {
 // forwarding of a tuple.
 
 template<size_t... Ixs, class Func>
-constexpr auto
+constexpr decltype(auto)
 index_apply_impl(Func&& func, std::index_sequence<Ixs...>)
 {
     return std::
@@ -25,7 +25,7 @@ index_apply_impl(Func&& func, std::index_sequence<Ixs...>)
 }
 
 template<size_t N, class Func>
-constexpr auto
+constexpr decltype(auto)
 index_apply(Func&& func)
 {
     return index_apply_impl(std::forward<Func>(func), std::make_index_sequence<N>{});
@@ -36,12 +36,11 @@ Essentially a clone of std::apply; an academic exercise using expression
 folding.
  */
 template<class Tup, class Func, const size_t N = tuple_size<Tup>::value>
-constexpr auto
+constexpr decltype(auto)
 apply(Func&& func, Tup&& tup)
 {
     return index_apply<N>([&tup, func = std::forward<Func>(func)](auto... Ixs) {
-        return std::invoke(
-            func, std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))...);
+        return std::invoke(func, std::get<Ixs>(std::forward<Tup>(tup))...);
     });
 }
 
@@ -53,15 +52,15 @@ Begets a tuple of size N of type T, filled with value value.
 @returns: tuple filled N times with value.
  */
 template<const size_t N, class T>
-constexpr auto
+constexpr decltype(auto)
 make_tuple_of(T value)
 {
-    auto func = [&value](auto t) { return value; };
-    auto tup =
-        index_apply<N>([&value](auto... Ixs) { return std::make_tuple(Ixs...); });
+    auto func = [=](auto) { return value; };
+    auto tup = index_apply<N>([=](auto... Ixs) { return std::make_tuple(Ixs...); });
 
-    return index_apply<N>(
-        [&](auto... Ixs) { return std::make_tuple(func(std::get<Ixs>(tup))...); });
+    return index_apply<N>([func = std::move(func)](auto... Ixs) {
+        return std::make_tuple(func(Ixs)...);
+    });
 }
 
 /*
@@ -86,65 +85,61 @@ void
 for_each(Tup&& tup, Func&& func)
 {
     index_apply<N>([&tup, func = std::forward<Func>(func)](auto... Ixs) {
-        (std::invoke(
-             func, Ixs, std::forward<decltype(std::get<Ixs>(tup))>(std::get<Ixs>(tup))),
-         ...);
+        (std::invoke(func, Ixs, std::get<Ixs>(std::forward<Tup>(tup))), ...);
     });
     return;
 }
 
 template<class Func, class Tup>
-constexpr auto
+constexpr decltype(auto)
 transform(Func&& func, Tup&& tup)
 {
     auto f = [func = std::forward<Func>(func)]<class... Args>(Args && ... args)
     {
         return std::forward_as_tuple(std::invoke(func, std::forward<Args>(args))...);
     };
-    using F = decltype(f);
-
-    return tupletools::apply(std::forward<F>(f), std::forward<Tup>(tup));
+    return tupletools::apply(f, std::forward<Tup>(tup));
 }
 
 template<class Tup, const size_t N = tuple_size<Tup>::value>
 constexpr auto
 reverse(Tup&& tup)
 {
-    return index_apply<N>(
-        [&](auto... Ixs) { return std::make_tuple(std::get<N - (Ixs + 1)>(tup)...); });
+    return index_apply<N>([&tup](auto... Ixs) {
+        return std::make_tuple(std::get<N - (Ixs + 1)>(std::forward<Tup>(tup))...);
+    });
 }
 
-template<int Ix1, int Ix2, class Tup, const size_t N = tuple_size<Tup>::value>
-constexpr auto
+template<int Ix1, int Ix2, class Tup>
+constexpr void
 swap(Tup&& tup)
 {
-    std::swap(std::get<Ix1>(tup), std::get<Ix2>(tup));
-    return tup;
+    std::swap(
+        std::get<Ix1>(std::forward<Tup>(tup)), std::get<Ix2>(std::forward<Tup>(tup)));
 }
 
-template<class Tup, const size_t N = tuple_size<Tup>::value>
-constexpr auto
-roll(Tup&& tup, bool reverse = false)
+template<const bool reverse, class Tup, const size_t N = tuple_size<Tup>::value>
+constexpr void
+roll(Tup&& tup)
 {
-    if (reverse) {
-        tupletools::for_each(tup, [&](auto n, auto&&) {
-            swap<0, N - (n + 1)>(std::forward<Tup>(tup));
-        });
-    } else {
-        tupletools::for_each(tup, [&](auto n, auto&&) {
-            swap<n, N - 1>(std::forward<Tup>(tup));
-        });
-    }
-    return tup;
+    tupletools::for_each(std::forward<Tup>(tup), [&tup](auto n, auto&&) {
+        if constexpr (reverse) {
+            swap<0, N - (n + 1)>(std::forward<Tup>(std::forward<Tup>(tup)));
+        } else {
+            swap<n, N - 1>(std::forward<Tup>(std::forward<Tup>(tup)));
+        }
+    });
 }
 
-template<class... Tuples, const size_t N = std::min({std::tuple_size<Tuples>{}...})>
+template<class... Tups, const size_t N = std::min({std::tuple_size<Tups>{}...})>
 constexpr auto
-transpose(Tuples&&... tups)
+transpose(Tups&&... tups)
 {
-    auto row = [&](auto Ixs) { return std::make_tuple(std::get<Ixs>(tups)...); };
-
-    return index_apply<N>([&](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
+    auto row = [&](auto Ixs) {
+        return std::make_tuple(std::get<Ixs>(std::forward<Tups>(tups))...);
+    };
+    return index_apply<N>(
+        [row = std::move(row)](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
 }
 
 template<
@@ -156,7 +151,7 @@ template<
 constexpr auto
 where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
-    static_assert(N == M, "Tuples must be the same size!");
+    static_assert(N == M, "Tups must be the same size!");
 
     return index_apply<N>([&](auto... Ixs) {
         auto tup = std::make_tuple(std::invoke(
@@ -197,10 +192,10 @@ constexpr bool
 all_where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
-    return index_apply<N>([&](auto... Ixs) {
+    return index_apply<N>([&tup1, &tup2, pred = std::forward<Pred>(pred)](auto... Ixs) {
         return (
             (std::invoke(
-                std::forward<Pred>(pred),
+                pred,
                 std::get<Ixs>(std::forward<Tup1>(tup1)),
                 std::get<Ixs>(std::forward<Tup2>(tup2)))) &&
             ...);
@@ -242,7 +237,7 @@ any_of(Tup&& tup)
         }
         return false;
     };
-    tupletools::for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
+    tupletools::for_each(std::forward<Tup>(tup), func);
     return b;
 }
 
@@ -258,7 +253,7 @@ all_of(Tup&& tup)
         }
         return false;
     };
-    tupletools::for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
+    tupletools::for_each(std::forward<Tup>(tup), func);
     return b;
 }
 
@@ -279,7 +274,7 @@ disjunction_of(Tup&& tup)
         }
     };
 
-    tupletools::for_each(std::forward<Tup>(tup), std::forward<decltype(func)>(func));
+    tupletools::for_each(std::forward<Tup>(tup), func);
     return b;
 }
 

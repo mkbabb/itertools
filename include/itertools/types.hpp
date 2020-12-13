@@ -73,7 +73,7 @@ struct is_iterable<
     std::void_t<decltype(std::declval<T>().begin()), decltype(std::declval<T>().end())>>
   : std::true_type
 {
-    // using deref_type = std::remove_cvref_t<decltype(*(std::declval<T>().begin()))>;
+    using deref_type = std::remove_cvref_t<decltype(*(std::declval<T>().begin()))>;
 };
 
 template<typename T>
@@ -107,6 +107,15 @@ struct is_container<T, std::void_t<is_tupleoid<T>, is_iterable<T>>> : std::true_
 
 template<typename T>
 constexpr bool is_container_v = is_container<T>::value;
+
+template<typename T, typename = void>
+struct is_sized : std::false_type
+{};
+template<typename T>
+struct is_sized<T, std::void_t<decltype(std::declval<T>().size())>> : std::true_type
+{};
+template<typename T>
+constexpr bool is_sized_v = is_iterator<T>::value;
 
 template<typename T>
 struct tuple_size

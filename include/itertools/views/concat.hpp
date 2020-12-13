@@ -23,8 +23,8 @@ public:
     bool is_complete()
     {
         if (is_first_complete()) {
-            tupletools::roll(this->begin_it, true);
-            tupletools::roll(this->end_it, true);
+            tupletools::roll<true>(this->begin_it);
+            tupletools::roll<true>(this->end_it);
 
             return is_first_complete();
         } else {
