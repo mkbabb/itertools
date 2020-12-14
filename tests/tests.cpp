@@ -402,15 +402,15 @@ main()
 {
     using namespace std::string_literals;
     using namespace itertools;
-    // zip_tests();
-    // any_tests();
-    // enumerate_tests();
-    // // range_tests();
-    // itertools_tests();
-    // tupletools_tests();
-    // // to_string_tests();
+    zip_tests();
+    any_tests();
+    enumerate_tests();
+    // range_tests();
+    itertools_tests();
+    tupletools_tests();
+    // to_string_tests();
 
-    // range_container_tests();
+    range_container_tests();
 
     int a = 1;
     int b = 2;
