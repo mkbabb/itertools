@@ -42,81 +42,6 @@ struct is_tupleoid<std::pair<T...>> : std::true_type
 template<class T>
 constexpr bool is_tupleoid_v = is_tupleoid<std::remove_cvref_t<T>>::value;
 
-template<typename T, typename = void>
-struct is_iterator : std::false_type
-{};
-
-template<typename T>
-struct is_iterator<
-    T,
-    std::void_t<
-        decltype(++std::declval<T>()),
-        decltype(*std::declval<T>()),
-        decltype(std::declval<T>().operator==(std::declval<T>()))>> : std::true_type
-{
-    using deref_type = std::remove_cvref_t<decltype(*std::declval<T>())>;
-};
-
-template<typename T>
-using iterator_t = typename is_iterator<T>::deref_type;
-
-template<typename T>
-constexpr bool is_iterator_v = is_iterator<T>::value;
-
-template<typename T, typename = void>
-struct is_iterable : std::false_type
-{};
-
-template<typename T>
-struct is_iterable<
-    T,
-    std::void_t<decltype(std::declval<T>().begin()), decltype(std::declval<T>().end())>>
-  : std::true_type
-{
-    using deref_type = std::remove_cvref_t<decltype(*(std::declval<T>().begin()))>;
-};
-
-template<typename T>
-using iterable_t = typename is_iterable<T>::deref_type;
-
-template<typename T>
-constexpr bool is_iterable_v = is_iterable<T>::value;
-
-template<typename T, typename = void>
-struct is_nested_iterable : std::false_type
-{};
-
-template<typename T>
-struct is_nested_iterable<
-    T,
-    std::void_t<
-        decltype(std::declval<T>().begin()->begin()),
-        decltype(std::declval<T>().begin()->end())>> : std::true_type
-{};
-
-template<typename T>
-constexpr bool is_nested_iterable_v = is_nested_iterable<T>::value;
-
-template<typename T, typename = void>
-struct is_container : std::false_type
-{};
-
-template<typename T>
-struct is_container<T, std::void_t<is_tupleoid<T>, is_iterable<T>>> : std::true_type
-{};
-
-template<typename T>
-constexpr bool is_container_v = is_container<T>::value;
-
-template<typename T, typename = void>
-struct is_sized : std::false_type
-{};
-template<typename T>
-struct is_sized<T, std::void_t<decltype(std::declval<T>().size())>> : std::true_type
-{};
-template<typename T>
-constexpr bool is_sized_v = is_iterator<T>::value;
-
 template<typename T>
 struct tuple_size
 {
@@ -160,15 +85,36 @@ concept Rangeable = requires(T x)
 };
 
 template<typename T>
-concept ForwardIterable = Rangeable<T>&& requires(T iter)
+concept Rangeloid = (Rangeable<T> or Tupleoid<T>);
+
+template<typename T>
+concept ForwardIterable = requires(T a, T b)
 {
-    ++iter;
-    *iter;
-    iter == iter;
+    ++a;
+    *a;
+};
+
+template<typename T>
+concept ForwardRange = Rangeable<T>&& requires(T a)
+{
+    requires ForwardIterable<decltype(a.begin())>;
+};
+
+template<typename T>
+concept NestedRange = Rangeable<T>&& requires(T x)
+{
+    requires Rangeable<decltype(*(x.begin()))>;
 };
 
 template<Rangeable T>
 using range_value_t = decltype(*std::declval<T>().begin());
+
+template<class F, class... Args>
+concept invocable = requires(F&& f, Args&&... args)
+{
+    std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
+    /* not required to be equality preserving */
+};
 
 };     // namespace tupletools
 #endif // TYPES_H

@@ -4,6 +4,7 @@
 #include "filter.hpp"
 #include "flatten.hpp"
 #include "intersperse.hpp"
+#include "join.hpp"
 #include "range.hpp"
 #include "slice.hpp"
 #include "stride.hpp"

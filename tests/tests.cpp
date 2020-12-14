@@ -426,9 +426,14 @@ main()
     //     i = 999;
     // }
 
-    auto x = views::zip(v1, v2);
+    auto out = v1 | views::join("") | itertools::to<std::vector>();
+    // auto out = std::vector<std::string>{"a", "b", "c", "d"} | join(",");
 
-    std::cout << itertools::to_string(x) << std::endl;
+    for (auto i : out) {
+        std::cout << i << std::endl;
+    }
+
+    // std::cout << itertools::to_string(x) << std::endl;
 
     // auto vot = views::zip(v1, v2) | to<std::vector>();
 

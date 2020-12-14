@@ -8,8 +8,8 @@ template<class Range>
 class block_iterator : public range_container_iterator<Range>
 {
 public:
-    using IteratorValue = tupletools::iterable_t<Range>;
-    std::vector<IteratorValue> ret;
+    using Value = tupletools::range_value_t<Range>;
+    std::vector<Value> ret;
 
     block_iterator(Range&& range, size_t block_size) noexcept
       : range_container_iterator<Range>(std::forward<Range>(range))

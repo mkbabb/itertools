@@ -8,9 +8,9 @@ template<class Pred, class Range>
 class filter_iterator : public range_container_iterator<Range>
 {
 public:
-    filter_iterator(Pred&& pred, Range&& range) noexcept
+    filter_iterator(Pred&& pred, Range&& range)
       : range_container_iterator<Range>(std::forward<Range>(range))
-      , pred{std::forward<Pred>(pred)}
+      , pred{pred}
     {}
 
     bool invoke_predicate()
@@ -61,11 +61,9 @@ private:
 namespace detail {
 template<class Func, class Range>
 constexpr auto
-filter(Func&& func, Range&& range)
+filter(Func func, Range&& range)
 {
-    auto it = filter_iterator<
-        Func,
-        Range>(std::forward<Func>(func), std::forward<Range>(range));
+    auto it = filter_iterator<Func, Range>(std::move(func), std::forward<Range>(range));
     using Iterator = decltype(it);
 
     return range_container<
@@ -76,7 +74,7 @@ filter(Func&& func, Range&& range)
 
 template<class Func>
 constexpr auto
-filter(Func&& func)
+filter(Func func)
 {
     return [func = std::forward<Func>(func)]<class Range>(Range&& range) {
         return detail::filter(func, std::forward<Range>(range));

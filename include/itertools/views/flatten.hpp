@@ -38,7 +38,7 @@ public:
         this->end_it = outer_begin_it->end();
     }
 
-    auto operator++() -> decltype(auto)
+    decltype(auto) operator++()
     {
         ++this->begin_it;
 
@@ -56,19 +56,17 @@ public:
     EndIt outer_end_it;
 };
 
-template<class Range>
+template<NestedRange Range>
 constexpr auto
 flatten(Range&& range)
 {
-
     auto it = flatten_iterator<Range>(std::forward<Range>(range));
+    using Iter = decltype(it);
 
-    using Iterator = decltype(it);
-
-    return range_container<Range, Iterator>(std::forward<Range>(range), std::move(it));
+    return range_container<Range, Iter>(std::forward<Range>(range), std::move(it));
 }
 
-template<class Range, std::enable_if_t<!is_nested_iterable_v<Range>, bool> = true>
+template<class Range>
 constexpr auto
 flatten(Range&& range)
 {

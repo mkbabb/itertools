@@ -1,6 +1,5 @@
 #include "itertools.hpp"
-
-#include <concepts>
+#include "tupletools.hpp"
 
 #pragma once
 
@@ -8,129 +7,46 @@ namespace itertools {
 namespace detail {
 
 using namespace std::string_literals;
-namespace tt = tupletools;
+using namespace tupletools;
 
 struct get_ndim_impl
 {
     int ndim = 0;
 
-    template<class Iterable, std::enable_if_t<tt::is_iterable_v<Iterable>, int> = 0>
-    constexpr void recurse(Iterable&& iter)
+    template<Rangeable Iter>
+    constexpr void recurse(Iter&& iter)
     {
         ndim = 0;
         recurse(*(++iter.begin()));
         ndim += 1;
     }
 
-    template<class Tup, std::enable_if_t<tt::is_tupleoid_v<Tup>, int> = 0>
+    template<Tupleoid Tup>
     constexpr void recurse(Tup&& tup)
     {
-        tt::for_each(tup, [this]<class T>(auto&& n, T&& i) {
+        for_each(tup, [this]<class T>(auto&& n, T&& i) {
             recurse(std::forward<T>(i));
         });
         ndim += 1;
     }
 
-    template<
-        class Iterable,
-        std::enable_if_t<
-            !(tt::is_iterable_v<Iterable> or tt::is_tupleoid_v<Iterable>),
-            int> = 0>
-    constexpr void recurse(Iterable&& iter)
+    template<class T>
+    requires(!Rangeloid<T>) constexpr void recurse(T&& x)
     {}
 
-    template<class Iterable>
-    constexpr int operator()(Iterable&& iter)
+    template<class Iter>
+    constexpr int operator()(Iter&& iter)
     {
-        recurse(std::forward<Iterable>(iter));
+        recurse(std::forward<Iter>(iter));
         return ndim;
     }
 };
 
-template<class Iterable>
+template<class Iter>
 constexpr int
-get_ndim(Iterable&& iter)
+get_ndim(Iter&& iter)
 {
-    return detail::get_ndim_impl{}(std::forward<Iterable>(iter));
-}
-
-int
-bidirectional_match(
-    const std::string& buff,
-    const std::string& token,
-    size_t pos = 0,
-    bool backwards = false)
-{
-    int neg = 1;
-    int end = buff.size();
-    int token_begin = 0;
-    int token_end = token.size() - 1;
-    int t_begin = 0;
-
-    if (backwards) {
-        neg = -1;
-        end = 0;
-        token_begin = token.size() - 1;
-        token_end = -1;
-    }
-    t_begin = token_begin;
-
-    while (pos != end) {
-        if (buff[pos] == token[t_begin]) {
-            t_begin += neg;
-        } else {
-            t_begin = token_begin;
-        }
-        if (t_begin == token_end) {
-            return pos;
-        }
-        pos += neg;
-    }
-    return -1;
-}
-
-std::string
-summarize_string(
-    const std::string& buff,
-    const std::string& sep,
-    size_t max_items = 3,
-    size_t max_len = 80)
-{
-    if (buff.size() < max_len) {
-        return buff;
-    }
-    int pos = 0;
-    size_t max_len2 = max_len / 2;
-    size_t i = 0;
-    size_t begin = 0;
-    size_t end = buff.size() - 1;
-    while ((i++ < max_items) && (begin < max_len2)) {
-        pos = bidirectional_match(buff, sep, pos, false);
-        if (pos == -1) {
-            break;
-        } else {
-            pos += sep.size() - 1;
-            begin = pos;
-        }
-    }
-    i = 0;
-    pos = buff.size() - 1;
-    while ((i++ < max_items) && (buff.size() - (end + 1) < max_len2)) {
-        pos = bidirectional_match(buff, sep, pos, true);
-        if (pos == -1) {
-            break;
-        } else {
-            pos -= sep.size();
-            end = pos;
-        }
-    }
-    if (begin == 0 || end == buff.size() - 1) {
-        return buff;
-    } else {
-        std::string summary =
-            buff.substr(0, begin - 1) + " ... " + buff.substr(end, buff.size() - 1);
-        return summary;
-    }
+    return detail::get_ndim_impl{}(std::forward<Iter>(iter));
 }
 
 template<class Formatter>
@@ -143,9 +59,9 @@ struct to_string_impl
     std::string sep;
     std::string tmp;
 
-    template<class Iterable>
+    template<class Iter>
     explicit to_string_impl(
-        Iterable&& iter,
+        Iter&& iter,
         Formatter&& formatter,
         std::string& sep,
         int offset = 0)
@@ -154,18 +70,10 @@ struct to_string_impl
       , ndim{std::max(0, get_ndim(iter) - 1)}
       , offset{offset} {};
 
-    template<class Iterable>
-    std::string operator()(Iterable&& iter)
+    template<class Iter>
+    std::string operator()(Iter&& iter)
     {
-        return recurse(std::forward<Iterable>(iter), 0);
-    }
-
-    template<
-        class T,
-        std::enable_if_t<!(tt::is_tupleoid_v<T> or tt::is_iterable_v<T>), int> = 0>
-    std::string recurse(T&& t, int ix)
-    {
-        return formatter(std::forward<T>(t));
+        return recurse(std::forward<Iter>(iter), 0);
     }
 
     decltype(auto) create_hanging_indent(int ix)
@@ -178,14 +86,20 @@ struct to_string_impl
         return new_lines + spaces;
     }
 
+    template<class T>
+    requires(!Rangeloid<T>) std::string recurse(T&& x, int ix)
+    {
+        return formatter(std::forward<T>(x));
+    }
+
     template<Tupleoid Tup>
     std::string recurse(Tup tup, int ix)
     {
         std::string buff = "";
         auto hanging_indent = create_hanging_indent(ix);
 
-        auto size = tt::tuple_size_v<Tup>;
-        tt::for_each(std::forward<Tup>(tup), [&, this]<class T>(auto n, T&& i) {
+        auto size = tuple_size_v<Tup>;
+        for_each(std::forward<Tup>(tup), [&, this]<class T>(auto n, T&& i) {
             auto t_buff = to_string_impl{
                 std::forward<T>(i),
                 std::forward<Formatter>(formatter),
@@ -202,8 +116,8 @@ struct to_string_impl
         return "("s + buff + ")"s;
     }
 
-    template<class Iterable, std::enable_if_t<tt::is_iterable_v<Iterable>, int> = 0>
-    std::string recurse(Iterable&& iter, int ix)
+    template<Rangeable Iter>
+    std::string recurse(Iter&& iter, int ix)
     {
         std::string buff = "";
         auto hanging_indent = create_hanging_indent(ix);
@@ -211,7 +125,7 @@ struct to_string_impl
         for (auto&& [n, i] : views::enumerate(iter)) {
             using T = std::remove_cvref_t<decltype(i)>;
 
-            if constexpr (is_iterable_v<T> or is_tupleoid_v<T>) {
+            if constexpr (Rangeloid<T>) {
                 auto t_buff = recurse(i, ix + 1);
 
                 buff += (n > 0) ? hanging_indent + t_buff : t_buff;
@@ -227,26 +141,27 @@ struct to_string_impl
         return "["s + buff + "]"s;
     };
 };
-}; // namespace detail
+};
 
-template<class Iterable, class Formatter>
+template<class Iter, class Formatter>
 std::string
-to_string_f(Iterable&& iter, Formatter&& formatter, std::string sep = ", ")
+to_string_f(Iter&& iter, Formatter&& formatter, std::string sep = ", ")
 {
     return detail::to_string_impl{
-        std::forward<Iterable>(iter), std::forward<Formatter>(formatter), sep}(iter);
+        std::forward<Iter>(iter), std::forward<Formatter>(formatter), sep}(iter);
 }
 
-template<class Iterable>
+template<class Iter>
 std::string
-to_string(Iterable&& iter)
+to_string(Iter&& iter)
 {
     std::string sep = ", ";
     auto formatter = []<class T>(T&& s) -> std::string {
         return fmt::format("{}", std::forward<T>(s));
     };
 
-    return detail::
-        to_string_impl{std::forward<Iterable>(iter), std::move(formatter), sep}(iter);
+    return detail::to_string_impl{std::forward<Iter>(iter), std::move(formatter), sep}(
+        std::forward<Iter>(iter));
 }
+
 }

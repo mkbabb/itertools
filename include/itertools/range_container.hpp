@@ -101,19 +101,19 @@ public:
         return tupletools::transform(func, this->begin_it);
     }
 
-    // auto operator->() -> decltype(auto)
-    // {
-    //     return this->begin_it;
-    // }
+    decltype(auto) operator->()
+    {
+        return this->begin_it;
+    }
 };
 
 template<class Range, class Iterator>
 class range_container
 {
 public:
-    range_container(Range&& range, Iterator&& it)
-      : it{std::forward<Iterator>(it)}
-      , range{std::forward<Range>(range)}
+    range_container(Range&& range, Iterator it)
+      : range{std::forward<Range>(range)}
+      , it{it}
     {}
 
     decltype(auto) begin()
@@ -128,42 +128,35 @@ public:
 
     auto size()
     {
-        if constexpr (tupletools::is_sized_v<Range>) {
-            return range.size();
-        } else {
-            return 1;
-        }
+
+        return 1;
     }
 
-    template<class Func>
-    auto operator|(Func&& rhs) -> decltype(auto)
-    {
-        return std::
-            invoke(std::forward<Func>(rhs), std::forward<decltype(*this)>(*this));
-    }
-
-    // template<class Func, class R, class I>
-    // friend auto operator|(Func&& lhs, range_container<R, I>&& rhs)
+    // template<class Func>
+    // auto operator|(Func&& rhs) -> decltype(auto)
     // {
-    //     using RR = std::remove_cvref_t<decltype(rhs)>;
-    //     return std::invoke(std::forward<Func>(lhs), std::forward<RR>(rhs));
+    //     return std::
+    //         invoke(std::forward<Func>(rhs), std::forward<decltype(*this)>(*this));
     // }
 
     Iterator it;
     Range range;
 };
 
+template<class Func, tupletools::ForwardRange Range>
+decltype(auto)
+operator|(Range&& rhs, Func&& lhs)
+{
+    return std::invoke(std::forward<Func>(lhs), std::forward<Range>(rhs));
+}
+
 template<template<typename... Ts> class Iterator, class... Args>
 decltype(auto)
 make_tuple_iterator(Args&&... args)
 {
     auto range = std::forward_as_tuple(args...);
-    // auto begin_it = std::make_tuple(args.begin()...);
-    // auto end_it = std::make_tuple(args.end()...);
 
     using Range = decltype(range);
-    // using BeginIt = decltype(begin_it);
-    // using EndIt = decltype(end_it);
 
     auto it = Iterator(
         std::forward<Range>(range),
@@ -173,8 +166,8 @@ make_tuple_iterator(Args&&... args)
     return range_container(std::forward<Range>(range), std::move(it));
 }
 
-constexpr auto default_inserter = [](auto&& x, auto&& y) {
-    x.push_back(std::forward<decltype(y)>(y));
+constexpr auto default_inserter = [](auto&& container, auto y) {
+    container.push_back(y);
 };
 
 template<
@@ -184,8 +177,8 @@ template<
 decltype(auto)
 to(Func inserter = Func())
 {
-    return [=]<class Range>(Range&& range) {
-        using Value = tupletools::iterable_t<Range>;
+    return [=]<tupletools::Rangeable Range>(Range&& range) {
+        using Value = std::remove_cvref_t<tupletools::range_value_t<Range>>;
         auto container = Container<Value>{};
 
         for (auto&& x : range) {

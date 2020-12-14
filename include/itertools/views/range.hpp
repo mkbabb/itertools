@@ -24,12 +24,11 @@ public:
         return seq.current == rhs;
     }
 
-    const T& operator*()
+    decltype(auto) operator*() const
     {
         return seq.current;
     }
 
-private:
     range<T> seq;
 };
 
@@ -80,9 +79,8 @@ public:
         return stop;
     }
 
-private:
-    friend class range_iterator<T>;
-    T start, stop, stride, current;
+    T start, stop, stride;
+    T current;
     size_t size_ = 0;
 };
 

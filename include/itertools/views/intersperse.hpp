@@ -8,9 +8,9 @@ template<class Func, class Range>
 class intersperse_iterator : public range_container_iterator<Range>
 {
 public:
-    intersperse_iterator(Func&& func, Range&& range) noexcept
+    intersperse_iterator(Func func, Range&& range) noexcept
       : range_container_iterator<Range>(std::forward<Range>(range))
-      , func{std::forward<Func>(func)}
+      , func{func}
       , pos{0}
     {}
 
@@ -30,7 +30,7 @@ public:
     auto operator*()
     {
         if (do_intersperse()) {
-            return this->func();
+            return func();
         } else {
             return *this->begin_it;
         }
@@ -43,22 +43,18 @@ private:
 
 namespace detail {
 template<class Func, class Range>
-constexpr auto
-intersperse(Func&& func, Range&& range)
+constexpr decltype(auto)
+intersperse(Func func, Range&& range)
 {
-    auto it = intersperse_iterator<
-        Func,
-        Range>(std::forward<Func>(func), std::forward<Range>(range));
-    using Iterator = decltype(it);
-
-    return range_container<
-        Range,
-        Iterator>(std::forward<Range>(range), std::forward<Iterator>(it));
+    auto it =
+        intersperse_iterator<Func, Range>(std::move(func), std::forward<Range>(range));
+    using Iter = decltype(it);
+    return range_container<Range, Iter>(std::forward<Range>(range), std::move(it));
 };
 }
 
-template<class Func, class T = decltype(Func::operator())>
-constexpr auto
+template<tupletools::invocable Func>
+constexpr decltype(auto)
 intersperse(Func&& func)
 {
     return [func = std::forward<Func>(func)]<class Range>(Range&& range) {
@@ -67,16 +63,11 @@ intersperse(Func&& func)
 }
 
 template<class T>
-constexpr auto
-intersperse(T&& value)
+constexpr decltype(auto)
+intersperse(T value)
 {
-    auto func = [value = std::forward<T>(value)]() -> const auto
-    {
-        return value;
-    };
-    using Func = decltype(func);
-
-    return intersperse<Func, void>(std::move(func));
+    auto func = [=]() -> T { return value; };
+    return intersperse(std::move(func));
 }
 
 }}
