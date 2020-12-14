@@ -9,27 +9,49 @@ template<typename T = int>
 class range_iterator
 {
 public:
-    explicit range_iterator(range<T>& seq)
+    explicit range_iterator(range<T>* seq)
       : seq(seq)
     {}
 
-    auto operator++()
+    decltype(auto) operator++()
     {
-        seq.current += seq.stride;
+        seq->current += seq->stride;
         return *this;
     }
 
     bool operator==(T rhs)
     {
-        return seq.current == rhs;
+        return seq->current == rhs;
     }
 
-    decltype(auto) operator*() const
+    const T operator*()
     {
-        return seq.current;
+        return seq->current;
     }
 
-    range<T> seq;
+    // range_iterator(const range_iterator&)
+    // {
+    //     std::cout << "it copy ctord" << std::endl;
+    // }
+
+    // range_iterator(const range_iterator&&)
+    // {
+    //     std::cout << "it move ctord" << std::endl;
+    // }
+
+    // range_iterator& operator=(range_iterator&)
+    // {
+    //     std::cout << "it copy assigned" << std::endl;
+    //     return *this;
+    // }
+
+    // range_iterator& operator=(range_iterator&&)
+    // {
+    //     std::cout << "it move assigned" << std::endl;
+    //     return *this;
+    // }
+
+    range<T>* seq;
 };
 
 template<typename T>
@@ -71,7 +93,7 @@ public:
 
     iterator begin()
     {
-        return iterator(*this);
+        return iterator(this);
     }
 
     T end()
