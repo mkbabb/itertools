@@ -4,6 +4,28 @@
 
 namespace itertools { namespace views {
 
+constexpr auto identity = []<class T>(T&& t) { return std::forward<T>(t); };
+
+template<class I, class S, class Pred, class Proj = decltype(identity)>
+constexpr decltype(auto)
+find_if(I first, S last, Pred&& pred, Proj proj = {})
+{
+    for (; first != last; ++first) {
+        if (std::invoke(pred, std::invoke(proj, *first))) {
+            return first;
+        }
+    }
+    return first;
+}
+
+template<class Range, class Pred, class Proj = decltype(identity)>
+constexpr decltype(auto)
+find_if(Range&& range, Pred&& pred, Proj proj = {})
+{
+    return find_if(
+        range.begin(), range.end(), std::forward<Pred>(pred), std::ref(proj));
+}
+
 template<class Pred, class Range>
 class filter_iterator : public range_container_iterator<Range>
 {
@@ -13,31 +35,22 @@ public:
       , pred{pred}
     {}
 
-    bool invoke_predicate()
-    {
-        using T = decltype(*this->begin_it);
-        return std::invoke(std::forward<Pred>(pred), std::forward<T>(*this->begin_it));
-    }
-
-    void filter_until()
-    {
-        while (!this->is_complete()) {
-            auto good_value = invoke_predicate();
-
-            if (good_value) {
-                break;
-            } else {
-                ++this->begin_it;
-            }
-        };
-    }
-
     auto operator++() -> decltype(auto)
     {
-        ++this->begin_it;
-        filter_until();
+        this->begin_it = find_if(this->begin_it, this->end_it, this->pred);
         was_incremented = true;
 
+        return *this;
+    }
+
+    auto operator--() -> decltype(auto)
+    {
+        while (true) {
+            --this->begin_it;
+            if (std::invoke(pred, *this->begin_it)) {
+                break;
+            }
+        }
         return *this;
     }
 
@@ -45,9 +58,9 @@ public:
     {
         // We cache the predicate value of the previous increment call.
         // If a 'good value' was found, there's no need to check the predicate again.
-        auto good_value = was_incremented || invoke_predicate();
+        auto good_value = was_incremented || std::invoke(pred, *this->begin_it);
         if (!good_value) {
-            filter_until();
+            ++(*this);
             was_incremented = false;
         }
         return *this->begin_it;
@@ -63,12 +76,13 @@ template<class Func, class Range>
 constexpr auto
 filter(Func func, Range&& range)
 {
-    auto it = filter_iterator<Func, Range>(std::move(func), std::forward<Range>(range));
-    using Iterator = decltype(it);
+    auto begin_func = [func = std::forward<Func>(func)](auto&& range) {
+        return filter_iterator<
+            Func,
+            Range>(std::move(func), std::forward<Range>(range));
+    };
 
-    return range_container<
-        Range,
-        Iterator>(std::forward<Range>(range), std::forward<Iterator>(it));
+    return range_container(std::forward<Range>(range), std::move(begin_func));
 };
 }
 

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #pragma once
 
 namespace itertools { namespace views {
@@ -29,15 +31,17 @@ public:
         return seq->current;
     }
 
-    // range_iterator(const range_iterator&)
-    // {
-    //     std::cout << "it copy ctord" << std::endl;
-    // }
+    range_iterator(const range_iterator& rhs)
+      : seq{rhs.seq}
+    {
+        std::cout << "it copy ctord" << std::endl;
+    }
 
-    // range_iterator(const range_iterator&&)
-    // {
-    //     std::cout << "it move ctord" << std::endl;
-    // }
+    range_iterator(const range_iterator&& rhs)
+      : seq{rhs.seq}
+    {
+        std::cout << "it move ctord" << std::endl;
+    }
 
     // range_iterator& operator=(range_iterator&)
     // {

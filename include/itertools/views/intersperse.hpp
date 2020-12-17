@@ -27,6 +27,14 @@ public:
         pos += 1;
     }
 
+    auto operator--() -> decltype(auto)
+    {
+        if (!do_intersperse()) {
+            ++this->begin_it;
+        }
+        pos -= 1;
+    }
+
     auto operator*()
     {
         if (do_intersperse()) {
@@ -48,8 +56,7 @@ intersperse(Func func, Range&& range)
 {
     auto it =
         intersperse_iterator<Func, Range>(std::move(func), std::forward<Range>(range));
-    using Iter = decltype(it);
-    return range_container<Range, Iter>(std::forward<Range>(range), std::move(it));
+    return range_container(std::move(it));
 };
 }
 

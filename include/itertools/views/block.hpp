@@ -42,16 +42,16 @@ public:
     size_t block_size;
 };
 
-template<class Func, class Range>
-constexpr auto
-block(Range&& range, size_t block_size)
-{
-    auto it = block_iterator(std::forward<Range>(range), block_size);
-    using Iterator = decltype(it);
+// template<class Func, class Range>
+// constexpr auto
+// block(Range&& range, size_t block_size)
+// {
+//     auto it = block_iterator(std::forward<Range>(range), block_size);
+//     using Iterator = decltype(it);
 
-    return range_container<
-        Range,
-        Iterator>(std::forward<Range>(range), std::forward<Iterator>(it));
-};
+//     return range_container<
+//         Range,
+//         Iterator>(std::forward<Range>(range), std::forward<Iterator>(it));
+// };
 
 }}

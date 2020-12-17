@@ -8,7 +8,7 @@ template<class Range, class BeginIt, class EndIt>
 class concat_iterator : public range_tuple_iterator<Range, BeginIt, EndIt>
 {
 public:
-    concat_iterator(Range&& range, BeginIt&& begin_it, EndIt&& end_it)
+    concat_iterator(Range range, BeginIt begin_it, EndIt end_it)
       : range_tuple_iterator<Range, BeginIt, EndIt>{
             std::forward<Range>(range),
             std::forward<BeginIt>(begin_it),

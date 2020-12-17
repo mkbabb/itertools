@@ -9,7 +9,7 @@ template<class Func, class Range>
 class transform_iterator : public range_container_iterator<Range>
 {
 public:
-    transform_iterator(Func&& func, Range&& range) noexcept
+    transform_iterator(Func func, Range range) noexcept
       : range_container_iterator<Range>(std::forward<Range>(range))
       , func{func}
     {}
@@ -29,11 +29,12 @@ template<class Func, class Range>
 constexpr auto
 transform(Func func, Range&& range)
 {
-    auto it =
-        transform_iterator<Func, Range>(std::move(func), std::forward<Range>(range));
-    using Iter = decltype(it);
-
-    return range_container<Range, Iter>(std::forward<Range>(range), std::move(it));
+    auto begin_func = [func = std::forward<Func>(func)](auto&& range) {
+        return transform_iterator<
+            Func,
+            Range>(std::move(func), std::forward<Range>(range));
+    };
+    return range_container(std::forward<Range>(range), std::move(begin_func));
 };
 }
 

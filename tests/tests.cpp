@@ -3,6 +3,7 @@
 #include "fmt/format.h"
 #include "itertools/itertools.hpp"
 #include "itertools/to_string.hpp"
+#include "itertools/views/all.hpp"
 
 #include <chrono>
 #include <deque>
@@ -372,8 +373,8 @@ void
 range_container_tests()
 {
     using namespace itertools::views;
-
     using namespace itertools;
+
     {
         std::vector<int> v1 = {1, 2, 3, 4, 5};
         std::vector<int> v2 = {10, 9, 8, 7, 6};
@@ -382,14 +383,14 @@ range_container_tests()
         auto l1 = std::list<float>{1.2, 1.2, 1.2};
         auto l2 = std::list<float>{9.9, 8.8, 7.7};
 
-        auto v1_enum = enumerate(v1);
-        auto v2_enum = enumerate(v2);
+        auto v1_enum = zip(views::range(100), v1);
+        auto v2_enum = zip(v2);
 
         auto f = [](auto v) { return v; };
 
-        auto zipped = zip(v1, v1_enum, zip(zip(zip(enumerate(l1), v2))));
+        auto zipped = zip(v1, v1_enum, zip(zip(zip(zip(l1), v2))));
 
-        for (auto t : zipped | transform(f)) {
+        for (auto t : zipped) {
             auto& [i, tup, tt] = t;
             auto& [n, j] = tup;
             std::cout << fmt::format("{}, {}", n, j) << std::endl;
@@ -408,7 +409,7 @@ main()
     // range_tests();
     itertools_tests();
     tupletools_tests();
-    // to_string_tests();
+    to_string_tests();
 
     range_container_tests();
 
@@ -421,17 +422,32 @@ main()
     v3.push_back(std::make_unique<int>(a));
     v3.emplace_back(std::make_unique<int>(a));
 
-    // for (auto [x] : views::zip(views::zip(v1, v2))) {
-    //     auto [i, j] = x;
+    for (auto&& [x] : views::zip(views::zip(v1, v2, v3))) {
+        auto&& [i, j, k] = x;
+        i = 999;
+    }
+
+    // auto x = views::zip(v1, v2);
+    auto e = views::enumerate(v1);
+    // auto e = views::zip(views::range(100), v1);
+
+    for (auto&& [n, i] : e) {
+        std::cout << i << std::endl;
+        i = 999;
+    }
+
+    // for (auto& i :
+    //      std::vector<int>{1, 2, 3, 4, 5} | views::filter([](auto) { return true; }))
+    //      {
     //     i = 999;
     // }
 
-    auto out = v1 | views::join("") | itertools::to<std::vector>();
-    // auto out = std::vector<std::string>{"a", "b", "c", "d"} | join(",");
+    // auto out = v1 | views::join(",");
+    // // auto out = std::vector<std::string>{"a", "b", "c", "d"} | join(",");
 
-    for (auto i : out) {
-        std::cout << i << std::endl;
-    }
+    // for (auto i : out) {
+    //     std::cout << i << std::endl;
+    // }
 
     // std::cout << itertools::to_string(x) << std::endl;
 

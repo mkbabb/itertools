@@ -21,10 +21,10 @@ public:
             Range,
             IBeginIt,
             IEndIt>{std::forward<Range>(range),
-            std::forward<IBeginIt>(range.begin()->begin()),
-            std::forward<IEndIt>(range.begin()->end())}
-      , outer_begin_it{std::forward<BeginIt>(range.begin())}
-      , outer_end_it{std::forward<EndIt>(range.end())}
+            std::forward<IBeginIt>(this->range.begin()->begin()),
+            std::forward<IEndIt>(this->range.begin()->end())}
+      , outer_begin_it{std::forward<BeginIt>(this->range.begin())}
+      , outer_end_it{std::forward<EndIt>(this->range.end())}
     {}
 
     bool is_outer_complete()
@@ -60,10 +60,11 @@ template<NestedRange Range>
 constexpr auto
 flatten(Range&& range)
 {
-    auto it = flatten_iterator<Range>(std::forward<Range>(range));
-    using Iter = decltype(it);
+    auto begin_func = [](auto&& range) {
+        return flatten_iterator<Range>(std::forward<Range>(range));
+    };
 
-    return range_container<Range, Iter>(std::forward<Range>(range), std::move(it));
+    return range_container(std::forward<Range>(range), std::move(begin_func));
 }
 
 template<class Range>
