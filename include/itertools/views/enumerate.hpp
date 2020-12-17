@@ -5,12 +5,12 @@
 
 namespace itertools { namespace views {
 
-template<class Iterable>
-constexpr auto
-enumerate(Iterable&& it)
+template<class Range>
+constexpr decltype(auto)
+enumerate(Range&& range)
 {
-    auto rng = range(std::numeric_limits<size_t>::max());
-    return zip(std::move(rng), std::forward<Iterable>(it));
+    auto rng = views::range(std::numeric_limits<int>::max());
+    return zip(std::move(rng), std::forward<Range>(range));
 }
 
 }}

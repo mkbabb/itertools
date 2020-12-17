@@ -13,6 +13,20 @@
 
 namespace tupletools {
 
+template<typename T>
+constexpr std::reference_wrapper<T>
+copy_if_rvalue(T& t)
+{
+    return t;
+}
+
+template<typename T>
+constexpr T
+copy_if_rvalue(T&& t)
+{
+    return std::move(t);
+}
+
 // The below three functions are drivers behind one's basic argument
 // forwarding of a tuple.
 
@@ -81,7 +95,7 @@ proper type coalescence.
  */
 
 template<class Tup, class Func, const size_t N = tuple_size_v<Tup>>
-void
+constexpr void
 for_each(Tup&& tup, Func&& func)
 {
     index_apply<N>([&tup, func = std::forward<Func>(func)](auto... Ixs) {
@@ -96,7 +110,7 @@ transform(Func&& func, Tup&& tup)
 {
     auto f = [func = std::forward<Func>(func)]<class... Args>(Args && ... args)
     {
-        return std::forward_as_tuple(std::invoke(func, std::forward<Args>(args))...);
+        return std::make_tuple(std::invoke(func, std::forward<Args>(args))...);
     };
     return std::apply(f, std::forward<Tup>(tup));
 }

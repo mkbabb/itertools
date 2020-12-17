@@ -1,11 +1,11 @@
-#include <itertools/range_container.hpp>
+#include "itertools/range_container.hpp"
 
 #pragma once
 
 namespace itertools { namespace views {
 
 template<class... Args>
-constexpr auto
+constexpr decltype(auto)
 zip(Args&&... args)
 {
     return make_tuple_iterator<range_tuple_iterator, Args...>(

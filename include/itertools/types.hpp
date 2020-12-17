@@ -95,6 +95,12 @@ concept ForwardIterable = requires(T a, T b)
 };
 
 template<typename T>
+concept BidirectionalIterable = ForwardIterable<T>&& requires(T a, T b)
+{
+    --a;
+};
+
+template<typename T>
 concept ForwardRange = Rangeable<T>&& requires(T a)
 {
     requires ForwardIterable<decltype(a.begin())>;
