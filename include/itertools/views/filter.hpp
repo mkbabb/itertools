@@ -26,20 +26,21 @@ find_if(Range&& range, Pred&& pred, Proj proj = {})
         range.begin(), range.end(), std::forward<Pred>(pred), std::ref(proj));
 }
 
-template<class Pred, class Range>
-class filter_iterator : public range_container_iterator<Range>
+template<class Pred, class BeginIt, class EndIt>
+class filter_iterator : public bi_range_container_iterator<BeginIt, EndIt>
 {
 public:
-    filter_iterator(Pred&& pred, Range&& range)
-      : range_container_iterator<Range>(std::forward<Range>(range))
+    filter_iterator(Pred&& pred, BeginIt&& begin_it, EndIt&& end_it)
+      : bi_range_container_iterator<
+            BeginIt,
+            EndIt>(std::forward<BeginIt>(begin_it), std::forward<EndIt>(end_it))
       , pred{pred}
     {}
 
     auto operator++() -> decltype(auto)
     {
-        this->begin_it = find_if(this->begin_it, this->end_it, this->pred);
+        this->begin_it = find_if(++this->begin_it, this->end_it, this->pred);
         was_incremented = true;
-
         return *this;
     }
 
@@ -76,13 +77,16 @@ template<class Func, class Range>
 constexpr auto
 filter(Func func, Range&& range)
 {
-    auto begin_func = [func = std::forward<Func>(func)](auto&& range) {
-        return filter_iterator<
-            Func,
-            Range>(std::move(func), std::forward<Range>(range));
+    auto begin_func = [func](auto&& range) {
+        return filter_iterator(std::move(func), range.begin(), range.end());
     };
 
-    return range_container(std::forward<Range>(range), std::move(begin_func));
+    auto end_func = [func](auto&& range) {
+        return filter_iterator(std::move(func), range.begin(), range.end());
+    };
+
+    return range_container<Range, decltype(begin_func), decltype(end_func)>(
+        std::forward<Range>(range), std::move(begin_func), std::move(end_func));
 };
 }
 
