@@ -1,14 +1,18 @@
+#include "reverse.hpp"
+
 #include <itertools/range_container.hpp>
 
 #pragma once
 
 namespace itertools { namespace views {
 
-constexpr auto identity = []<class T>(T&& t) { return std::forward<T>(t); };
+constexpr auto identity = []<class T>(T&& t) -> decltype(auto) {
+    return std::forward<T>(t);
+};
 
 template<class I, class S, class Pred, class Proj = decltype(identity)>
 constexpr decltype(auto)
-find_if(I first, S last, Pred&& pred, Proj proj = {})
+find_if(I first, S last, Pred pred, Proj proj = {})
 {
     for (; first != last; ++first) {
         if (std::invoke(pred, std::invoke(proj, *first))) {
@@ -26,6 +30,12 @@ find_if(Range&& range, Pred&& pred, Proj proj = {})
         range.begin(), range.end(), std::forward<Pred>(pred), std::ref(proj));
 }
 
+// template<class Range, class BeginFunc, class EndFunc>
+// class filter_container : public range_container<Range, BeginFunc, EndFunc>
+// {
+// public:
+// }
+
 template<class Pred, class BeginIt, class EndIt>
 class filter_iterator : public bi_range_container_iterator<BeginIt, EndIt>
 {
@@ -39,16 +49,15 @@ public:
 
     auto operator++() -> decltype(auto)
     {
-        this->begin_it = find_if(++this->begin_it, this->end_it, this->pred);
-        was_incremented = true;
+        this->it = find_if(++this->it, this->end_it, pred);
         return *this;
     }
 
     auto operator--() -> decltype(auto)
     {
-        while (true) {
-            --this->begin_it;
-            if (std::invoke(pred, *this->begin_it)) {
+        while (this->it != this->end_it) {
+            --this->it;
+            if (std::invoke(pred, *this->it)) {
                 break;
             }
         }
@@ -57,14 +66,7 @@ public:
 
     auto operator*() -> decltype(auto)
     {
-        // We cache the predicate value of the previous increment call.
-        // If a 'good value' was found, there's no need to check the predicate again.
-        auto good_value = was_incremented || std::invoke(pred, *this->begin_it);
-        if (!good_value) {
-            ++(*this);
-            was_incremented = false;
-        }
-        return *this->begin_it;
+        return *this->it;
     }
 
 private:
@@ -77,12 +79,24 @@ template<class Func, class Range>
 constexpr auto
 filter(Func func, Range&& range)
 {
-    auto begin_func = [func](auto&& range) {
-        return filter_iterator(std::move(func), range.begin(), range.end());
+    auto clamp_range = [&func](auto&& range) {
+        auto end = range.end();
+        auto begin = find_if(range.begin(), end, std::forward<Func>(func));
+        return std::make_tuple(begin, end);
     };
 
-    auto end_func = [func](auto&& range) {
-        return filter_iterator(std::move(func), range.begin(), range.end());
+    auto begin_func = [&](auto&& range) {
+        auto [begin, end] = clamp_range(range);
+
+        return filter_iterator(
+            std::forward<Func>(func), std::move(begin), std::move(end));
+    };
+
+    auto end_func = [&](auto&& range) {
+        auto [begin, end] = clamp_range(range);
+
+        return filter_iterator(
+            std::forward<Func>(func), std::move(end), std::move(begin));
     };
 
     return range_container<Range, decltype(begin_func), decltype(end_func)>(

@@ -81,7 +81,7 @@ public:
     // {}
 
     range_container_iterator(Iter&& it)
-      : it{std::forward<Iter>(it)}
+      : it(std::forward<Iter>(it))
     {}
 
     template<class T>
@@ -127,17 +127,15 @@ class bi_range_container_iterator : public range_container_iterator<BeginIt>
 public:
     bi_range_container_iterator(BeginIt&& begin_it, EndIt&& end_it)
       : range_container_iterator<BeginIt>(std::forward<BeginIt>(begin_it))
-      , begin_it{std::forward<BeginIt>(this->it)}
-      , end_it{std::forward<EndIt>(end_it)}
+      , end_it(std::forward<EndIt>(end_it))
     {}
 
     template<class T>
     bool operator==(T&&)
     {
-        return begin_it == end_it;
+        return this->it == end_it;
     }
 
-    BeginIt begin_it;
     EndIt end_it;
 };
 

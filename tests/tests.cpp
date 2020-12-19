@@ -420,7 +420,7 @@ main()
     int b = 2;
 
     std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
-    std::vector<int> v2 = {11, 22, 33, 44, 55, 66, 44};
+    std::vector<int> v2 = {11, 22, 33, 44, 55, 66, 99, 88};
     std::vector<std::unique_ptr<int>> v3;
     v3.push_back(std::make_unique<int>(a));
     v3.emplace_back(std::make_unique<int>(a));
@@ -437,21 +437,21 @@ main()
     //     std::cout << "d" << std::endl;
     // }
 
-    auto p = [](auto&& x) { return true; };
+    auto p = [pos = 0](auto&& x) { return x % 2 == 0; };
 
-    auto rng = v2 | views::filter(p);
+    // auto rng = v2 | views::filter(p);
 
-    auto begin = --rng.end();
-    auto end = rng.begin();
+    // auto begin = rng.end();
+    // auto end = rng.begin();
 
-    while (begin != end) {
-        std::cout << *begin << std::endl;
-        --begin;
-    }
-
-    // for (auto&& i : rng | views::reverse()) {
-    //     std::cout << i << std::endl;
+    // while (begin != end) {
+    //     std::cout << *begin << std::endl;
+    //     --begin;
     // }
+
+    for (auto&& i : v2 | views::filter(p) | views::reverse()) {
+        std::cout << i << std::endl;
+    }
 
     // for (auto&& [x] : views::zip(views::zip(v1, v2, v3))) {
     //     auto&& [i, j, k] = x;
