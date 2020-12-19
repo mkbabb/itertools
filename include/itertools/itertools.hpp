@@ -66,7 +66,7 @@ std::string
 ltrim(std::string s)
 {
     auto end =
-        std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); });
+      std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); });
     s.erase(s.begin(), end);
     return s;
 }

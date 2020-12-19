@@ -3,9 +3,6 @@
 #include "fmt/format.h"
 // #include "itertools/itertools.hpp"
 // #include "itertools/to_string.hpp"
-#include "itertools/range_container.hpp"
-#include "itertools/views/all.hpp"
-
 #include <chrono>
 #include <deque>
 #include <iostream>
@@ -15,6 +12,9 @@
 #include <numeric>
 #include <string>
 #include <vector>
+
+#include "itertools/range_container.hpp"
+#include "itertools/views/all.hpp"
 
 // void
 // zip_tests()
@@ -419,8 +419,8 @@ main()
     int a = 1;
     int b = 2;
 
-    std::vector<int> v1 = {1, 5, 9, 2, 8, 77};
-    std::vector<int> v2 = {11, 22, 33, 44, 55, 66, 99, 88};
+    std::vector<int> v1 = { 1, 5, 9, 2, 8, 77 };
+    std::vector<int> v2 = { 2, 4, 7, 8 };
     std::vector<std::unique_ptr<int>> v3;
     v3.push_back(std::make_unique<int>(a));
     v3.emplace_back(std::make_unique<int>(a));
@@ -437,7 +437,7 @@ main()
     //     std::cout << "d" << std::endl;
     // }
 
-    auto p = [pos = 0](auto&& x) { return x % 2 == 0; };
+    auto p = [pos = 0](auto&& x) { return true; };
 
     // auto rng = v2 | views::filter(p);
 
@@ -449,7 +449,21 @@ main()
     //     --begin;
     // }
 
-    for (auto&& i : v2 | views::filter(p) | views::reverse()) {
+    constexpr auto drop_while = [](auto&& pred) {
+        auto dropper = [pred = std::forward<decltype(pred)>(pred),
+                        dropped = true](auto&& x) mutable {
+            dropped = pred(x) and dropped;
+            return !dropped;
+        };
+        return views::filter(dropper);
+    };
+
+    auto rng = v2 | drop_while([](auto&& x) {
+                   auto out = x % 2 == 0;
+                   return out;
+               });
+
+    for (auto&& i : rng) {
         std::cout << i << std::endl;
     }
 
@@ -504,17 +518,21 @@ main()
     //     std::cout << "hi" << std::endl;
     // }
 
-    std::vector<std::tuple<
-        std::list<std::vector<std::vector<int>>>,
-        int,
-        std::map<int, std::tuple<int, int, int>>>>
-        iter =
-            {{{{{1, 2}}, {{3, 4}}},
-              1,
-              {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}},
-             {{{{5, 6}}, {{7, 8}}},
-              4,
-              {{1, {0, 1, 2}}, {2, {1, 2, 3}}, {3, {2, 3, 4}}, {4, {3, 4, 5}}}}};
+    std::vector<std::tuple<std::list<std::vector<std::vector<int>>>,
+                           int,
+                           std::map<int, std::tuple<int, int, int>>>>
+      iter = { { { { { 1, 2 } }, { { 3, 4 } } },
+                 1,
+                 { { 1, { 0, 1, 2 } },
+                   { 2, { 1, 2, 3 } },
+                   { 3, { 2, 3, 4 } },
+                   { 4, { 3, 4, 5 } } } },
+               { { { { 5, 6 } }, { { 7, 8 } } },
+                 4,
+                 { { 1, { 0, 1, 2 } },
+                   { 2, { 1, 2, 3 } },
+                   { 3, { 2, 3, 4 } },
+                   { 4, { 3, 4, 5 } } } } };
 
     // std::vector<std::vector<std::vector<int>>> iter =
     //     {{{1, 2, 3}, {4, 5, 6}},

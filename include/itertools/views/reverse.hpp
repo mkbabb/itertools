@@ -3,29 +3,23 @@
 
 #pragma once
 
-namespace itertools { namespace views {
+namespace itertools {
+namespace views {
+namespace detail {
 
 template<class BeginIt, class EndIt>
 class reverse_iterator : public bi_range_container_iterator<BeginIt, EndIt>
 {
-public:
+  public:
     reverse_iterator(BeginIt&& begin_it, EndIt&& end_it) noexcept
-      : bi_range_container_iterator<
-            BeginIt,
-            EndIt>(std::forward<BeginIt>(begin_it), std::forward<EndIt>(end_it))
-      , was_cached{false}
+      : bi_range_container_iterator<BeginIt, EndIt>(std::forward<BeginIt>(begin_it),
+                                                    std::forward<EndIt>(end_it))
     {}
 
-    template<class T>
-    bool operator==(T&&)
+    decltype(auto) operator*()
     {
-        bool res = this->it == this->end_it;
-        if (res && !was_cached) {
-            was_cached = true;
-            return false;
-        } else {
-            return res;
-        }
+        auto tmp = *this;
+        return *(--tmp.it);
     }
 
     decltype(auto) operator++()
@@ -34,28 +28,40 @@ public:
         return *this;
     }
 
+    decltype(auto) operator++(int)
+    {
+        auto tmp = *this;
+        ++*this;
+        return tmp;
+    }
+
     decltype(auto) operator--()
     {
         ++this->it;
         return *this;
     }
-    bool was_cached;
+    decltype(auto) operator--(int)
+    {
+        auto tmp = *this;
+        --*this;
+        return tmp;
+    }
 };
 
-namespace detail {
 template<class Range>
 constexpr auto
 reverse(Range&& range)
 {
-    auto begin_func = [](auto&& range) {
-        return reverse_iterator(std::move(--range.end()), range.begin());
+    auto begin_func = [&](auto& range) {
+        return reverse_iterator(range.end(), range.begin());
     };
-    auto end_func = [](auto&& range) {
-        return reverse_iterator(range.begin(), std::move(--range.end()));
+
+    auto end_func = [&](auto& range) {
+        return reverse_iterator(range.begin(), range.end());
     };
 
     return range_container(
-        std::forward<Range>(range), std::move(begin_func), std::move(end_func));
+      std::forward<Range>(range), std::move(begin_func), std::move(end_func));
 };
 }
 
@@ -67,4 +73,5 @@ reverse()
     };
 }
 
-}}
+}
+}
