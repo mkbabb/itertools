@@ -43,6 +43,8 @@ class reverse_container : range_container<Range>
     template<class BeginIt, class EndIt>
     iterator(BeginIt&&, EndIt&&) -> iterator<BeginIt, EndIt>;
 
+    bool was_cached = false;
+
     using super = range_container<Range>;
 
     reverse_container(Range&& range)
@@ -51,9 +53,12 @@ class reverse_container : range_container<Range>
 
     decltype(auto) init_range()
     {
-        if (!(this->begin_ || this->end_)) {
+        if (was_cached || !(this->begin_ || this->end_)) {
             this->begin_ = super::begin();
             this->end_ = super::end();
+            was_cached = false;
+        } else {
+            was_cached = true;
         }
         return std::forward_as_tuple(*this->begin_, *this->end_);
     }
@@ -75,11 +80,12 @@ template<class Range>
 reverse_container(Range&&) -> reverse_container<Range>;
 
 template<class Range>
-constexpr reverse_container<Range>
+constexpr decltype(auto)
 reverse(Range&& range)
 {
     return reverse_container(std::forward<Range>(range));
 };
+
 }
 
 constexpr auto

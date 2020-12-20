@@ -5,11 +5,11 @@
 // #include "flatten.hpp"
 // #include "intersperse.hpp"
 // #include "join.hpp"
-// #include "range.hpp"
+#include "range.hpp"
 #include "reverse.hpp"
 // #include "slice.hpp"
 // #include "stride.hpp"
-// #include "transform.hpp"
+#include "transform.hpp"
 #include "zip.hpp"
 
 #pragma once

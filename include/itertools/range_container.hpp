@@ -202,17 +202,32 @@ constexpr auto default_inserter = [](auto& container, auto&& y) {
 template<template<typename... Ts> class Container,
          class Func = decltype(default_inserter)>
 decltype(auto)
-to(Func inserter = {})
+to(Func&& inserter = {})
 {
-    return [=]<tupletools::Rangeable Range>(Range&& range) {
+    return [inserter = std::forward<Func>(inserter)]<tupletools::Rangeable Range>(
+             Range&& range) {
         using Value = std::remove_cvref_t<tupletools::range_value_t<Range>>;
         auto container = Container<Value>{};
 
         for (auto&& x : range) {
-            inserter(container, std::forward<decltype(x)>(x));
+            using T = decltype(x);
+            inserter(container, std::forward<T>(x));
         }
 
         return container;
+    };
+}
+
+template<class T>
+requires std::is_same_v<std::string, T> decltype(auto)
+to()
+{
+    return []<tupletools::Rangeable Range>(Range&& range) {
+        std::string s;
+        for (auto&& x : range) {
+            s += x;
+        }
+        return s;
     };
 }
 

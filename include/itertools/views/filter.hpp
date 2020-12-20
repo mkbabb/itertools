@@ -47,8 +47,7 @@ class filter_container : public range_container<Range>
 
     using super = range_container<Range>;
 
-    using begin_t = typename super::begin_t;
-    using end_t = typename super::end_t;
+    bool was_cached = false;
 
     filter_container(Pred&& pred, Range&& range)
       : range_container<Range>(std::forward<Range>(range))
@@ -57,11 +56,15 @@ class filter_container : public range_container<Range>
 
     decltype(auto) init_range()
     {
-        if (!(this->begin_ || this->end_)) {
+        if (was_cached || !(this->begin_ || this->end_)) {
             this->end_ = range_container<Range>::end();
             this->begin_ =
               itertools::find_if(range_container<Range>::begin(), *this->end_, pred);
+            was_cached = false;
+        } else {
+            was_cached = true;
         }
+
         return std::forward_as_tuple(*this->begin_, *this->end_);
     }
 
@@ -86,7 +89,7 @@ template<class Func, class Range>
 constexpr filter_container<Func, Range>
 filter(Func func, Range&& range)
 {
-    return filter_container(std::forward<Func>(func), std::forward<Range>(range));
+    return filter_container(std::move(func), std::forward<Range>(range));
 };
 }
 

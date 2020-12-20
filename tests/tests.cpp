@@ -401,6 +401,33 @@
 //     }
 // }
 
+void
+test_reverse()
+{
+    using namespace itertools;
+
+    std::vector<int> v;
+    for (auto i : views::range(13)) {
+        v.push_back(i);
+    }
+
+    auto p = [pos = 0](auto&& x) { return x % 2 == 0; };
+
+    auto rng = v | views::filter(p) | views::reverse() | views::filter(p) |
+               views::reverse() | views::filter(p) | views::reverse() |
+               views::filter(p) | views::reverse() | views::filter(p) |
+               views::reverse() | views::filter(p) | views::reverse();
+
+    std::vector<int> expected = { 0, 2, 4, 6, 8, 10, 12 };
+    std::vector<int> r_expected = { 12, 10, 8, 6, 4, 2, 0 };
+
+    auto tmp_v = rng | to<std::vector>();
+    auto r_tmp_v = rng | to<std::vector>();
+
+    assert(tmp_v == expected);
+    assert(r_tmp_v == r_expected);
+}
+
 int
 main()
 {
@@ -449,6 +476,8 @@ main()
     //     --begin;
     // }
 
+    test_reverse();
+
     constexpr auto drop_while = [](auto&& pred) {
         auto dropper = [pred = std::forward<decltype(pred)>(pred),
                         dropped = true](auto&& x) mutable {
@@ -458,18 +487,28 @@ main()
         return views::filter(dropper);
     };
 
+    auto trim_front = [&]<class Range>(Range&& range) {
+        return std::forward<Range>(range) |
+               drop_while([](char c) { return std::isspace(c); });
+    };
+    auto trim_back = [&]<class Range>(Range&& range) {
+        return std::forward<Range>(range) | views::reverse() | trim_front |
+               views::reverse();
+    };
+
+    auto s = "    for the love of      "s | trim_front | trim_back |
+             views::transform([](char x) { return std::toupper(x); }) |
+             to<std::string>();
+
     auto p2 = [](auto&& x) { return x == 2; };
+    auto f = [](auto&& x) { return x + 100; };
 
-    // auto rng = v2 | drop_while([](auto&& x) {
-    //                auto out = x % 2 == 0;
-    //                return out;
-    //            });
-    // auto rng =
-    //   v2 | drop_while(p2) | views::reverse() | drop_while(p2) | views::reverse();
+    auto rng = v2 | drop_while(p2) | views::reverse() | drop_while(p2) |
+               views::reverse() | views::transform(f);
 
-    // for (auto&& i : rng) {
-    //     std::cout << i << std::endl;
-    // }
+    for (auto&& i : rng) {
+        std::cout << i << std::endl;
+    }
 
     for (auto&& [x, y] : views::zip(v1, v2) | views::reverse() | views::reverse()) {
         std::cout << fmt::format("{}, {}\n", x, y);
