@@ -419,8 +419,8 @@ main()
     int a = 1;
     int b = 2;
 
-    std::vector<int> v1 = { 1, 5, 9, 2, 8, 77 };
-    std::vector<int> v2 = { 2, 4, 7, 8 };
+    std::vector<int> v1 = { 1, 5, 3, 4, 7, 99 };
+    std::vector<int> v2 = { 2, 3, 4, 7, 8, 9, 2, 2, 2, 2, 2 };
     std::vector<std::unique_ptr<int>> v3;
     v3.push_back(std::make_unique<int>(a));
     v3.emplace_back(std::make_unique<int>(a));
@@ -458,13 +458,21 @@ main()
         return views::filter(dropper);
     };
 
-    auto rng = v2 | drop_while([](auto&& x) {
-                   auto out = x % 2 == 0;
-                   return out;
-               });
+    auto p2 = [](auto&& x) { return x == 2; };
 
-    for (auto&& i : rng) {
-        std::cout << i << std::endl;
+    // auto rng = v2 | drop_while([](auto&& x) {
+    //                auto out = x % 2 == 0;
+    //                return out;
+    //            });
+    // auto rng =
+    //   v2 | drop_while(p2) | views::reverse() | drop_while(p2) | views::reverse();
+
+    // for (auto&& i : rng) {
+    //     std::cout << i << std::endl;
+    // }
+
+    for (auto&& [x, y] : views::zip(v1, v2) | views::reverse() | views::reverse()) {
+        std::cout << fmt::format("{}, {}\n", x, y);
     }
 
     // for (auto&& [x] : views::zip(views::zip(v1, v2, v3))) {

@@ -35,8 +35,8 @@ class range_container
     BeginFunc begin_func;
     EndFunc end_func;
 
-    begin_t* begin_ = nullptr;
-    end_t* end_ = nullptr;
+    std::optional<begin_t> begin_;
+    std::optional<end_t> end_;
 
     range_container(Range&& range, BeginFunc&& begin_func = {}, EndFunc&& end_func = {})
       : range{ std::forward<Range>(range) }
@@ -72,32 +72,19 @@ class range_container_iterator
     Iter it;
 
     range_container_iterator(Iter&& it)
-      : it(std::forward<Iter>(it))
+      : it{ std::forward<Iter>(it) }
     {}
 
-    template<class T, class U>
+    template<class T>
     bool operator==(const range_container_iterator<T>& rhs) const
     {
         return it == rhs.it;
-    }
-
-    template<class T, class U>
-    bool operator!=(const range_container_iterator<T>& rhs) const
-    {
-        return !(*this == rhs);
     }
 
     decltype(auto) operator++()
     {
         ++this->it;
         return *this;
-    }
-
-    decltype(auto) operator++(int)
-    {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
     }
 
     decltype(auto) operator*() { return *this->it; }
@@ -119,29 +106,28 @@ class bi_range_container_iterator : public range_container_iterator<BeginIt>
       , end_it(std::forward<EndIt>(end_it))
     {}
 
+    bi_range_container_iterator(const bi_range_container_iterator& other)
+      : bi_range_container_iterator(other.it, other.end_it)
+    {}
+    bi_range_container_iterator& operator=(const bi_range_container_iterator& other)
+    {
+        this->it = other.it;
+        this->end_it = other.end_it;
+        return *this;
+    }
+    ~bi_range_container_iterator() = default;
+
+    bool operator==(const bi_range_container_iterator&) const
+    {
+        return this->it == this->end_it;
+    }
+
     decltype(auto) operator--()
     {
         --this->it;
         return *this;
     }
-
-    decltype(auto) operator--(int)
-    {
-        auto tmp = *this;
-        --*this;
-        return tmp;
-    }
-
-    template<class T>
-    bool operator==(T&&)
-    {
-        return this->it == end_it;
-    }
 };
-
-template<class BeginIt, class EndIt>
-bi_range_container_iterator(BeginIt&&, EndIt&&)
-  -> bi_range_container_iterator<BeginIt, EndIt>;
 
 template<class Iter>
 class range_tuple_iterator : public range_container_iterator<Iter>
@@ -151,17 +137,10 @@ class range_tuple_iterator : public range_container_iterator<Iter>
       : range_container_iterator<Iter>(std::forward<Iter>(it))
     {}
 
-    template<class T>
-    bool operator==(const range_container_iterator<T>& rhs) const
+    bool operator==(const range_tuple_iterator<Iter>& rhs) const
     {
         return tupletools::any_where(
           [](auto&& x, auto&& y) { return x == y; }, this->it, rhs.it);
-    }
-
-    template<class T>
-    bool operator!=(const range_container_iterator<T>& rhs) const
-    {
-        return !(*this == rhs);
     }
 
     decltype(auto) operator++()
@@ -184,6 +163,10 @@ class range_tuple_iterator : public range_container_iterator<Iter>
         return tupletools::transform(func, this->it);
     }
 };
+
+template<class BeginIt, class EndIt>
+bi_range_container_iterator(BeginIt&&, EndIt&&)
+  -> bi_range_container_iterator<BeginIt, EndIt>;
 
 template<class Iter>
 range_tuple_iterator(Iter&&) -> range_tuple_iterator<Iter>;

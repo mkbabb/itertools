@@ -33,8 +33,8 @@ class filter_container : public range_container<Range>
 
         auto operator--() -> decltype(auto)
         {
-            while (this->it != this->end_it) {
-                if (std::invoke(base->pred, *(--this->it))) {
+            while (--this->it != this->end_it) {
+                if (std::invoke(base->pred, *this->it)) {
                     break;
                 }
             }
@@ -45,36 +45,35 @@ class filter_container : public range_container<Range>
     template<class BeginIt, class EndIt>
     iterator(filter_container*, BeginIt&&, EndIt&&) -> iterator<BeginIt, EndIt>;
 
-    // using begin_t = typename range_container<Range>::begin_t;
-    // using end_t = typename range_container<Range>::end_t;
+    using super = range_container<Range>;
 
-    // begin_t* begin_ = nullptr;
-    // end_t* end_ = nullptr;
+    using begin_t = typename super::begin_t;
+    using end_t = typename super::end_t;
 
     filter_container(Pred&& pred, Range&& range)
       : range_container<Range>(std::forward<Range>(range))
       , pred(std::forward<Pred>(pred))
     {}
 
-    auto clamp_range()
+    decltype(auto) init_range()
     {
-        if (this->begin_ == nullptr && this->end_ == nullptr) {
-            *this->end_ = range_container<Range>::end();
-            *this->begin_ =
+        if (!(this->begin_ || this->end_)) {
+            this->end_ = range_container<Range>::end();
+            this->begin_ =
               itertools::find_if(range_container<Range>::begin(), *this->end_, pred);
         }
         return std::forward_as_tuple(*this->begin_, *this->end_);
-    };
+    }
 
     auto begin()
     {
-        auto [begin, end] = clamp_range();
+        auto [begin, end] = init_range();
         return iterator(this, begin, end);
     }
 
     auto end()
     {
-        auto [begin, end] = clamp_range();
+        auto [begin, end] = init_range();
         return iterator(this, end, begin);
     }
 };
@@ -84,7 +83,7 @@ filter_container(Pred&&, Range&&) -> filter_container<Pred, Range>;
 
 namespace detail {
 template<class Func, class Range>
-constexpr auto
+constexpr filter_container<Func, Range>
 filter(Func func, Range&& range)
 {
     return filter_container(std::forward<Func>(func), std::forward<Range>(range));

@@ -7,61 +7,78 @@ namespace itertools {
 namespace views {
 namespace detail {
 
-template<class BeginIt, class EndIt>
-class reverse_iterator : public bi_range_container_iterator<BeginIt, EndIt>
+template<class Range>
+class reverse_container : range_container<Range>
 {
   public:
-    reverse_iterator(BeginIt&& begin_it, EndIt&& end_it) noexcept
-      : bi_range_container_iterator<BeginIt, EndIt>(std::forward<BeginIt>(begin_it),
-                                                    std::forward<EndIt>(end_it))
+    template<class BeginIt, class EndIt>
+    class iterator : public bi_range_container_iterator<BeginIt, EndIt>
+    {
+      public:
+        iterator(BeginIt&& begin_it, EndIt&& end_it)
+          : bi_range_container_iterator<BeginIt, EndIt>(std::forward<BeginIt>(begin_it),
+                                                        std::forward<EndIt>(end_it))
+        {}
+
+        decltype(auto) operator*()
+        {
+            auto tmp = *--this->it;
+            this->it = ++this->it;
+            return tmp;
+        }
+
+        decltype(auto) operator++()
+        {
+            --this->it;
+            return *this;
+        }
+
+        decltype(auto) operator--()
+        {
+            ++this->it;
+            return *this;
+        }
+    };
+
+    template<class BeginIt, class EndIt>
+    iterator(BeginIt&&, EndIt&&) -> iterator<BeginIt, EndIt>;
+
+    using super = range_container<Range>;
+
+    reverse_container(Range&& range)
+      : range_container<Range>(std::forward<Range>(range))
     {}
 
-    decltype(auto) operator*()
+    decltype(auto) init_range()
     {
-        auto tmp = *this;
-        return *(--tmp.it);
+        if (!(this->begin_ || this->end_)) {
+            this->begin_ = super::begin();
+            this->end_ = super::end();
+        }
+        return std::forward_as_tuple(*this->begin_, *this->end_);
     }
 
-    decltype(auto) operator++()
+    auto begin()
     {
-        --this->it;
-        return *this;
+        auto [begin, end] = init_range();
+        return iterator(end, begin);
     }
 
-    decltype(auto) operator++(int)
+    auto end()
     {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
-    }
-
-    decltype(auto) operator--()
-    {
-        ++this->it;
-        return *this;
-    }
-    decltype(auto) operator--(int)
-    {
-        auto tmp = *this;
-        --*this;
-        return tmp;
+        auto [begin, end] = init_range();
+        return iterator(begin, end);
     }
 };
 
 template<class Range>
-constexpr auto
+reverse_container(Range&&) -> reverse_container<Range>;
+
+template<class Range>
+constexpr reverse_container<Range>
 reverse(Range&& range)
 {
-    auto begin_func = [&](auto& range) {
-        return reverse_iterator(range.end(), range.begin());
-    };
-
-    auto end_func = [&](auto& range) {
-        return reverse_iterator(range.begin(), range.end());
-    };
-
-    return range_container(
-      std::forward<Range>(range), std::move(begin_func), std::move(end_func));
+    return reverse_container(std::forward<Range>(range));
 };
 }
 
