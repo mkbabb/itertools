@@ -1,7 +1,7 @@
 #ifndef ITERTOOLS_H
 #define ITERTOOLS_H
 
-#include "itertools/range_container.hpp"
+#include "itertools/range_iterator.hpp"
 #include "itertools/tupletools.hpp"
 #include "itertools/types.hpp"
 #include "itertools/views/all.hpp"
@@ -50,44 +50,6 @@ struct y_combinator
         return func(std::ref(*this), std::forward<Args>(args)...);
     }
 };
-
-template<typename Iterable>
-std::string
-join(Iterable&& iter, std::string sep = "")
-{
-    std::ostringstream result;
-    for (auto&& [n, i] : views::enumerate(iter)) {
-        result << (n > 0 ? sep : "") << i;
-    }
-    return result.str();
-}
-
-std::string
-ltrim(std::string s)
-{
-    auto end =
-      std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); });
-    s.erase(s.begin(), end);
-    return s;
-}
-
-std::string
-rtrim(std::string s)
-{
-    auto begin = std::find_if(s.rbegin(), s.rend(), [](int ch) {
-                     return !std::isspace(ch);
-                 }).base();
-    s.erase(begin, s.end());
-    return s;
-}
-
-std::string
-trim(std::string s)
-{
-    ltrim(s);
-    rtrim(s);
-    return s;
-}
 
 };     // namespace itertools
 #endif // ITERTOOLS_H

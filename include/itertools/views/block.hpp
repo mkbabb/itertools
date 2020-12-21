@@ -1,18 +1,18 @@
-#include <itertools/range_container.hpp>
+#include <itertools/range_iterator.hpp>
 
 namespace itertools { namespace views {
 
 #pragma once
 
 template<class Range>
-class block_iterator : public range_container_iterator<Range>
+class block_iterator : public range_iterator<Range>
 {
 public:
     using Value = tupletools::range_value_t<Range>;
     std::vector<Value> ret;
 
     block_iterator(Range&& range, size_t block_size) noexcept
-      : range_container_iterator<Range>(std::forward<Range>(range))
+      : range_iterator<Range>(std::forward<Range>(range))
     {
         this->block_size = block_size;
         ret.reserve(block_size);

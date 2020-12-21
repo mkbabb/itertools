@@ -1,4 +1,4 @@
-#include "itertools/range_container.hpp"
+#include "itertools/range_iterator.hpp"
 
 #pragma once
 
@@ -6,19 +6,17 @@ namespace itertools {
 namespace views {
 
 template<class Func, class Range>
-class transform_container : public range_container<Range>
+class transform_container
 {
   public:
-    Func func;
-
     template<class Iter>
-    class iterator : public range_container_iterator<Iter>
+    class iterator : public range_iterator<Iter>
     {
       public:
         transform_container* base;
 
         iterator(transform_container* base, Iter&& it)
-          : range_container_iterator<Iter>(std::forward<Iter>(it))
+          : range_iterator<Iter>(std::forward<Iter>(it))
           , base(base)
         {}
 
@@ -28,16 +26,17 @@ class transform_container : public range_container<Range>
     template<class Iter>
     iterator(transform_container*, Iter&&) -> iterator<Iter>;
 
-    using super = range_container<Range>;
+    Range range;
+    Func func;
 
     transform_container(Func&& func, Range&& range)
-      : range_container<Range>(std::forward<Range>(range))
+      : range(std::forward<Range>(range))
       , func(std::forward<Func>(func))
     {}
 
-    auto begin() { return iterator(this, super::begin()); }
+    auto begin() { return iterator(this, range.begin()); }
 
-    auto end() { return iterator(this, super::end()); }
+    auto end() { return iterator(this, range.end()); }
 };
 
 template<class Func, class Range>
@@ -48,7 +47,8 @@ template<class Func, class Range>
 constexpr transform_container<Func, Range>
 transform(Func func, Range&& range)
 {
-    return transform_container(std::move(func), std::forward<Range>(range));
+    return transform_container<Func, Range>(std::move(func),
+                                            std::forward<Range>(range));
 };
 }
 

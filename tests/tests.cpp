@@ -1,8 +1,7 @@
 #define FMT_HEADER_ONLY
 
 #include "fmt/format.h"
-// #include "itertools/itertools.hpp"
-// #include "itertools/to_string.hpp"
+
 #include <chrono>
 #include <deque>
 #include <iostream>
@@ -13,52 +12,61 @@
 #include <string>
 #include <vector>
 
-#include "itertools/range_container.hpp"
+#include "itertools/algorithm/all.hpp"
+#include "itertools/itertools.hpp"
+#include "itertools/range_iterator.hpp"
 #include "itertools/views/all.hpp"
+
+using namespace itertools;
 
 // void
 // zip_tests()
 // {
 //     using namespace itertools::views;
-//     {
-//         std::vector<int> iv1 = {101, 102, 103, 104};
-//         std::vector<int> iv2 = {9, 8, 7, 6, 5, 4, 3, 2};
-//         std::vector<int> iv3 = {123, 1234, 12345};
+//     // {
+//     //     std::vector<int> iv1 = { 101, 102, 103, 104 };
+//     //     std::vector<int> iv2 = { 9, 8, 7, 6, 5, 4, 3, 2 };
+//     //     std::vector<int> iv3 = { 123, 1234, 12345 };
 
-//         for (auto [i, j, k] : zip(iv1, iv2, iv3)) {
-//         };
-//     }
-//     {
-//         std::vector<std::string> sv1 = {"\nThis", "but", "different", "containers,"};
-//         std::vector<std::string> sv2 = {"is", "can", "types", "too?"};
-//         std::vector<std::string> sv3 = {"cool,", "we iterate through", "of",
-//         "...\n"};
+//     //     for (auto&& [i, j, k] : zip(iv1, iv2, iv3)) {
+//     //     };
+//     // }
+//     // {
+//     //     std::vector<std::string> sv1 = { "\nThis", "but", "different",
+//     "containers," };
+//     //     std::vector<std::string> sv2 = { "is", "can", "types", "too?" };
+//     //     std::vector<std::string> sv3 = { "cool,", "we iterate through", "of",
+//     "...\n" };
 
-//         for (auto [i, j, k] : zip(sv1, sv2, sv3)) {
-//         };
-//     }
-//     {
+//     //     for (auto&& [i, j, k] : zip(sv1, sv2, sv3)) {
+//     //     };
+//     // }
+//     // {
 
-//         std::list<std::string> sl1 =
-//             {"Yes, we can!", "Some more numbers:", "More numbers!"};
-//         std::vector<std::string> sv1 =
-//             {"Different types, too!", "Ints and doubles.", ""};
-//         std::list<int> iv1 = {1, 2, 3};
-//         std::vector<double> dv1{3.141592653589793238, 1.6181, 2.71828};
+//     //     std::list<std::string> sl1 = {
+//     //         "Yes, we can!", "Some more numbers:", "More numbers!"
+//     //     };
+//     //     std::vector<std::string> sv1 = { "Different types, too!",
+//     //                                      "Ints and doubles.",
+//     //                                      "" };
+//     //     std::list<int> iv1 = { 1, 2, 3 };
+//     //     std::vector<double> dv1{ 3.141592653589793238, 1.6181, 2.71828 };
 
-//         for (auto [i, j, k, l] : zip(sl1, sv1, iv1, dv1)) {
-//         }
-//     }
-//     {
-//         std::map<int, int> id1 = {{0, 10}, {1, 11}, {2, 12}, {3, 13}, {4, 14}, {5,
-//         15}}; std::list<std::string> sv1 = {"1", "mijn", "worten", "2", "helm",
-//         "dearth"}; std::vector<double> dv1 = {1.2, 3.4, 5.6, 6.7, 7.8, 8.9, 9.0};
+//     //     for (auto&& [i, j, k, l] : zip(sl1, sv1, iv1, dv1)) {
+//     //     }
+//     // }
+//     // {
+//     //     std::map<int, int> id1 = { { 0, 10 }, { 1, 11 }, { 2, 12 },
+//     //                                { 3, 13 }, { 4, 14 }, { 5, 15 } };
+//     //     std::list<std::string> sv1 = { "1", "mijn", "worten", "2", "helm",
+//     "dearth" };
+//     //     std::vector<double> dv1 = { 1.2, 3.4, 5.6, 6.7, 7.8, 8.9, 9.0 };
 
-//         for (auto [i, j, k, l] : zip(id1, sv1, dv1, range(7))) {
-//             auto [key, value] = i;
-//             fmt::print("{}: {}, {}, {}, {}\n", key, value, j, k, l);
-//         }
-//     }
+//     //     for (auto&& [i, j, k, l] : zip(id1, sv1, dv1, range(7))) {
+//     //         auto [key, value] = i;
+//     //         fmt::print("{}: {}, {}, {}, {}\n", key, value, j, k, l);
+//     //     }
+//     // }
 // }
 
 // void
@@ -74,8 +82,10 @@
 //         assert(tupletools::tuple_size<decltype(tup1)>::value == 20);
 //     }
 //     {
-//         std::vector<std::tuple<int, int>> tv1 = {{1, 2}, {3, 4}, {5, 6}, {7, 8}};
-//         for (auto v : enumerate(tv1)) {
+//         std::vector<std::tuple<int, int>> tv1 = {
+//             { 1, 2 }, { 3, 4 }, { 5, 6 }, { 7, 8 }
+//         };
+//         for (auto&& v : enumerate(tv1)) {
 //             auto [n, i, j] = tupletools::flatten(v);
 //             fmt::print("{} {} {}\n", n, i, j);
 //         }
@@ -87,23 +97,23 @@
 //     }
 // }
 
-// void
-// itertools_tests()
-// {
-//     {
-//         std::vector<std::string> sv1 = {"h", "e", "l", "l", "o"};
-//         std::vector<int> iv1 = {1, 2, 3, 4, 5, 6, 7, 8};
+// // void
+// // itertools_tests()
+// // {
+// //     {
+// //         std::vector<std::string> sv1 = { "h", "e", "l", "l", "o" };
+// //         std::vector<int> iv1 = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
-//         assert(itertools::join(sv1, "") == "hello");
-//         assert(itertools::join(sv1, ",") == "h,e,l,l,o");
-//         assert(itertools::join(iv1, ", ") == "1, 2, 3, 4, 5, 6, 7, 8");
-//     }
-//     {
-//         std::vector<int> iv1 = {1, 2, 3, 4, 5, 6, 7, 8};
-//         itertools::roll(itertools::roll(iv1));
-//         assert(iv1 == (std::vector<int>{7, 8, 1, 2, 3, 4, 5, 6}));
-//     }
-// }
+// //         assert(itertools::join(sv1, "") == "hello");
+// //         assert(itertools::join(sv1, ",") == "h,e,l,l,o");
+// //         assert(itertools::join(iv1, ", ") == "1, 2, 3, 4, 5, 6, 7, 8");
+// //     }
+// //     {
+// //         std::vector<int> iv1 = { 1, 2, 3, 4, 5, 6, 7, 8 };
+// //         itertools::roll(itertools::roll(iv1));
+// //         assert(iv1 == (std::vector<int>{ 7, 8, 1, 2, 3, 4, 5, 6 }));
+// //     }
+// // }
 
 // void
 // any_tests()
@@ -114,10 +124,11 @@
 //         auto tup2 = std::make_tuple(33, 44, 77, 4, 5, 99);
 
 //         auto tup_bool =
-//             tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+//           tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
 //         bool bool1 = tupletools::any_of(tup_bool);
-//         bool bool2 = tupletools::
-//             any_where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+//         bool bool2 =
+//           tupletools::any_where([](auto&& x, auto&& y) { return x == y; }, tup1,
+//           tup2);
 
 //         assert(bool1 == true);
 //         assert(bool1 = bool2);
@@ -139,10 +150,11 @@
 //         auto tup2 = std::make_tuple(1, 2, 3, 4, 5, 6);
 
 //         auto tup_bool =
-//             tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+//           tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
 //         bool bool1 = tupletools::all_of(tup_bool);
-//         bool bool2 = tupletools::
-//             all_where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+//         bool bool2 =
+//           tupletools::all_where([](auto&& x, auto&& y) { return x == y; }, tup1,
+//           tup2);
 
 //         assert(bool1 == true);
 //         assert(bool1 = bool2);
@@ -164,7 +176,7 @@
 //         auto tup2 = std::make_tuple(1, 2, 7, 4);
 
 //         auto ilist =
-//             tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
+//           tupletools::where([](auto&& x, auto&& y) { return x == y; }, tup1, tup2);
 
 //         bool bool1 = tupletools::disjunction_of(ilist);
 //         assert(bool1 == false);
@@ -372,34 +384,34 @@
 //     }
 // }
 
-// void
-// range_container_tests()
-// {
-//     using namespace itertools::views;
-//     using namespace itertools;
+void
+range_container_tests()
+{
+    using namespace itertools::views;
+    using namespace itertools;
 
-//     {
-//         std::vector<int> v1 = {1, 2, 3, 4, 5};
-//         std::vector<int> v2 = {10, 9, 8, 7, 6};
-//         std::vector<int> v3 = {100, 200, 300, 400, 500};
+    {
+        std::vector<int> v1 = { 1, 2, 3, 4, 5 };
+        std::vector<int> v2 = { 10, 9, 8, 7, 6 };
+        std::vector<int> v3 = { 100, 200, 300, 400, 500 };
 
-//         auto l1 = std::list<float>{1.2, 1.2, 1.2};
-//         auto l2 = std::list<float>{9.9, 8.8, 7.7};
+        auto l1 = std::list<float>{ 1.2, 1.2, 1.2 };
+        auto l2 = std::list<float>{ 9.9, 8.8, 7.7 };
 
-//         auto v1_enum = zip(views::range(100), v1);
-//         auto v2_enum = zip(v2);
+        auto v1_enum = views::enumerate(v1);
+        auto v2_enum = views::enumerate(v2);
 
-//         auto f = [](auto v) { return v; };
+        auto f = [](auto v) { return v; };
 
-//         auto zipped = zip(v1, v1_enum, zip(zip(zip(zip(l1), v2))));
+        auto zipped = zip(v1, v1_enum, zip(zip(zip(zip(l1), v2))));
 
-//         for (auto t : zipped) {
-//             auto& [i, tup, tt] = t;
-//             auto& [n, j] = tup;
-//             std::cout << fmt::format("{}, {}", n, j) << std::endl;
-//         }
-//     }
-// }
+        for (auto&& t : zipped) {
+            auto& [i, tup, tt] = t;
+            auto& [n, j] = tup;
+            std::cout << fmt::format("{}, {}", n, j) << std::endl;
+        }
+    }
+}
 
 void
 test_reverse()
@@ -407,9 +419,12 @@ test_reverse()
     using namespace itertools;
 
     std::vector<int> v;
-    for (auto i : views::range(13)) {
+    for (auto i : views::iota(13)) {
         v.push_back(i);
     }
+
+    std::vector<int> expected = { 0, 2, 4, 6, 8, 10, 12 };
+    std::vector<int> r_expected = { 12, 10, 8, 6, 4, 2, 0 };
 
     auto p = [pos = 0](auto&& x) { return x % 2 == 0; };
 
@@ -418,134 +433,108 @@ test_reverse()
                views::filter(p) | views::reverse() | views::filter(p) |
                views::reverse() | views::filter(p) | views::reverse();
 
-    std::vector<int> expected = { 0, 2, 4, 6, 8, 10, 12 };
-    std::vector<int> r_expected = { 12, 10, 8, 6, 4, 2, 0 };
-
-    auto tmp_v = rng | to<std::vector>();
-    auto r_tmp_v = rng | to<std::vector>();
+    auto tmp_v = rng | itertools::to<std::vector>();
+    auto r_tmp_v = rng | views::reverse() | itertools::to<std::vector>();
 
     assert(tmp_v == expected);
     assert(r_tmp_v == r_expected);
 }
+
+void
+test_filter()
+{
+    using namespace itertools;
+
+    std::vector<int> v = { 2, 2, 2, 2, 3, 4, 7, 8, 9, 2, 2, 2, 2, 2 };
+    std::vector<int> expected = { 3, 4, 7, 8, 9 };
+
+    auto p = [](auto&& x) { return x == 2; };
+
+    auto rng = v | views::drop_while(p) | views::reverse() | views::drop_while(p) |
+               views::reverse();
+
+    auto tmp_v = rng | itertools::to<std::vector>();
+
+    assert(tmp_v == expected);
+}
+
+void
+test_zip()
+{
+    using namespace itertools;
+
+    std::vector<int> v1 = { 1, 5, 3, 4, 7, 99 };
+    std::vector<int> v2 = { 2, 3, 4, 7, 8, 9, 2, 2, 2, 2, 2 };
+    std::vector<std::unique_ptr<int>> v3;
+
+    int a = 1;
+    int b = 2;
+    int c = 3;
+    v3.push_back(std::make_unique<int>(a));
+    v3.emplace_back(std::make_unique<int>(b));
+    v3.emplace_back(std::make_unique<int>(c));
+
+    auto rng = views::zip(v1, v2, v3);
+
+    for (auto&& [x, y, z] : rng) {
+    }
+
+    for (auto&& [x, y, z] : rng | views::reverse()) {
+    }
+
+    auto erm =
+      rng | views::reverse() | views::reverse() | views::reverse() | views::reverse();
+
+    auto t_erm = erm | to<std::vector>();
+}
+
+constexpr auto trim_front = []<class Range>(Range&& range) {
+    return std::forward<Range>(range) |
+           views::drop_while([](char c) { return std::isspace(c); });
+};
+
+constexpr auto trim_back = []<class Range>(Range&& range) {
+    return std::forward<Range>(range) | views::reverse() | trim_front |
+           views::reverse();
+};
+
+constexpr auto trim = [](std::string s) {
+    return s | trim_front | trim_back | to<std::string>();
+};
 
 int
 main()
 {
     using namespace std::string_literals;
     using namespace itertools;
+
     // zip_tests();
     // any_tests();
     // enumerate_tests();
     // // range_tests();
-    // itertools_tests();
+    // // itertools_tests();
     // tupletools_tests();
-    // to_string_tests();
+    // // to_string_tests();
 
-    // range_container_tests();
-
-    int a = 1;
-    int b = 2;
-
-    std::vector<int> v1 = { 1, 5, 3, 4, 7, 99 };
-    std::vector<int> v2 = { 2, 3, 4, 7, 8, 9, 2, 2, 2, 2, 2 };
-    std::vector<std::unique_ptr<int>> v3;
-    v3.push_back(std::make_unique<int>(a));
-    v3.emplace_back(std::make_unique<int>(a));
-
-    // auto begin = range_container_iterator(v1.begin());
-    // auto end = range_container_iterator(v1.end());
-
-    // while (begin != end) {
-    //     std::cout << *begin << std::endl;
-    //     ++begin;
-    // }
-
-    // for (auto&& i : views::zip(v1, v2) | views::reverse()) {
-    //     std::cout << "d" << std::endl;
-    // }
-
-    auto p = [pos = 0](auto&& x) { return true; };
-
-    // auto rng = v2 | views::filter(p);
-
-    // auto begin = rng.end();
-    // auto end = rng.begin();
-
-    // while (begin != end) {
-    //     std::cout << *begin << std::endl;
-    //     --begin;
-    // }
+    range_container_tests();
 
     test_reverse();
+    test_filter();
+    test_zip();
 
-    constexpr auto drop_while = [](auto&& pred) {
-        auto dropper = [pred = std::forward<decltype(pred)>(pred),
-                        dropped = true](auto&& x) mutable {
-            dropped = pred(x) and dropped;
-            return !dropped;
-        };
-        return views::filter(dropper);
-    };
-
-    auto trim_front = [&]<class Range>(Range&& range) {
-        return std::forward<Range>(range) |
-               drop_while([](char c) { return std::isspace(c); });
-    };
-    auto trim_back = [&]<class Range>(Range&& range) {
-        return std::forward<Range>(range) | views::reverse() | trim_front |
-               views::reverse();
-    };
-
-    auto s = "    for the love of      "s | trim_front | trim_back |
+    auto s = "    for the love of      "s | trim |
              views::transform([](char x) { return std::toupper(x); }) |
              to<std::string>();
 
-    auto p2 = [](auto&& x) { return x == 2; };
-    auto f = [](auto&& x) { return x + 100; };
+    std::cout << s << std::endl;
 
-    auto rng = v2 | drop_while(p2) | views::reverse() | drop_while(p2) |
-               views::reverse() | views::transform(f);
-
-    for (auto&& i : rng) {
-        std::cout << i << std::endl;
-    }
-
-    for (auto&& [x, y] : views::zip(v1, v2) | views::reverse() | views::reverse()) {
-        std::cout << fmt::format("{}, {}\n", x, y);
-    }
-
-    // for (auto&& [x] : views::zip(views::zip(v1, v2, v3))) {
-    //     auto&& [i, j, k] = x;
-    //     i = 999;
-    // }
-
-    // // auto x = views::zip(v1, v2);
-    // auto e = views::enumerate(v1);
-    // // auto e = views::zip(views::range(100), v1);
-
-    // for (auto&& [n, i] : e) {
-    //     std::cout << i << std::endl;
-    //     i = 999;
-    // }
-
-    // for (auto&& i : views::zip(v1, v2) | views::reverse()) {
-    //     // std::cout << i << std::endl;
-    // }
-
-    // for (auto& i :
-    //      std::vector<int>{1, 2, 3, 4, 5} | views::filter([](auto) { return true; }))
-    //      {
-    //     i = 999;
-    // }
-
-    // auto out = v1 | views::join(",");
-    // // auto out = std::vector<std::string>{"a", "b", "c", "d"} | join(",");
-
-    // for (auto i : out) {
+    // for (auto&& i : rng) {
     //     std::cout << i << std::endl;
     // }
 
-    // std::cout << itertools::to_string(x) << std::endl;
+    // for (auto&& [x, y] : views::zip(v1, v2) | views::reverse() | views::reverse()) {
+    //     std::cout << fmt::format("{}, {}\n", x, y);
+    // }
 
     // auto vot = views::zip(v1, v2) | to<std::vector>();
 

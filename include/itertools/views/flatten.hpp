@@ -1,4 +1,4 @@
-#include <itertools/range_container.hpp>
+#include <itertools/range_iterator.hpp>
 #include <itertools/tupletools.hpp>
 
 #pragma once
@@ -13,11 +13,11 @@ template<
     class EndIt = decltype(std::declval<Range>().end()),
     class IBeginIt = decltype(std::declval<BeginIt>()->begin()),
     class IEndIt = decltype(std::declval<BeginIt>()->end())>
-class flatten_iterator : public range_container_iterator<Range, IBeginIt, IEndIt>
+class flatten_iterator : public range_iterator<Range, IBeginIt, IEndIt>
 {
 public:
     flatten_iterator(Range&& range)
-      : range_container_iterator<
+      : range_iterator<
             Range,
             IBeginIt,
             IEndIt>{std::forward<Range>(range),

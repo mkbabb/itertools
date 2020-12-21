@@ -1,4 +1,4 @@
-#include <itertools/range_container.hpp>
+#include <itertools/range_iterator.hpp>
 #include <itertools/tupletools.hpp>
 
 #pragma once
@@ -8,16 +8,15 @@ namespace views {
 namespace detail {
 
 template<class Range>
-class reverse_container : range_container<Range>
+class reverse_container
 {
   public:
-    template<class BeginIt, class EndIt>
-    class iterator : public bi_range_container_iterator<BeginIt, EndIt>
+    template<class Iter>
+    class iterator : public range_iterator<Iter>
     {
       public:
-        iterator(BeginIt&& begin_it, EndIt&& end_it)
-          : bi_range_container_iterator<BeginIt, EndIt>(std::forward<BeginIt>(begin_it),
-                                                        std::forward<EndIt>(end_it))
+        iterator(Iter&& it)
+          : range_iterator<Iter>(std::forward<Iter>(it))
         {}
 
         decltype(auto) operator*()
@@ -40,50 +39,28 @@ class reverse_container : range_container<Range>
         }
     };
 
-    template<class BeginIt, class EndIt>
-    iterator(BeginIt&&, EndIt&&) -> iterator<BeginIt, EndIt>;
+    template<class Iter>
+    iterator(Iter&&) -> iterator<Iter>;
 
-    bool was_cached = false;
-
-    using super = range_container<Range>;
+    Range range;
 
     reverse_container(Range&& range)
-      : range_container<Range>(std::forward<Range>(range))
+      : range(std::forward<Range>(range))
     {}
 
-    decltype(auto) init_range()
-    {
-        if (was_cached || !(this->begin_ || this->end_)) {
-            this->begin_ = super::begin();
-            this->end_ = super::end();
-            was_cached = false;
-        } else {
-            was_cached = true;
-        }
-        return std::forward_as_tuple(*this->begin_, *this->end_);
-    }
+    auto begin() { return iterator(range.end()); }
 
-    auto begin()
-    {
-        auto [begin, end] = init_range();
-        return iterator(end, begin);
-    }
-
-    auto end()
-    {
-        auto [begin, end] = init_range();
-        return iterator(begin, end);
-    }
+    auto end() { return iterator(range.begin()); }
 };
 
 template<class Range>
 reverse_container(Range&&) -> reverse_container<Range>;
 
 template<class Range>
-constexpr decltype(auto)
+constexpr reverse_container<Range>
 reverse(Range&& range)
 {
-    return reverse_container(std::forward<Range>(range));
+    return reverse_container<Range>(std::forward<Range>(range));
 };
 
 }

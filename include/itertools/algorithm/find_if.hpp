@@ -1,7 +1,10 @@
 #include "itertools/tupletools.hpp"
 #include <functional>
 
+#pragma once
+
 namespace itertools {
+
 constexpr auto identity = []<class T>(T&& t) -> decltype(auto) {
     return std::forward<T>(t);
 };
@@ -29,4 +32,5 @@ find_if(Range&& range, Pred&& pred, Proj proj = {})
     return find_if(
       range.begin(), range.end(), std::forward<Pred>(pred), std::ref(proj));
 }
+
 }

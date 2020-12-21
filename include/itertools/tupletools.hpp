@@ -34,8 +34,8 @@ template<size_t... Ixs, class Func>
 constexpr decltype(auto)
 index_apply_impl(Func&& func, std::index_sequence<Ixs...>)
 {
-    return std::
-        invoke(std::forward<Func>(func), std::integral_constant<size_t, Ixs>{}...);
+    return std::invoke(std::forward<Func>(func),
+                       std::integral_constant<size_t, Ixs>{}...);
 }
 
 template<size_t N, class Func>
@@ -72,9 +72,8 @@ make_tuple_of(T value)
     auto func = [=](auto) { return value; };
     auto tup = index_apply<N>([=](auto... Ixs) { return std::make_tuple(Ixs...); });
 
-    return index_apply<N>([func = std::move(func)](auto... Ixs) {
-        return std::make_tuple(func(Ixs)...);
-    });
+    return index_apply<N>(
+      [func = std::move(func)](auto... Ixs) { return std::make_tuple(func(Ixs)...); });
 }
 
 /*
@@ -128,8 +127,8 @@ template<int Ix1, int Ix2, class Tup>
 constexpr void
 swap(Tup&& tup)
 {
-    std::swap(
-        std::get<Ix1>(std::forward<Tup>(tup)), std::get<Ix2>(std::forward<Tup>(tup)));
+    std::swap(std::get<Ix1>(std::forward<Tup>(tup)),
+              std::get<Ix2>(std::forward<Tup>(tup)));
 }
 
 template<const bool reverse, class Tup, const size_t N = tuple_size<Tup>::value>
@@ -145,7 +144,7 @@ roll(Tup&& tup)
     });
 }
 
-template<class... Tups, const size_t N = std::min({std::tuple_size<Tups>{}...})>
+template<class... Tups, const size_t N = std::min({ std::tuple_size<Tups>{}... })>
 constexpr auto
 transpose(Tups&&... tups)
 {
@@ -153,66 +152,59 @@ transpose(Tups&&... tups)
         return std::make_tuple(std::get<Ixs>(std::forward<Tups>(tups))...);
     };
     return index_apply<N>(
-        [row = std::move(row)](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
+      [row = std::move(row)](auto... Ixs) { return std::make_tuple(row(Ixs)...); });
 }
 
-template<
-    class Pred,
-    class Tup1,
-    class Tup2,
-    const size_t N = tupletools::tuple_size_v<Tup1>,
-    const size_t M = tupletools::tuple_size_v<Tup2>>
+template<class Pred,
+         class Tup1,
+         class Tup2,
+         const size_t N = tupletools::tuple_size_v<Tup1>,
+         const size_t M = tupletools::tuple_size_v<Tup2>>
 constexpr auto
 where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tups must be the same size!");
 
     return index_apply<N>([&](auto... Ixs) {
-        auto tup = std::make_tuple(std::invoke(
-            std::forward<Pred>(pred),
-            std::get<Ixs>(std::forward<Tup1>(tup1)),
-            std::get<Ixs>(std::forward<Tup2>(tup2)))...);
+        auto tup =
+          std::make_tuple(std::invoke(std::forward<Pred>(pred),
+                                      std::get<Ixs>(std::forward<Tup1>(tup1)),
+                                      std::get<Ixs>(std::forward<Tup2>(tup2)))...);
         return tup;
     });
 }
 
-template<
-    class Pred,
-    class Tup1,
-    class Tup2,
-    const size_t N = tupletools::tuple_size_v<Tup1>,
-    const size_t M = tupletools::tuple_size_v<Tup2>>
+template<class Pred,
+         class Tup1,
+         class Tup2,
+         const size_t N = tupletools::tuple_size_v<Tup1>,
+         const size_t M = tupletools::tuple_size_v<Tup2>>
 constexpr bool
 any_where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
     return index_apply<N>([&tup1, &tup2, pred = std::forward<Pred>(pred)](auto... Ixs) {
-        return (
-            (std::invoke(
-                pred,
-                std::get<Ixs>(std::forward<Tup1>(tup1)),
-                std::get<Ixs>(std::forward<Tup2>(tup2)))) ||
-            ...);
+        return ((std::invoke(pred,
+                             std::get<Ixs>(std::forward<Tup1>(tup1)),
+                             std::get<Ixs>(std::forward<Tup2>(tup2)))) ||
+                ...);
     });
 }
 
-template<
-    class Pred,
-    class Tup1,
-    class Tup2,
-    const size_t N = tupletools::tuple_size_v<Tup1>,
-    const size_t M = tupletools::tuple_size_v<Tup2>>
+template<class Pred,
+         class Tup1,
+         class Tup2,
+         const size_t N = tupletools::tuple_size_v<Tup1>,
+         const size_t M = tupletools::tuple_size_v<Tup2>>
 constexpr bool
 all_where(Pred&& pred, Tup1&& tup1, Tup2&& tup2)
 {
     static_assert(N == M, "Tuples must be the same size!");
     return index_apply<N>([&tup1, &tup2, pred = std::forward<Pred>(pred)](auto... Ixs) {
-        return (
-            (std::invoke(
-                pred,
-                std::get<Ixs>(std::forward<Tup1>(tup1)),
-                std::get<Ixs>(std::forward<Tup2>(tup2)))) &&
-            ...);
+        return ((std::invoke(pred,
+                             std::get<Ixs>(std::forward<Tup1>(tup1)),
+                             std::get<Ixs>(std::forward<Tup2>(tup2)))) &&
+                ...);
     });
 }
 
@@ -327,27 +319,26 @@ struct flatten_impl<std::tuple<T>>
     constexpr auto operator()(Tup&& tup)
     {
         return flatten_impl<std::remove_cvref_t<T>>{}(
-            std::get<0>(std::forward<Tup>(tup)));
+          std::get<0>(std::forward<Tup>(tup)));
     }
 };
 
 template<class T, class... Ts>
 struct flatten_impl<std::tuple<T, Ts...>>
 {
-    template<
-        class Tup,
-        const size_t N = sizeof...(Ts),
-        std::enable_if_t<(N >= 1), int> = 0>
+    template<class Tup,
+             const size_t N = sizeof...(Ts),
+             std::enable_if_t<(N >= 1), int> = 0>
     constexpr auto operator()(Tup&& tup)
     {
         auto tup_first =
-            flatten_impl<std::remove_cvref_t<T>>{}(std::get<0>(std::forward<Tup>(tup)));
+          flatten_impl<std::remove_cvref_t<T>>{}(std::get<0>(std::forward<Tup>(tup)));
 
         auto t_tup_args = index_apply<N>([&](auto... Ixs) {
             return std::forward_as_tuple(std::get<Ixs + 1>(std::forward<Tup>(tup))...);
         });
         auto tup_args =
-            flatten_impl<std::remove_cvref_t<decltype(t_tup_args)>>{}(t_tup_args);
+          flatten_impl<std::remove_cvref_t<decltype(t_tup_args)>>{}(t_tup_args);
 
         return std::tuple_cat(make_tuple_if(tup_first), make_tuple_if(tup_args));
     }

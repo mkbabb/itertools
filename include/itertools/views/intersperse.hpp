@@ -1,15 +1,15 @@
-#include <itertools/range_container.hpp>
+#include <itertools/range_iterator.hpp>
 
 #pragma once
 
 namespace itertools { namespace views {
 
 template<class Func, class Range>
-class intersperse_iterator : public range_container_iterator<Range>
+class intersperse_iterator : public range_iterator<Range>
 {
 public:
     intersperse_iterator(Func func, Range&& range) noexcept
-      : range_container_iterator<Range>(std::forward<Range>(range))
+      : range_iterator<Range>(std::forward<Range>(range))
       , func{func}
       , pos{0}
     {}
