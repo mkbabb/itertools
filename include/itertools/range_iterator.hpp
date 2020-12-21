@@ -57,6 +57,49 @@ class range_iterator
 template<class Iter>
 range_iterator(Iter&&) -> range_iterator<Iter>;
 
+template<class Range,
+         class begin_t = iter_begin_t<Range>,
+         class end_t = iter_end_t<Range>>
+class cached_container
+{
+  public:
+    Range range;
+    std::optional<begin_t> begin_;
+    std::optional<end_t> end_;
+    bool was_cached = false;
+
+    cached_container(Range&& range)
+      : range{ std::forward<Range>(range) }
+    {}
+
+    void init_begin() { begin_ = std::begin(range); }
+
+    void init_end() { end_ = std::end(range); }
+
+    void cache()
+    {
+        if (was_cached || !(begin_ || end_)) {
+            init_begin();
+            init_end();
+            was_cached = false;
+        } else {
+            was_cached = true;
+        }
+    }
+
+    auto& cache_begin()
+    {
+        cache();
+        return *begin_;
+    }
+
+    auto& cache_end()
+    {
+        cache();
+        return *end_;
+    }
+};
+
 template<ForwardRange Range, class Func>
 requires invocable<Func, Range> constexpr auto
 operator|(Range&& rhs, Func&& lhs)

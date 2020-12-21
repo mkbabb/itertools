@@ -1,57 +1,88 @@
+#include "itertools/tupletools.hpp"
 #include <itertools/range_iterator.hpp>
-
-namespace itertools { namespace views {
 
 #pragma once
 
+namespace itertools {
+namespace views {
+
+namespace detail {
+
 template<class Range>
-class block_iterator : public range_iterator<Range>
+class block_container : cached_container<Range>
 {
-public:
-    using Value = tupletools::range_value_t<Range>;
-    std::vector<Value> ret;
-
-    block_iterator(Range&& range, size_t block_size) noexcept
-      : range_iterator<Range>(std::forward<Range>(range))
+  public:
+    template<class Iter>
+    class iterator : public range_iterator<Iter>
     {
-        this->block_size = block_size;
-        ret.reserve(block_size);
-    }
+        block_container* base;
+        std::vector<std::remove_cvref_t<iter_value_t<Iter>>> ret;
 
-    auto operator++()
-    {
-        auto i = 0;
-        while (!this->is_complete() && i++ < this->block_size) {
-            ret.pop_back();
-        }
-        return *this;
-    }
-
-    auto operator*() noexcept
-    {
-        auto i = 0;
-
-        while (!this->is_complete() && i++ < this->block_size) {
-            ret.push_back(*(this->begin_it));
-            ++(this->begin_it);
+      public:
+        iterator(block_container* base, Iter&& it) noexcept
+          : range_iterator<Iter>(std::forward<Iter>(it))
+          , base(base)
+        {
+            ret.reserve(base->block_size);
         }
 
-        return ret;
-    }
+        bool is_complete() { return *base->begin_ == *base->end_; }
+
+        auto operator++()
+        {
+            for (auto i : views::iota(ret.size())) {
+                ret.pop_back();
+            }
+            return *this;
+        }
+
+        auto operator*() noexcept
+        {
+            for (auto i : views::iota(base->block_size)) {
+                if (is_complete()) {
+                    break;
+                } else {
+                    ret.push_back(*this->it);
+                    ++this->it;
+                }
+            }
+            return ret;
+        }
+    };
+
+    template<class Iter>
+    iterator(block_container*, Iter&&) -> iterator<Iter>;
 
     size_t block_size;
+
+    block_container(Range&& range, size_t block_size)
+      : cached_container<Range>{ std::forward<Range>(range) }
+      , block_size(block_size)
+    {}
+
+    auto begin() { return iterator(this, this->cache_begin()); }
+
+    auto end() { return iterator(this, this->cache_end()); }
 };
 
-// template<class Func, class Range>
-// constexpr auto
-// block(Range&& range, size_t block_size)
-// {
-//     auto it = block_iterator(std::forward<Range>(range), block_size);
-//     using Iterator = decltype(it);
+template<class Range>
+block_container(Range&&) -> block_container<Range>;
 
-//     return range_container<
-//         Range,
-//         Iterator>(std::forward<Range>(range), std::forward<Iterator>(it));
-// };
+template<class Range>
+constexpr block_container<Range>
+block(Range&& range, size_t block_size)
+{
+    return block_container<Range>(std::forward<Range>(range), block_size);
+};
+}
 
-}}
+constexpr auto
+block(size_t block_size)
+{
+    return [=]<class Range>(Range&& range) {
+        return detail::block(std::forward<Range>(range), block_size);
+    };
+}
+
+}
+}
