@@ -63,15 +63,13 @@ template<template<typename, typename> class Pred, typename... Ts>
 struct any_of_t : std::false_type
 {};
 
-template<
-    template<typename, typename>
-    class Pred,
-    typename T0,
-    typename T1,
-    typename... Ts>
+template<template<typename, typename> class Pred,
+         typename T0,
+         typename T1,
+         typename... Ts>
 struct any_of_t<Pred, T0, T1, Ts...>
-  : std::
-        integral_constant<bool, Pred<T0, T1>::value || any_of_t<Pred, T0, Ts...>::value>
+  : std::integral_constant<bool,
+                           Pred<T0, T1>::value || any_of_t<Pred, T0, Ts...>::value>
 {};
 
 template<typename T>
@@ -114,6 +112,9 @@ concept NestedRange = Rangeable<T>&& requires(T x)
 
 template<Rangeable T>
 using range_value_t = decltype(*std::declval<T>().begin());
+
+template<ForwardIterable T>
+using iter_value_t = decltype(*std::declval<T>());
 
 template<class F, class... Args>
 concept invocable = requires(F&& f, Args&&... args)

@@ -517,31 +517,21 @@ main()
 
     std::cout << s << std::endl;
 
-    // for (auto&& i : rng) {
-    //     std::cout << i << std::endl;
-    // }
+    std::vector<int> v1 = { 1, 2, 3, 4, 5 };
+    std::vector<int> v2 = { 10, 9, 8, 7, 6 };
+    std::vector<int> v3 = { 100, 200, 300, 400, 500 };
 
-    // for (auto&& [x, y] : views::zip(v1, v2) | views::reverse() | views::reverse()) {
-    //     std::cout << fmt::format("{}, {}\n", x, y);
-    // }
+    auto rng = views::concat(v1, v2, v3);
 
-    // auto vot = views::zip(v1, v2) | to<std::vector>();
+    for (auto i : rng) {
+        std::cout << i << std::endl;
+    }
 
-    // for (auto&& i : vot) {
-    //     std::cout << "nmo!!" << std::endl;
-    // }
+    auto rng2 = v1 | views::block(2);
 
-    // std::vector<std::tuple<int, std::tuple<int, int>>> tup = {{1, {2, 3}}, {4, {5,
-    // 6}}};
-
-    // auto f = [](auto x) { return tupletools::flatten(x); };
-
-    // auto [n, i, x] = tupletools::flatten(std::make_tuple(1, std::make_tuple(2, 3)));
-
-    // for (auto [n, x, y] : views::enumerate(views::zip(v1, v2)) | views::transform(f))
-    // {
-    //     std::cout << "hi" << std::endl;
-    // }
+    for (auto i : rng2) {
+        std::cout << i.size() << std::endl;
+    }
 
     std::vector<std::tuple<std::list<std::vector<std::vector<int>>>,
                            int,

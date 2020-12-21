@@ -11,8 +11,6 @@ template<class Pred, class Range>
 class filter_container
 {
   public:
-    Pred pred;
-
     template<class Iter>
     class iterator : public range_iterator<Iter>
     {
@@ -48,6 +46,7 @@ class filter_container
     using end_t = iter_end_t<Range>;
 
     Range range;
+    Pred pred;
     std::optional<begin_t> begin_;
     std::optional<end_t> end_;
     bool was_cached = false;

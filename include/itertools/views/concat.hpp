@@ -1,67 +1,113 @@
 #include "itertools/range_iterator.hpp"
+#include "itertools/tupletools.hpp"
+#include "itertools/types.hpp"
+#include "zip.hpp"
 
 #pragma once
 
-namespace itertools { namespace views {
+namespace itertools {
+namespace views {
+namespace detail {
 
-template<class Range, class BeginIt, class EndIt>
-class concat_iterator : public range_tuple_iterator<Range, BeginIt, EndIt>
+template<class Range>
+class concat_container
 {
-public:
-    concat_iterator(Range range, BeginIt begin_it, EndIt end_it)
-      : range_tuple_iterator<Range, BeginIt, EndIt>{
-            std::forward<Range>(range),
-            std::forward<BeginIt>(begin_it),
-            std::forward<EndIt>(end_it)}
+  public:
+    template<class Iter>
+    class iterator : range_iterator<Iter>
+    {
+      public:
+        concat_container* base;
+
+        iterator(concat_container* base, Iter&& it)
+          : range_iterator<Iter>{ std::forward<Iter>(it) }
+          , base(base)
+        {}
+
+        bool is_first_complete()
+        {
+            return std::get<0>(this->it) == std::get<0>(*base->end_);
+        }
+
+        bool is_complete()
+        {
+            if (is_first_complete()) {
+                tupletools::roll<true>(this->it);
+                tupletools::roll<true>(*base->end_);
+
+                return is_first_complete();
+            } else {
+                return false;
+            }
+        }
+
+        template<class T>
+        bool operator==(T&)
+        {
+            return is_complete();
+        }
+
+        auto operator++() -> decltype(auto)
+        {
+            ++std::get<0>(this->it);
+            is_complete();
+            return *this;
+        }
+
+        auto operator*() -> decltype(auto) { return *std::get<0>(this->it); }
+    };
+
+    template<class Iter>
+    iterator(concat_container*, Iter&&) -> iterator<Iter>;
+
+    using begin_t = tuple_begin_t<Range&>;
+    using end_t = tuple_end_t<Range&>;
+
+    Range range;
+    std::optional<begin_t> begin_;
+    std::optional<end_t> end_;
+    bool was_cached = false;
+
+    concat_container(Range&& range)
+      : range{ std::forward<Range>(range) }
     {}
 
-    bool is_first_complete()
+    decltype(auto) init_range()
     {
-        return std::get<0>(this->begin_it) == std::get<0>(this->end_it);
-    }
-
-    bool is_complete()
-    {
-        if (is_first_complete()) {
-            tupletools::roll<true>(this->begin_it);
-            tupletools::roll<true>(this->end_it);
-
-            return is_first_complete();
+        if (was_cached || !(begin_ || end_)) {
+            begin_ = tuple_begin(range);
+            end_ = tuple_end(range);
+            was_cached = false;
         } else {
-            return false;
+            was_cached = true;
         }
+        return std::forward_as_tuple(*begin_, *end_);
     }
 
-    bool operator==(range_container_terminus)
+    auto begin()
     {
-        return is_complete();
+        auto [begin, end] = init_range();
+        return iterator(this, begin);
     }
 
-    auto operator++() -> decltype(auto)
+    auto end()
     {
-        ++std::get<0>(this->begin_it);
-        this->is_complete();
-        return *this;
-    }
-
-    auto operator*() -> decltype(auto)
-    {
-        return *std::get<0>(this->begin_it);
+        auto [begin, end] = init_range();
+        return iterator(this, end);
     }
 };
 
-template<class T, class... Args>
-constexpr auto
-concat(T&& arg, Args&&... args)
-{
-    static_assert(
-        tupletools::is_all<T, Args...>::value,
-        "All arguments must be of a homogenous type.");
+template<class Range>
+concat_container(Range&&) -> concat_container<Range>;
 
-    return make_tuple_iterator<
-        concat_iterator,
-        T,
-        Args...>(std::forward<T>(arg), std::forward<Args>(args)...);
 }
 
-}}
+template<class T, class... Args>
+requires(std::is_same_v<T, Args>&&...) constexpr auto concat(T&& arg, Args&&... args)
+{
+    auto tup = std::forward_as_tuple(arg, args...);
+    return detail::concat_container(std::move(tup));
+}
+
+}
+}
