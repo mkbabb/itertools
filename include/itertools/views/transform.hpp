@@ -34,9 +34,9 @@ class transform_container
       , func(std::forward<Func>(func))
     {}
 
-    auto begin() { return iterator(this, range.begin()); }
+    auto begin() { return iterator(this, std::begin(range)); }
 
-    auto end() { return iterator(this, range.end()); }
+    auto end() { return iterator(this, std::end(range)); }
 };
 
 template<class Func, class Range>

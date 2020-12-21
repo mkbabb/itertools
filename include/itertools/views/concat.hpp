@@ -10,7 +10,11 @@ namespace views {
 namespace detail {
 
 template<class Range>
-class concat_container
+using cached_tuple =
+  cached_container<Range, tuple_begin_t<Range&>, tuple_end_t<Range&>>;
+
+template<class Range>
+class concat_container : cached_tuple<Range>
 {
   public:
     template<class Iter>
@@ -60,41 +64,17 @@ class concat_container
     template<class Iter>
     iterator(concat_container*, Iter&&) -> iterator<Iter>;
 
-    using begin_t = tuple_begin_t<Range&>;
-    using end_t = tuple_end_t<Range&>;
-
-    Range range;
-    std::optional<begin_t> begin_;
-    std::optional<end_t> end_;
-    bool was_cached = false;
-
     concat_container(Range&& range)
-      : range{ std::forward<Range>(range) }
+      : cached_tuple<Range>{ std::forward<Range>(range) }
     {}
 
-    decltype(auto) init_range()
-    {
-        if (was_cached || !(begin_ || end_)) {
-            begin_ = tuple_begin(range);
-            end_ = tuple_end(range);
-            was_cached = false;
-        } else {
-            was_cached = true;
-        }
-        return std::forward_as_tuple(*begin_, *end_);
-    }
+    void init_begin() override { this->begin_ = tuple_begin(this->range); }
 
-    auto begin()
-    {
-        auto [begin, end] = init_range();
-        return iterator(this, begin);
-    }
+    void init_end() override { this->end_ = tuple_end(this->range); }
 
-    auto end()
-    {
-        auto [begin, end] = init_range();
-        return iterator(this, end);
-    }
+    auto begin() { return iterator(this, this->cache_begin()); }
+
+    auto end() { return iterator(this, this->cache_end()); }
 };
 
 template<class Range>

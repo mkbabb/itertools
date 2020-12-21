@@ -26,7 +26,7 @@ template<tupletools::Tupleoid T>
 using tuple_end_t = std::remove_cvref_t<std::invoke_result_t<decltype(tuple_end), T>>;
 
 template<class Range>
-class range_tuple
+class zip_container
 {
   public:
     template<class Iter>
@@ -73,7 +73,7 @@ class range_tuple
 
     Range range;
 
-    range_tuple(Range&& range)
+    zip_container(Range&& range)
       : range(std::forward<Range>(range))
     {}
 
@@ -83,7 +83,7 @@ class range_tuple
 };
 
 template<class Range>
-range_tuple(Range&&) -> range_tuple<Range>;
+zip_container(Range&&) -> zip_container<Range>;
 }
 
 // template<class... Args>
@@ -91,7 +91,7 @@ range_tuple(Range&&) -> range_tuple<Range>;
 // args)
 // {
 //     auto range = std::forward_as_tuple(args...);
-//     return detail::range_tuple(std::move(range));
+//     return detail::zip_container(std::move(range));
 // }
 
 template<class... Args>
@@ -99,7 +99,7 @@ constexpr decltype(auto)
 zip(Args&&... args)
 {
     auto tup = std::forward_as_tuple(args...);
-    return detail::range_tuple(std::move(tup));
+    return detail::zip_container(std::move(tup));
 }
 
 template<class... Args>
@@ -107,7 +107,7 @@ constexpr decltype(auto)
 zip_copy_if_rvalue(Args&&... args)
 {
     auto tup = std::make_tuple(tupletools::copy_if_rvalue(std::forward<Args>(args))...);
-    return detail::range_tuple(std::move(tup));
+    return detail::zip_container(std::move(tup));
 }
 
 }

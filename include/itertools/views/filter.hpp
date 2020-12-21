@@ -8,7 +8,7 @@ namespace itertools {
 namespace views {
 
 template<class Pred, class Range>
-class filter_container
+class filter_container : cached_container<Range>
 {
   public:
     template<class Iter>
@@ -42,44 +42,16 @@ class filter_container
     template<class Iter>
     iterator(filter_container*, Iter&&) -> iterator<Iter>;
 
-    using begin_t = iter_begin_t<Range>;
-    using end_t = iter_end_t<Range>;
-
-    Range range;
     Pred pred;
-    std::optional<begin_t> begin_;
-    std::optional<end_t> end_;
-    bool was_cached = false;
 
     filter_container(Pred&& pred, Range&& range)
-      : range(std::forward<Range>(range))
+      : cached_container<Range>(std::forward<Range>(range))
       , pred(std::forward<Pred>(pred))
     {}
 
-    decltype(auto) init_range()
-    {
-        if (was_cached || !(begin_ || end_)) {
-            end_ = range.end();
-            begin_ = itertools::find_if(range.begin(), *end_, pred);
-            was_cached = false;
-        } else {
-            was_cached = true;
-        }
+    auto begin() { return iterator(this, this->cache_begin()); }
 
-        return std::forward_as_tuple(*begin_, *end_);
-    }
-
-    auto begin()
-    {
-        auto [begin, end] = init_range();
-        return iterator(this, begin);
-    }
-
-    auto end()
-    {
-        auto [begin, end] = init_range();
-        return iterator(this, end);
-    }
+    auto end() { return iterator(this, this->cache_end()); }
 };
 
 template<class Pred, class Range>
