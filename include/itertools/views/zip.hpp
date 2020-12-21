@@ -1,4 +1,6 @@
 #include "itertools/range_iterator.hpp"
+#include "itertools/tupletools.hpp"
+
 #include <tuple>
 
 #pragma once
@@ -74,6 +76,14 @@ class range_tuple
 template<class Range>
 range_tuple(Range&&) -> range_tuple<Range>;
 }
+
+// template<class... Args>
+// requires(...&& std::is_reference_v<Args>) constexpr decltype(auto) zip(Args&&...
+// args)
+// {
+//     auto range = std::forward_as_tuple(args...);
+//     return detail::range_tuple(std::move(range));
+// }
 
 template<class... Args>
 constexpr decltype(auto)

@@ -15,7 +15,7 @@ class reverse_container
     class iterator : public range_iterator<Iter>
     {
       public:
-        iterator(Iter&& it)
+        constexpr iterator(Iter&& it)
           : range_iterator<Iter>(std::forward<Iter>(it))
         {}
 
@@ -44,7 +44,7 @@ class reverse_container
 
     Range range;
 
-    reverse_container(Range&& range)
+    constexpr reverse_container(Range&& range)
       : range(std::forward<Range>(range))
     {}
 

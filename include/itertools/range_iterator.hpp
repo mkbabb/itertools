@@ -29,7 +29,7 @@ class range_iterator
   public:
     Iter it;
 
-    range_iterator(Iter&& it)
+    constexpr range_iterator(Iter&& it)
       : it{ std::forward<Iter>(it) }
     {}
 
@@ -57,11 +57,23 @@ class range_iterator
 template<class Iter>
 range_iterator(Iter&&) -> range_iterator<Iter>;
 
-template<class Func, ForwardRange Range>
-auto
+template<ForwardRange Range, class Func>
+requires invocable<Func, Range> constexpr auto
 operator|(Range&& rhs, Func&& lhs)
 {
     return std::invoke(std::forward<Func>(lhs), std::forward<Range>(rhs));
+}
+
+template<class Func, class Funk>
+constexpr auto
+operator|(Funk&& rhs, Func&& lhs)
+{
+    return [&]<class... Args>(Args && ... args)
+    {
+        return std::invoke(
+          std::forward<Funk>(rhs),
+          std::invoke(std::forward<Func>(lhs), std::forward<Args>(args)...));
+    };
 }
 
 } // namespace itertools
