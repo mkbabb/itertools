@@ -428,11 +428,8 @@ test_reverse()
                views::filter(p) | views::reverse() | views::filter(p) |
                views::reverse() | views::filter(p) | views::reverse();
 
-    auto tmp_v = rng | itertools::to<std::vector>();
-    auto r_tmp_v = rng | views::reverse() | itertools::to<std::vector>();
-
-    assert(tmp_v == expected);
-    assert(r_tmp_v == r_expected);
+    assert(equal(rng, expected));
+    assert(equal(rng | views::reverse(), r_expected));
 }
 
 void
@@ -448,9 +445,11 @@ test_filter()
     auto rng = v | views::drop_while(p) | views::reverse() | views::drop_while(p) |
                views::reverse();
 
-    auto tmp_v = rng | itertools::to<std::vector>();
+    for (auto&& i : rng) {
+        std::cout << i << std::endl;
+    }
 
-    assert(tmp_v == expected);
+    assert(equal(rng, expected));
 }
 
 void
@@ -522,6 +521,10 @@ main()
     std::vector<int> v3 = { 100, 200, 300, 400, 500 };
 
     auto rng = views::concat(v1, v2, v3);
+
+    for (auto i : rng | views::reverse()) {
+        std::cout << i << std::endl;
+    }
 
     for (auto i : rng) {
         std::cout << i << std::endl;

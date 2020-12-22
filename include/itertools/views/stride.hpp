@@ -2,7 +2,8 @@
 
 #pragma once
 
-namespace itertools { namespace views {
+namespace itertools {
+namespace views {
 
 namespace detail {
 
@@ -12,6 +13,11 @@ stride(Range&& range, size_t stride = 1)
 {
     auto pred = [=, pos = 0UL](auto&&) mutable {
         auto b = pos % stride == 0;
+
+        if (b && pos == stride) {
+            pos = 0;
+        }
+
         pos += 1;
         return b;
     };
@@ -27,4 +33,5 @@ stride(size_t stride = 1)
     };
 }
 
-}}
+}
+}

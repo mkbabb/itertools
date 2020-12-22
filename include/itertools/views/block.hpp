@@ -10,7 +10,7 @@ namespace views {
 namespace detail {
 
 template<class Range>
-class block_container : cached_container<Range>
+class block_container : public cached_container<Range>
 {
   public:
     template<class Iter>

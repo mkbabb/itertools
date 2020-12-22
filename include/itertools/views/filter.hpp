@@ -8,7 +8,7 @@ namespace itertools {
 namespace views {
 
 template<class Pred, class Range>
-class filter_container : cached_container<Range>
+class filter_container : public cached_container<Range>
 {
   public:
     template<class Iter>
@@ -48,6 +48,13 @@ class filter_container : cached_container<Range>
       : cached_container<Range>(std::forward<Range>(range))
       , pred(std::forward<Pred>(pred))
     {}
+
+    void init_begin() override { this->end_ = this->range.end(); }
+
+    void init_end() override
+    {
+        this->begin_ = itertools::find_if(this->range.begin(), *this->end_, pred);
+    }
 
     auto begin() { return iterator(this, this->cache_begin()); }
 
