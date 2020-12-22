@@ -1,3 +1,4 @@
+#include "equal.hpp"
 #include "find_if.hpp"
 #include "to.hpp"
 
