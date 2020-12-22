@@ -49,6 +49,12 @@ class range_iterator
         return *this;
     }
 
+    decltype(auto) operator--()
+    {
+        --this->it;
+        return *this;
+    }
+
     decltype(auto) operator*() { return *this->it; }
 
     decltype(auto) operator->() { return this->it; }
