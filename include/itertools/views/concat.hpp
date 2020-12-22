@@ -14,7 +14,7 @@ using cached_tuple =
   cached_container<Range, tuple_begin_t<Range&>, tuple_end_t<Range&>>;
 
 template<class Range>
-class concat_container : cached_tuple<Range>
+class concat_container : public cached_tuple<Range>
 {
   public:
     template<class Iter>
@@ -28,16 +28,17 @@ class concat_container : cached_tuple<Range>
           , base(base)
         {}
 
-        bool is_first_complete()
+        bool is_first_complete() const
         {
-            return std::get<0>(this->it) == std::get<0>(*base->end_);
+            return std::get<0>(*base->begin_) == std::get<0>(*base->end_);
         }
 
-        bool is_complete()
+        template<bool forward>
+        bool is_complete() const
         {
             if (is_first_complete()) {
-                tupletools::roll<true>(this->it);
-                tupletools::roll<true>(*base->end_);
+                tupletools::roll<forward>(*base->begin_);
+                tupletools::roll<forward>(*base->end_);
 
                 return is_first_complete();
             } else {
@@ -46,15 +47,22 @@ class concat_container : cached_tuple<Range>
         }
 
         template<class T>
-        bool operator==(T&)
+        bool operator==(const iterator<T>& rhs) const
         {
-            return is_complete();
+            return is_first_complete();
         }
 
         auto operator++() -> decltype(auto)
         {
+            is_complete<true>();
             ++std::get<0>(this->it);
-            is_complete();
+            return *this;
+        }
+
+        auto operator--() -> decltype(auto)
+        {
+            is_complete<false>();
+            --std::get<0>(this->it);
             return *this;
         }
 
@@ -80,13 +88,21 @@ class concat_container : cached_tuple<Range>
 template<class Range>
 concat_container(Range&&) -> concat_container<Range>;
 
+template<class Range>
+concat_container<Range>
+concat(Range&& range)
+{
+    return detail::concat_container(std::forward<Range>(range));
+}
+
 }
 
 template<class T, class... Args>
-requires(std::is_same_v<T, Args>&&...) constexpr auto concat(T&& arg, Args&&... args)
+requires(std::is_same_v<T, Args>&&...) constexpr decltype(auto)
+  concat(T&& arg, Args&&... args)
 {
     auto tup = std::forward_as_tuple(arg, args...);
-    return detail::concat_container(std::move(tup));
+    return detail::concat(std::move(tup));
 }
 
 }

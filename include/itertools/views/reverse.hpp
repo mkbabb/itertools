@@ -1,5 +1,6 @@
-#include <itertools/range_iterator.hpp>
-#include <itertools/tupletools.hpp>
+#include "concat.hpp"
+#include "itertools/range_iterator.hpp"
+#include "itertools/tupletools.hpp"
 
 #pragma once
 
@@ -48,18 +49,24 @@ class reverse_container
       : range(std::forward<Range>(range))
     {}
 
-    auto begin() { return iterator(range.end()); }
+    auto begin() { return iterator(std::end(range)); }
 
-    auto end() { return iterator(range.begin()); }
+    auto end() { return iterator(std::begin(range)); }
 };
 
 template<class Range>
 reverse_container(Range&&) -> reverse_container<Range>;
 
 template<class Range>
+concept concatted = is_instance_v<std::remove_cvref_t<Range>, concat_container>;
+
+template<class Range>
 constexpr reverse_container<Range>
 reverse(Range&& range)
 {
+    if constexpr (concatted<Range>) {
+        range.range = tupletools::reverse(range.range);
+    }
     return reverse_container<Range>(std::forward<Range>(range));
 };
 
