@@ -14,6 +14,17 @@ Tuple is an obstinate type: though it has been realtively surmounted in this
 sense; many higher order abstractions are provided hereinafter.
  */
 
+template<class, template<class, class...> class>
+struct is_instance : public std::false_type
+{};
+
+template<class... Ts, template<class, class...> class U>
+struct is_instance<U<Ts...>, U> : public std::true_type
+{};
+
+template<class T, template<class> class U>
+constexpr bool is_instance_v = is_instance<T, U>::value;
+
 /*
 Template-type meta-programming.
 Used for either getting or setting types withal.
