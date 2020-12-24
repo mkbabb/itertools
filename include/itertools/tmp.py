@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 
 
@@ -49,12 +50,46 @@ def to_string(arr):
     return s
 
 
-arr = [[[1, 2, 3], [(7, [[8, 9, 10], [11, 12, 13]], 9), 5, 6]],
-       [[7, 8, 9], [10, 11, 12]],
-       [[13, 14, 15], [16, 17, 18]],
-       [[19, 20, 21], [22, 23, 24]]]
+# arr = [[[1, 2, 3], [(7, [[8, 9, 10], [11, 12, 13]], 9), 5, 6]],
+#        [[7, 8, 9], [10, 11, 12]],
+#        [[13, 14, 15], [16, 17, 18]],
+#        [[19, 20, 21], [22, 23, 24]]]
 
-s = to_string(arr)
-print(s)
+# s = to_string(arr)
+# print(s)
 
-print(np.asarray(arr))
+# print(np.asarray(arr))
+
+
+class iterator:
+    def __init__(self, span: List, is_reversed = False) -> None:
+        self.span = span
+        self.begin = span[0][0]
+        self.end = span[0][-1]
+        self.is_reversed = is_reversed
+
+    def get_value(self):
+        return self.span[0] if not self.is_reversed else self.span[-1]
+
+
+    def plus(self):
+        next(self.get_value())
+    
+    def minus(self):
+        pass
+
+    def eq(self):
+        pass
+        
+
+
+
+        
+
+v1 = [0, 1, 2, 3]
+v2 = [4, 5, 6, 7]
+v3 = [8, 9, 10, 11]
+
+iters = [v1, v2, v3]
+
+
