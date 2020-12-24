@@ -412,6 +412,7 @@ void
 test_reverse()
 {
     using namespace itertools;
+    using namespace std::string_literals;
 
     std::vector<int> v;
     for (auto i : views::iota(13)) {
@@ -430,6 +431,11 @@ test_reverse()
 
     assert(equal(rng, expected));
     assert(equal(rng | views::reverse(), r_expected));
+
+    auto s = "Amami, Alfredo, quant'io t'amo."s;
+    auto r_s = s | views::reverse() | itertools::to<std::string>();
+
+    assert(equal(r_s, ".oma't oi'tnauq ,oderflA ,imamA"s));
 }
 
 void
@@ -457,10 +463,13 @@ test_zip()
 {
     using namespace itertools;
 
-    std::vector<int> v1 = { 1, 5, 3, 4, 7, 99 };
-    std::vector<int> v2 = { 2, 3, 4, 7, 8, 9, 2, 2, 2, 2, 2 };
+    std::vector<int> v1 = { 9, 8, 7, 6, 5 };
+    std::vector<int> v2 = { 2, 2, 3, 4, 7, 8, 9, 2, 2, 2 };
     std::vector<std::unique_ptr<int>> v3;
 
+    std::vector<std::tuple<int, int, int>> expected = { { 9, 2, 1 },
+                                                        { 8, 2, 2 },
+                                                        { 7, 3, 3 } };
     int a = 1;
     int b = 2;
     int c = 3;
@@ -472,14 +481,36 @@ test_zip()
 
     for (auto&& [x, y, z] : rng) {
     }
-
     for (auto&& [x, y, z] : rng | views::reverse()) {
     }
 
-    auto erm =
-      rng | views::reverse() | views::reverse() | views::reverse() | views::reverse();
+    auto v4 = v3 | views::transform([](auto&& x) { return *x.get(); });
+    auto rng2 = views::zip(v1, v2, v4);
 
-    auto t_erm = erm | to<std::vector>();
+    assert(equal(rng2, expected, false));
+}
+
+void
+test_concat()
+{
+    std::vector<int> expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    auto r_expected = expected | views::reverse() | itertools::to<std::vector>();
+
+    std::vector<int> v1 = { 1, 2, 3, 4, 5 };
+    std::vector<int> v2 = { 6, 7, 8, 9, 10 };
+    std::vector<int> v3 = { 11, 12, 13, 14, 15 };
+
+    auto rng = views::concat(v1, v2, v3);
+
+    assert(equal(rng, expected));
+    assert(equal(rng | views::reverse(), r_expected));
+
+    auto rng2 = rng | views::reverse() | views::reverse() | views::reverse() |
+                views::reverse() | views::reverse() | views::reverse() |
+                views::reverse() | views::reverse();
+
+    assert(equal(rng2, expected));
+    assert(equal(rng2 | views::reverse(), r_expected));
 }
 
 auto trim_front = views::drop_while([](char c) { return std::isspace(c); });
@@ -509,6 +540,7 @@ main()
     test_reverse();
     test_filter();
     test_zip();
+    test_concat();
 
     auto s = "    for the love of      "s | trim |
              views::transform([](char x) { return std::toupper(x); }) |
@@ -519,16 +551,6 @@ main()
     std::vector<int> v1 = { 1, 2, 3, 4, 5 };
     std::vector<int> v2 = { 10, 9, 8, 7, 6 };
     std::vector<int> v3 = { 100, 200, 300, 400, 500 };
-
-    auto rng = views::concat(v1, v2, v3);
-
-    for (auto i : rng | views::reverse()) {
-        std::cout << i << std::endl;
-    }
-
-    for (auto i : rng) {
-        std::cout << i << std::endl;
-    }
 
     auto rng2 = v1 | views::block(2);
 

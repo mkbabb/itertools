@@ -63,12 +63,13 @@ class range_iterator
 template<class Iter>
 range_iterator(Iter&&) -> range_iterator<Iter>;
 
-template<class Range,
-         class begin_t = iter_begin_t<Range>,
-         class end_t = iter_end_t<Range>>
+template<class Range, class Begin = iter_begin_t<Range>, class End = iter_end_t<Range>>
 class cached_container
 {
   public:
+    using begin_t = Begin;
+    using end_t = End;
+
     Range range;
     std::optional<begin_t> begin_;
     std::optional<end_t> end_;

@@ -14,59 +14,111 @@ using cached_tuple =
   cached_container<Range, tuple_begin_t<Range&>, tuple_end_t<Range&>>;
 
 template<class Range>
+using tuple_iter_value_t =
+  std::remove_cvref_t<decltype(std::get<0>(std::declval<Range>()))>;
+template<class Range>
 class concat_container : public cached_tuple<Range>
 {
+
   public:
     template<class Iter>
     class iterator : range_iterator<Iter>
     {
-      public:
-        concat_container* base;
-
-        iterator(concat_container* base, Iter&& it)
-          : range_iterator<Iter>{ std::forward<Iter>(it) }
-          , base(base)
-        {}
-
-        bool is_first_complete() const
-        {
-            return std::get<0>(*base->begin_) == std::get<0>(*base->end_);
-        }
-
-        template<bool forward>
+      private:
+        template<int ix>
         bool is_complete() const
         {
-            if (is_first_complete()) {
-                tupletools::roll<forward>(*base->begin_);
-                tupletools::roll<forward>(*base->end_);
+            return std::get<ix>(*base->begin_) == std::get<ix>(*base->end_);
+        }
 
-                return is_first_complete();
+        template<int ix>
+        bool roll()
+        {
+            tupletools::roll<ix == 0>(*base->begin_);
+            tupletools::roll<ix == 0>(*base->end_);
+            return is_complete<ix>();
+        }
+
+        template<int ix>
+        bool roll_if_complete()
+        {
+            if (is_complete<ix>()) {
+                rolled = true;
+                return this->roll<ix>();
             } else {
+                rolled = false;
                 return false;
             }
         }
 
+        void advance(auto&& func)
+        {
+            if (is_reversed) {
+                func.template operator()<N - 1>(this);
+            } else {
+                func.template operator()<0>(this);
+            }
+        }
+
+      public:
+        using begin_t = tuple_iter_value_t<typename cached_tuple<Range>::begin_t>;
+        static constexpr int N = tupletools::tuple_size_v<Range>;
+
+        concat_container* base;
+        begin_t value;
+        bool is_reversed = false;
+        bool rolled = false;
+
+        iterator(concat_container* base, Iter&& it)
+          : range_iterator<Iter>{ std::forward<Iter>(it) }
+          , base(base)
+          , value(std::get<0>(it))
+          , is_reversed{ it != *base->begin_ }
+        {}
+
         template<class T>
         bool operator==(const iterator<T>& rhs) const
         {
-            return is_first_complete();
+            if (is_reversed) {
+                return is_complete<N - 1>();
+            } else {
+                return is_complete<0>();
+            }
         }
 
         auto operator++() -> decltype(auto)
         {
-            is_complete<true>();
-            ++std::get<0>(this->it);
+            if (is_reversed && rolled) {
+                this->roll<0>();
+            }
+
+            constexpr auto func = []<int ix>(auto&& self) {
+                ++std::get<ix>(self->it);
+                self->template roll_if_complete<ix>();
+                self->value = std::get<ix>(self->it);
+            };
+
+            advance(func);
             return *this;
         }
 
         auto operator--() -> decltype(auto)
         {
-            is_complete<false>();
-            --std::get<0>(this->it);
+            if (!is_reversed && rolled) {
+                this->roll<N - 1>();
+            }
+
+            constexpr auto func = []<int ix>(auto&& self) {
+                --std::get<ix>(self->it);
+                self->value = std::get<ix>(self->it);
+                self->template roll_if_complete<ix>();
+            };
+
+            advance(func);
             return *this;
         }
 
-        auto operator*() -> decltype(auto) { return *std::get<0>(this->it); }
+        auto operator*() -> decltype(auto) { return *value; }
     };
 
     template<class Iter>

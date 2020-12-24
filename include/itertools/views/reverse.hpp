@@ -57,26 +57,13 @@ class reverse_container
 template<class Range>
 reverse_container(Range&&) -> reverse_container<Range>;
 
-template<class Range>
-concept concatted = is_instance_v<std::remove_cvref_t<Range>, concat_container>;
-
-template<class Range>
-constexpr reverse_container<Range>
-reverse(Range&& range)
-{
-    if constexpr (concatted<Range>) {
-        range.range = tupletools::reverse(range.range);
-    }
-    return reverse_container<Range>(std::forward<Range>(range));
-};
-
 }
 
 constexpr auto
 reverse()
 {
     return []<class Range>(Range&& range) {
-        return detail::reverse(std::forward<Range>(range));
+        return detail::reverse_container<Range>(std::forward<Range>(range));
     };
 }
 
