@@ -2,7 +2,7 @@
 #include "concat.hpp"
 #include "enumerate.hpp"
 #include "filter.hpp"
-// #include "flatten.hpp"
+#include "flatten.hpp"
 // #include "intersperse.hpp"
 // #include "join.hpp"
 #include "drop_while.hpp"

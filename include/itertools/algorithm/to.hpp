@@ -7,12 +7,13 @@
 
 namespace itertools {
 
-constexpr auto default_inserter = [](auto& container, auto&& y) {
+constexpr auto forward_inserter = [](auto& container, auto&& y) {
     container.push_back(y);
 };
 
-template<template<typename... Ts> class Container,
-         class Func = decltype(default_inserter)>
+constexpr auto copy_inserter = [](auto& container, auto y) { container.push_back(y); };
+
+template<template<typename... Ts> class Container, class Func = decltype(copy_inserter)>
 decltype(auto)
 to(Func&& inserter = {})
 {

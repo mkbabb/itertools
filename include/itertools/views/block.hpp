@@ -17,7 +17,8 @@ class block_container : public cached_container<Range>
     class iterator : public range_iterator<Iter>
     {
         block_container* base;
-        std::vector<std::remove_cvref_t<iter_value_t<Iter>>> ret;
+        using value_t = tupletools::range_value_t<Range>;
+        std::vector<value_t> ret;
 
       public:
         iterator(block_container* base, Iter&& it) noexcept
@@ -43,7 +44,8 @@ class block_container : public cached_container<Range>
                 if (is_complete()) {
                     break;
                 } else {
-                    ret.push_back(*this->it);
+                    auto val = *this->it;
+                    ret.push_back(val);
                     ++this->it;
                 }
             }
@@ -61,8 +63,10 @@ class block_container : public cached_container<Range>
       , block_size(block_size)
     {}
 
-    auto begin() { return iterator(this, this->cache_begin()); }
+    void init_begin() override { this->begin_ = std::begin(this->range); };
+    void init_end() override { this->end_ = std::end(this->range); };
 
+    auto begin() { return iterator(this, this->cache_begin()); }
     auto end() { return iterator(this, this->cache_end()); }
 };
 

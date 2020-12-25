@@ -87,10 +87,17 @@ template<typename T>
 concept Tupleoid = is_tupleoid_v<T>;
 
 template<typename T>
-concept Rangeable = requires(T x)
+concept Rangeable = requires(T&& x)
 {
     x.begin();
     x.end();
+};
+
+template<typename T>
+concept RangeablePtr = requires(T x)
+{
+    x->begin();
+    x->end();
 };
 
 template<typename T>

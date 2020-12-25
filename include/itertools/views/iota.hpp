@@ -29,10 +29,7 @@ class iota
             return *this;
         }
 
-        bool operator==(const range_container_terminus&) const
-        {
-            return base->current == base->stop;
-        }
+        bool operator==(const iterator&) const { return base->current == base->stop; }
 
         const T operator*() { return base->current; }
 
@@ -69,7 +66,7 @@ class iota
 
     auto begin() { return iterator(this); }
 
-    auto end() { return range_container_terminus{}; }
+    auto end() { return iterator(this); }
 
     T start, stop, stride;
     T current;

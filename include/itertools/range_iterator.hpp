@@ -79,19 +79,8 @@ class cached_container
       : range{ std::forward<Range>(range) }
     {}
 
-    virtual void init_begin()
-    {
-        if constexpr (ForwardRange<Range>) {
-            this->begin_ = std::begin(range);
-        }
-    }
-
-    virtual void init_end()
-    {
-        if constexpr (ForwardRange<Range>) {
-            this->end_ = std::end(range);
-        }
-    }
+    virtual void init_begin() = 0;
+    virtual void init_end() = 0;
 
     void cache()
     {

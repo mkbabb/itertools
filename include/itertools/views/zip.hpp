@@ -104,6 +104,14 @@ zip(Args&&... args)
 
 template<class... Args>
 constexpr decltype(auto)
+zip_copy(Args&&... args)
+{
+    auto tup = std::make_tuple(args...);
+    return detail::zip_container(std::move(tup));
+}
+
+template<class... Args>
+constexpr decltype(auto)
 zip_copy_if_rvalue(Args&&... args)
 {
     auto tup = std::make_tuple(tupletools::copy_if_rvalue(std::forward<Args>(args))...);

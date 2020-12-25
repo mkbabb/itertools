@@ -491,6 +491,16 @@ test_zip()
 }
 
 void
+test_enumerate()
+{
+    std::vector<int> v1 = { 1, 2, 3, 4, 5 };
+
+    auto rng = views::enumerate(v1) | itertools::to<std::vector>();
+
+    std::cout << "tranquilia" << std::endl;
+}
+
+void
 test_concat()
 {
     std::vector<int> expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
@@ -511,6 +521,46 @@ test_concat()
 
     assert(equal(rng2, expected));
     assert(equal(rng2 | views::reverse(), r_expected));
+}
+
+void
+test_block()
+{
+    {
+        auto v1 = views::iota(10);
+        std::vector<std::vector<int>> expected = {
+            { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 }, { 9 }
+        };
+        auto rng = v1 | views::block(3);
+
+        assert(equal(rng, expected));
+    }
+    {
+        std::vector<std::vector<int>> expected = {
+            { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 }, { 9, 10, 11 }
+        };
+
+        std::vector<int> v1 = { 0, 1, 2, 3, 4, 5 };
+        std::vector<int> v2 = { 6, 7, 8, 9, 10, 11 };
+
+        auto rng = views::concat(v1, v2) | views::block(3);
+
+        // assert(equal(rng, expected));
+    }
+    {
+        std::vector<std::vector<std::tuple<int, int>>> expected = {
+            { { 0, 6 }, { 1, 7 }, { 2, 8 } }, { { 3, 9 }, { 4, 10 }, { 5, 11 } }
+        };
+
+        std::vector<int> v1 = { 0, 1, 2, 3, 4, 5 };
+        std::vector<int> v2 = { 6, 7, 8, 9, 10, 11 };
+
+        auto rng =
+          views::zip_copy(v1, v2) | views::block(3) | itertools::to<std::vector>();
+
+        std::cout << "he";
+        // assert(equal(rng, expected));
+    }
 }
 
 auto trim_front = views::drop_while([](char c) { return std::isspace(c); });
@@ -537,42 +587,44 @@ main()
 
     range_container_tests();
 
+    test_enumerate();
     test_reverse();
     test_filter();
     test_zip();
     test_concat();
+    test_block();
 
     auto s = "    for the love of      "s | trim |
              views::transform([](char x) { return std::toupper(x); }) |
              to<std::string>();
-
     std::cout << s << std::endl;
 
-    std::vector<int> v1 = { 1, 2, 3, 4, 5 };
-    std::vector<int> v2 = { 10, 9, 8, 7, 6 };
-    std::vector<int> v3 = { 100, 200, 300, 400, 500 };
+    std::vector<std::vector<std::vector<int>>> iter = {
+        { { 1, 2, 3 }, { 4, 5, 6 } },
+        { { 7, 8, 9 }, { 10, 11, 12 } },
+        { { 13, 14, 15 }, { 16, 17, 18 } },
+        { { 19, 20, 21 }, { 22, 23, 24 } }
+    };
 
-    auto rng2 = v1 | views::block(2);
-
-    for (auto i : rng2) {
-        std::cout << i.size() << std::endl;
+    for (auto&& i : views::flatten(views::flatten(iter)) | views::reverse()) {
+        std::cout << i << std::endl;
     }
 
-    std::vector<std::tuple<std::list<std::vector<std::vector<int>>>,
-                           int,
-                           std::map<int, std::tuple<int, int, int>>>>
-      iter = { { { { { 1, 2 } }, { { 3, 4 } } },
-                 1,
-                 { { 1, { 0, 1, 2 } },
-                   { 2, { 1, 2, 3 } },
-                   { 3, { 2, 3, 4 } },
-                   { 4, { 3, 4, 5 } } } },
-               { { { { 5, 6 } }, { { 7, 8 } } },
-                 4,
-                 { { 1, { 0, 1, 2 } },
-                   { 2, { 1, 2, 3 } },
-                   { 3, { 2, 3, 4 } },
-                   { 4, { 3, 4, 5 } } } } };
+    // std::vector<std::tuple<std::list<std::vector<std::vector<int>>>,
+    //                        int,
+    //                        std::map<int, std::tuple<int, int, int>>>>
+    //   iter = { { { { { 1, 2 } }, { { 3, 4 } } },
+    //              1,
+    //              { { 1, { 0, 1, 2 } },
+    //                { 2, { 1, 2, 3 } },
+    //                { 3, { 2, 3, 4 } },
+    //                { 4, { 3, 4, 5 } } } },
+    //            { { { { 5, 6 } }, { { 7, 8 } } },
+    //              4,
+    //              { { 1, { 0, 1, 2 } },
+    //                { 2, { 1, 2, 3 } },
+    //                { 3, { 2, 3, 4 } },
+    //                { 4, { 3, 4, 5 } } } } };
 
     // std::vector<std::vector<std::vector<int>>> iter =
     //     {{{1, 2, 3}, {4, 5, 6}},
