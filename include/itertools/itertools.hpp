@@ -4,7 +4,7 @@
 #include "itertools/range_iterator.hpp"
 #include "itertools/tupletools.hpp"
 #include "itertools/types.hpp"
-#include "itertools/views/all.hpp"
+#include "itertools/views/iota.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -20,21 +20,23 @@
 
 namespace itertools {
 
-template<class Iterable>
-constexpr Iterable
-roll(Iterable&& iter, int axis = -1)
+template<class Iter>
+void
+roll(Iter&& it, bool reverse = false)
 {
-    if (axis == 0) {
-        return iter;
-    } else if (axis == -1) {
-        axis = iter.size() - 1;
+    int N = it.size();
+
+    for (int i : views::iota(N)) {
+        auto [ix1, ix2] = ([=] {
+            if (reverse) {
+                return std::make_tuple(N - (i + 1), 0);
+            } else {
+                return std::make_tuple(N - 1, i);
+            }
+        })();
+
+        std::swap(it[ix1], it[ix2]);
     }
-    int i = 0;
-    while (i < axis) {
-        std::swap(iter[axis], iter[i]);
-        i += 1;
-    };
-    return iter;
 }
 
 template<class Func>
