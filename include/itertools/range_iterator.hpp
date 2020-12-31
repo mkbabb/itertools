@@ -67,8 +67,8 @@ template<class Range, class Begin = iter_begin_t<Range>, class End = iter_end_t<
 class cached_container
 {
   public:
-    using begin_t = Begin;
-    using end_t = End;
+    using begin_t = std::remove_cvref_t<Begin>;
+    using end_t = std::remove_cvref_t<End>;
 
     Range range;
     std::optional<begin_t> begin_;
@@ -105,6 +105,9 @@ class cached_container
         return *end_;
     }
 };
+
+template<class Range>
+cached_container(Range&&) -> cached_container<Range>;
 
 template<ForwardRange Range, class Func>
 requires invocable<Func, Range> constexpr auto

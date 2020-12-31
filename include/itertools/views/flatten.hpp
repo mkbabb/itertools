@@ -9,11 +9,29 @@ namespace views {
 
 using namespace tupletools;
 
-template<class Range, class begin_t = iter_begin_t<Range>>
-using cached_flattened_container =
-  cached_container<Range,
-                   decltype(std::declval<begin_t>()->begin()),
-                   decltype(std::declval<begin_t>()->end())>;
+template<class Outer, class Inner>
+struct nested_iter
+{
+    Outer outer;
+    Inner inner;
+
+    nested_iter(Outer outer, Inner inner)
+      : outer(outer)
+      , inner(inner)
+    {}
+};
+
+// template<class Outer, class Inner>
+// nested_iter(Outer&&, Inner&&) -> nested_iter<Outer, Inner>;
+
+template<class Range,
+         class OuterBegin = iter_begin_t<Range>,
+         class OuterEnd = iter_end_t<Range>,
+         class InnerBegin = decltype(std::declval<OuterBegin>()->begin()),
+         class InnerEnd = decltype(std::declval<OuterEnd>()->end())>
+using cached_flattened_container = cached_container<Range,
+                                                    nested_iter<OuterBegin, InnerBegin>,
+                                                    nested_iter<OuterEnd, InnerEnd>>;
 
 namespace itt = itertools;
 
@@ -21,37 +39,49 @@ template<class Range>
 class flatten_container : cached_flattened_container<Range>
 {
   public:
-    using begin_t = iter_begin_t<Range>;
-    using end_t = iter_end_t<Range>;
-    template<class Iter>
-    class iterator : public range_iterator<Iter>
+    template<class BeginIter, class EndIter>
+    class iterator : public range_iterator<BeginIter>
     {
       public:
         flatten_container* base;
-        begin_t outer_begin;
-        end_t outer_end;
+        EndIter end;
+
         bool is_reversed;
 
-        iterator(flatten_container* base, Iter&& it)
-          : range_iterator<Iter>{ std::forward<Iter>(it) }
+        iterator(flatten_container* base,
+                 bool is_reversed,
+                 BeginIter&& it,
+                 EndIter&& end)
+          : range_iterator<BeginIter>{ std::forward<BeginIter>(it) }
+          , end{ std::forward<EndIter>(end) }
           , base(base)
-          , outer_begin(base->range.begin())
-          , outer_end(base->range.end())
-          , is_reversed{ it != *base->begin_ }
+          , is_reversed{ is_reversed }
         {}
 
-        bool is_complete() const { return *base->begin_ == *base->end_; }
+        auto& get_outer() { return (is_reversed ? *base->end_ : *base->begin_).outer; }
 
-        bool is_outer_complete() { return outer_begin == outer_end; }
+        bool is_complete() const { return this->it == end; }
+
+        bool is_outer_complete()
+        {
+            return (*base->begin_).outer == (*base->end_).outer;
+        }
 
         void inner_advance()
         {
-            *base->begin_ = outer_begin->begin();
-            *base->end_ = outer_begin->end();
+            auto& oit = get_outer();
+
+            if (is_reversed) {
+                this->it = (--oit)->end();
+                end = oit->begin();
+            } else {
+                this->it = oit->begin();
+                end = oit->end();
+            }
         }
 
-        template<class T>
-        bool operator==(const iterator<T>& rhs) const
+        template<class T, class U>
+        bool operator==(const iterator<T, U>& rhs) const
         {
             return is_complete();
         }
@@ -61,7 +91,7 @@ class flatten_container : cached_flattened_container<Range>
             ++this->it;
 
             if (this->is_complete()) {
-                ++outer_begin;
+                ++get_outer();
 
                 if (!this->is_outer_complete()) {
                     inner_advance();
@@ -75,7 +105,7 @@ class flatten_container : cached_flattened_container<Range>
             --this->it;
 
             if (this->is_complete()) {
-                --outer_begin;
+                --get_outer();
 
                 if (!this->is_outer_complete()) {
                     inner_advance();
@@ -85,19 +115,49 @@ class flatten_container : cached_flattened_container<Range>
         }
     };
 
-    template<class Iter>
-    iterator(flatten_container*, Iter&&) -> iterator<Iter>;
+    template<class BeginIter, class EndIter>
+    iterator(flatten_container*, bool, BeginIter&&, EndIter&&)
+      -> iterator<BeginIter, EndIter>;
 
     flatten_container(Range&& range)
       : cached_flattened_container<Range>(std::forward<Range>(range))
     {}
 
-    void init_begin() override { this->begin_ = this->range.begin()->begin(); }
-    void init_end() override { this->end_ = this->range.begin()->end(); }
+    void init_begin() override
+    {
+        auto outer = this->range.begin();
+        auto inner = outer->begin();
+        nested_iter iter(outer, inner);
 
-    auto begin() { return iterator(this, this->cache_begin()); }
+        this->begin_ = std::move(iter);
+    }
+    void init_end() override
+    {
+        auto outer = this->range.end();
+        auto inner = (--outer)->end();
 
-    auto end() { return iterator(this, this->cache_end()); }
+        nested_iter iter(outer, inner);
+
+        this->end_ = std::move(iter);
+    }
+
+    auto begin()
+    {
+        auto& iter = this->cache_begin();
+        auto& begin = iter.inner;
+        auto end = iter.outer->end();
+
+        return iterator(this, false, begin, std::move(end));
+    }
+
+    auto end()
+    {
+        auto& iter = this->cache_end();
+        auto& begin = iter.inner;
+        auto end = iter.outer->begin();
+
+        return iterator(this, true, begin, std::move(end));
+    }
 };
 
 template<class Range>

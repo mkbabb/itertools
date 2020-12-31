@@ -599,14 +599,25 @@ main()
              to<std::string>();
     std::cout << s << std::endl;
 
-    std::vector<std::vector<std::vector<int>>> iter = {
-        { { 1, 2, 3 }, { 4, 5, 6 } },
-        { { 7, 8, 9 }, { 10, 11, 12 } },
-        { { 13, 14, 15 }, { 16, 17, 18 } },
-        { { 19, 20, 21 }, { 22, 23, 24 } }
-    };
+    // std::vector<std::vector<std::vector<int>>> iter = {
+    //     { { 1, 2, 3 }, { 4, 5, 6 } },
+    //     { { 7, 8, 9 }, { 10, 11, 12 } },
+    //     { { 13, 14, 15 }, { 16, 17, 18 } },
+    //     { { 19, 20, 21 }, { 22, 23, 24 } }
+    // };
+
+    std::vector<std::vector<std::vector<int>>> iter = { { { 1, 2, 3 }, { 4, 5, 6 } } };
+
+    auto begin = iter.begin()->begin()->begin();
+    auto end = --(--(--iter.end())->end())->end();
 
     for (auto&& i : views::flatten(views::flatten(iter)) | views::reverse()) {
+        // std::cout << i << std::endl;
+    }
+
+    std::vector<int> v = { 1, 2, 3 };
+
+    for (auto&& i : v | views::reverse()) {
         std::cout << i << std::endl;
     }
 
