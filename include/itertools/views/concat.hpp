@@ -66,15 +66,15 @@ class concat_container : public cached_vector<Range>
         using value_t = iter_begin_t<range_value_t<Range>>;
 
         concat_container* base;
-        value_t value;
+        value_t cached_value;
         bool is_reversed;
         bool rolled = false;
 
         iterator(concat_container* base, Iter&& it, bool is_reversed = false)
           : range_iterator<Iter>{ std::forward<Iter>(it) }
           , base(base)
-          , value(it[0])
-          , is_reversed{ is_reversed }
+          , cached_value(it[0])
+          , is_reversed(is_reversed)
         {}
 
         template<class T>
@@ -91,7 +91,7 @@ class concat_container : public cached_vector<Range>
 
             ++first();
             roll_if_complete();
-            value = first();
+            cached_value = first();
 
             return *this;
         }
@@ -103,14 +103,14 @@ class concat_container : public cached_vector<Range>
             }
 
             --first();
-            value = first();
+            cached_value = first();
             roll_if_complete();
 
             return *this;
         }
 
-        auto operator*() -> decltype(auto) { return *value; }
-        auto operator->() -> decltype(auto) { return value; }
+        auto operator*() -> decltype(auto) { return *cached_value; }
+        auto operator->() -> decltype(auto) { return cached_value; }
     };
 
     template<class Iter>

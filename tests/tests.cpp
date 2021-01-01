@@ -512,6 +512,10 @@ test_concat()
 
     auto rng = views::concat(v1, v2, v3);
 
+    for (auto&& i : rng) {
+        std::cout << i << std::endl;
+    }
+
     for (auto&& i : rng | views::reverse()) {
         std::cout << i << std::endl;
     }
@@ -595,31 +599,28 @@ main()
     test_reverse();
     test_filter();
     test_zip();
-    // test_concat();
-    // test_block();
+    test_concat();
+    test_block();
 
     auto s = "    for the love of      "s | trim |
              views::transform([](char x) { return std::toupper(x); }) |
              to<std::string>();
     std::cout << s << std::endl;
 
-    // std::vector<std::vector<std::vector<int>>> iter = {
-    //     { { 1, 2, 3 }, { 4, 5, 6 } },
-    //     { { 7, 8, 9 }, { 10, 11, 12 } },
-    //     { { 13, 14, 15 }, { 16, 17, 18 } },
-    //     { { 19, 20, 21 }, { 22, 23, 24 } }
-    // };
-
     std::vector<std::vector<std::vector<int>>> iter = {
-        { { 1, 2, 3 }, { 4, 5, 6 } }, { { 7, 8, 9 }, { 10, 11, 12 } }
+        { { 1, 2, 3 }, { 4, 5, 6 } },
+        { { 7, 8, 9 }, { 10, 11, 12 } },
+        { { 13, 14, 15 }, { 16, 17, 18 } },
+        { { 19, 20, 21 }, { 22, 23, 24 } }
     };
 
-    auto vv = iter | views::transform([](auto&& x) { return *(x.begin()); }) |
-              itertools::to<std::vector>();
+    // std::vector<std::vector<std::vector<int>>> iter = {
+    //     { { 1, 2, 3 }, { 4, 5, 6 } }, { { 7, 8, 9 }, { 10, 11, 12 } }
+    // };
 
     // auto tup = std::make_tuple(*begin, *(++begin));
 
-    auto flt = views::flat(views::flat(iter));
+    auto flt = views::flatten(views::flatten(iter));
 
     for (auto&& i : flt | views::reverse()) {
         std::cout << i << std::endl;

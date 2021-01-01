@@ -9,8 +9,6 @@ namespace views {
 
 using namespace tupletools;
 
-
-
 template<class Range,
          class OuterBegin = iter_begin_t<Range>,
          class OuterEnd = iter_end_t<Range>,
@@ -20,13 +18,6 @@ using cached_flattened_container =
   cached_container<Range,
                    std::tuple<OuterBegin, InnerBegin, InnerEnd>,
                    std::tuple<OuterEnd, InnerEnd, InnerBegin>>;
-
-namespace itt = itertools;
-
-// enum class nested_iter : std::size_t
-// {
-//     outer, begin, end;
-// }
 
 auto
 advance_nested_it(auto& outer_it, bool is_reversed = false)
@@ -48,19 +39,11 @@ class flatten_container : cached_flattened_container<Range>
     template<class Iter>
     class iterator : public range_iterator<Iter>
     {
-      public:
-        flatten_container* base;
-        bool is_reversed;
-
-        iterator(flatten_container* base, bool is_reversed, Iter&& it)
-          : range_iterator<Iter>{ std::forward<Iter>(it) }
-          , base(base)
-          , is_reversed{ is_reversed }
-        {}
-
+      private:
         auto& get_nested() { return (is_reversed ? *base->end_ : *base->begin_); }
 
         auto& outer() { return std::get<0>(get_nested()); }
+
         auto& end() { return std::get<2>(get_nested()); }
 
         bool is_complete() { return this->it == end(); }
@@ -70,10 +53,36 @@ class flatten_container : cached_flattened_container<Range>
             return std::get<0>(*base->begin_) == std::get<0>(*base->end_);
         }
 
+        void advance(auto&& advance_func)
+        {
+            if (this->is_complete() and !this->is_outer_complete()) {
+
+                advance_func(this);
+
+                if (!this->is_outer_complete()) {
+                    inner_advance();
+                }
+            }
+        }
+
         void inner_advance()
         {
             std::tie(this->it, end()) = advance_nested_it(outer(), is_reversed);
         }
+
+      public:
+        using value_t = std::remove_cvref_t<Iter>;
+
+        flatten_container* base;
+        value_t cached_value;
+        bool is_reversed;
+
+        iterator(flatten_container* base, Iter&& it, bool is_reversed = false)
+          : range_iterator<Iter>{ std::forward<Iter>(it) }
+          , base(base)
+          , cached_value(it)
+          , is_reversed(is_reversed)
+        {}
 
         template<class T>
         bool operator==(const iterator<T>& rhs) const
@@ -83,36 +92,27 @@ class flatten_container : cached_flattened_container<Range>
 
         decltype(auto) operator++()
         {
-            ++this->it;
+            cached_value = ++this->it;
+            constexpr auto func = [](auto&& self) { ++(self->outer()); };
+            advance(func);
 
-            if (this->is_complete()) {
-                ++outer();
-
-                if (!this->is_outer_complete()) {
-                    inner_advance();
-                }
-            }
             return *this;
         }
 
         decltype(auto) operator--()
         {
-            --this->it;
+            cached_value = --this->it;
+            constexpr auto func = [](auto&& self) { --(self->outer()); };
+            advance(func);
 
-            if (this->is_complete()) {
-                --outer();
-
-                if (!this->is_outer_complete()) {
-                    inner_advance();
-                    --this->it;
-                }
-            }
             return *this;
         }
+        auto operator*() -> decltype(auto) { return *cached_value; }
+        auto operator->() -> decltype(auto) { return cached_value; }
     };
 
     template<class Iter>
-    iterator(flatten_container*, bool, Iter&&) -> iterator<Iter>;
+    iterator(flatten_container*, Iter&&, bool = false) -> iterator<Iter>;
 
     flatten_container(Range&& range)
       : cached_flattened_container<Range>(std::forward<Range>(range))
@@ -133,9 +133,9 @@ class flatten_container : cached_flattened_container<Range>
         this->end_ = std::make_tuple(outer, inner_begin, inner_end);
     }
 
-    auto begin() { return iterator(this, false, std::get<1>(this->cache_begin())); }
+    auto begin() { return iterator(this, std::get<1>(this->cache_begin())); }
 
-    auto end() { return iterator(this, true, std::get<1>(this->cache_end())); }
+    auto end() { return iterator(this, std::get<1>(this->cache_end()), true); }
 };
 
 template<class Range>
