@@ -39,7 +39,7 @@ class concat_container : public cached_vector<Range>
             return (*base->begin_)[get_ix()] == (*base->end_)[get_ix()];
         }
 
-        bool roll(bool reverse = false)
+        bool roll(bool reverse = true)
         {
             itertools::roll(*base->begin_, reverse);
             itertools::roll(*base->end_, reverse);
@@ -51,7 +51,7 @@ class concat_container : public cached_vector<Range>
         {
             if (is_complete()) {
                 rolled = true;
-                return roll();
+                return roll(!is_reversed);
             } else {
                 rolled = false;
                 return false;
@@ -114,18 +114,16 @@ class concat_container : public cached_vector<Range>
     };
 
     template<class Iter>
-    iterator(concat_container*, Iter&&, bool) -> iterator<Iter>;
+    iterator(concat_container*, Iter&&, bool = false) -> iterator<Iter>;
 
     concat_container(Range&& range)
       : cached_vector<Range>{ std::forward<Range>(range) }
     {}
 
     void init_begin() override { this->begin_ = vector_begin(this->range); }
-
     void init_end() override { this->end_ = vector_end(this->range); }
 
-    auto begin() { return iterator(this, this->cache_begin(), false); }
-
+    auto begin() { return iterator(this, this->cache_begin()); }
     auto end() { return iterator(this, this->cache_end(), true); }
 };
 
@@ -154,10 +152,12 @@ requires(std::is_same_v<T, Args>&&...) constexpr decltype(auto)
   concat(T&& arg, Args&&... args)
 {
     constexpr int N = sizeof...(Args) + 1;
-    std::vector<std::remove_cvref_t<T>> v;
+    using U = std::remove_cvref_t<T>;
+    std::vector<U> v;
+
     v.reserve(N);
-    v.push_back(arg);
-    (v.push_back(args), ...);
+    v.emplace_back(arg);
+    (v.emplace_back(args), ...);
 
     return detail::concat(std::move(v));
 }
