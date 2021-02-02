@@ -278,10 +278,9 @@ requires(std::is_same_v<T, Args>&&...) constexpr decltype(auto)
 
 template<class Range>
 auto
-flat(Range&& range)
+flatten(Range&& range)
 {
-    auto v = range | itertools::to<std::vector>();
-    return detail::concat_container_vector(std::move(v));
+    return detail::concat_container_vector(std::forward<Range>(range));
 }
 
 }
