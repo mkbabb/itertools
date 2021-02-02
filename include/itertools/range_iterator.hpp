@@ -27,6 +27,8 @@ template<class Iter>
 class range_iterator
 {
   public:
+    using iterator_type = std::remove_cvref_t<Iter>;
+
     Iter it;
 
     constexpr range_iterator(Iter&& it)
@@ -36,7 +38,7 @@ class range_iterator
     range_iterator(const range_iterator& other) = default;
     range_iterator& operator=(const range_iterator& other)
     {
-        this->it = other.it;
+        it = other.it;
         return *this;
     }
     ~range_iterator() = default;
@@ -45,19 +47,19 @@ class range_iterator
 
     decltype(auto) operator++()
     {
-        ++this->it;
+        ++it;
         return *this;
     }
 
     decltype(auto) operator--()
     {
-        --this->it;
+        --it;
         return *this;
     }
 
-    decltype(auto) operator*() { return *this->it; }
+    decltype(auto) operator*() { return *it; }
 
-    decltype(auto) operator->() { return this->it; }
+    decltype(auto) operator->() { return it; }
 };
 
 template<class Iter>

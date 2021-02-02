@@ -15,6 +15,10 @@ class filter_container : public cached_container<Range>
     class iterator : public range_iterator<Iter>
     {
       public:
+        using iterator_type = std::remove_cvref_t<Iter>;
+        using value_type = iter_value_t<iterator_type>;
+        using reference = value_type&;
+
         filter_container* base;
 
         iterator(filter_container* base, Iter&& it)

@@ -18,6 +18,11 @@ constexpr auto tuple_end = []<class Range>(Range& range) {
     return tupletools::transform([](auto&& x) { return x.end(); }, range);
 };
 
+constexpr auto tuple_deref = []<class Range>(Range&& range) {
+    return tupletools::transform(
+      [](auto&& v) -> decltype(auto) { return tupletools::copy_if_rvalue(*v); }, range);
+};
+
 template<tupletools::Tupleoid T>
 using tuple_begin_t =
   std::remove_cvref_t<std::invoke_result_t<decltype(tuple_begin), T>>;
@@ -32,13 +37,17 @@ class zip_container
     template<class Iter>
     class iterator : public range_iterator<Iter>
     {
+        using iterator_type = std::remove_cvref_t<Iter>;
+        using value_type = std::remove_cvref_t<
+          std::invoke_result_t<decltype(tuple_deref), iterator_type>>;
+        using reference_type = value_type&;
+
       public:
         iterator(Iter&& it)
           : range_iterator<Iter>(std::forward<Iter>(it))
         {}
 
-        template<class T>
-        bool operator==(const iterator<T>& rhs) const
+        bool operator==(const iterator& rhs) const
         {
             return tupletools::any_where(
               [](auto&& x, auto&& y) { return x == y; }, this->it, rhs.it);
@@ -56,13 +65,7 @@ class zip_container
             return *this;
         }
 
-        decltype(auto) operator*()
-        {
-            auto func = [](auto&& v) -> decltype(auto) {
-                return tupletools::copy_if_rvalue(*v);
-            };
-            return tupletools::transform(func, this->it);
-        }
+        decltype(auto) operator*() { return tuple_deref(this->it); }
     };
 
     template<class Iter>
@@ -77,9 +80,9 @@ class zip_container
       : range(std::forward<Range>(range))
     {}
 
-    auto begin() -> iterator<begin_t> { return iterator(tuple_begin(this->range)); }
+    auto begin() { return iterator(tuple_begin(this->range)); }
 
-    auto end() -> iterator<end_t> { return iterator(tuple_end(this->range)); }
+    auto end() { return iterator(tuple_end(this->range)); }
 };
 
 template<class Range>

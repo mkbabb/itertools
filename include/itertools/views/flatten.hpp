@@ -41,9 +41,7 @@ class flatten_container : cached_flattened_container<Range>
     {
       private:
         auto& get_nested() { return (is_reversed ? *base->end_ : *base->begin_); }
-
         auto& outer() { return std::get<0>(get_nested()); }
-
         auto& end() { return std::get<2>(get_nested()); }
 
         bool is_complete() { return this->it == end(); }
@@ -92,23 +90,28 @@ class flatten_container : cached_flattened_container<Range>
 
         decltype(auto) operator++()
         {
-            cached_value = ++this->it;
+
+            ++this->it;
             constexpr auto func = [](auto&& self) { ++(self->outer()); };
+
             advance(func);
+            cached_value = this->it;
 
             return *this;
         }
 
         decltype(auto) operator--()
         {
-            cached_value = --this->it;
+            --this->it;
             constexpr auto func = [](auto&& self) { --(self->outer()); };
+
+            cached_value = this->it;
             advance(func);
 
             return *this;
         }
         auto operator*() -> decltype(auto) { return *cached_value; }
-        auto operator->() -> decltype(auto) { return cached_value; }
+        auto operator->() -> decltype(auto) { return this->it; }
     };
 
     template<class Iter>

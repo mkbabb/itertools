@@ -17,7 +17,7 @@ class block_container : public cached_container<Range>
     class iterator : public range_iterator<Iter>
     {
         block_container* base;
-        using value_t = tupletools::range_value_t<Range>;
+        using value_t = std::remove_cvref_t<tupletools::range_value_t<Range>>;
         std::vector<value_t> ret;
 
       public:

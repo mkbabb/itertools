@@ -408,6 +408,12 @@ range_container_tests()
     }
 }
 
+auto reverse_many = [](auto&& range) {
+    return range | views::reverse() | views::reverse() | views::reverse() |
+           views::reverse() | views::reverse() | views::reverse() | views::reverse() |
+           views::reverse() | views::reverse() | views::reverse();
+};
+
 void
 test_reverse()
 {
@@ -419,6 +425,10 @@ test_reverse()
         v.push_back(i);
     }
 
+    for (auto&& i : v | views::reverse()) {
+        std::cout << i << std::endl;
+    }
+
     std::vector<int> expected = { 0, 2, 4, 6, 8, 10, 12 };
     std::vector<int> r_expected = { 12, 10, 8, 6, 4, 2, 0 };
 
@@ -428,6 +438,10 @@ test_reverse()
                views::reverse() | views::filter(p) | views::reverse() |
                views::filter(p) | views::reverse() | views::filter(p) |
                views::reverse() | views::filter(p) | views::reverse();
+
+    for (auto&& i : rng) {
+        std::cout << i << std::endl;
+    }
 
     assert(equal(rng, expected));
     assert(equal(rng | views::reverse(), r_expected));
@@ -512,20 +526,10 @@ test_concat()
 
     auto rng = views::concat(v1, v2, v3);
 
-    for (auto&& i : rng) {
-        std::cout << i << std::endl;
-    }
-
-    for (auto&& i : rng | views::reverse()) {
-        std::cout << i << std::endl;
-    }
-
     assert(equal(rng, expected));
     assert(equal(rng | views::reverse(), r_expected));
 
-    auto rng2 = rng | views::reverse() | views::reverse() | views::reverse() |
-                views::reverse() | views::reverse() | views::reverse() |
-                views::reverse() | views::reverse();
+    auto rng2 = rng | reverse_many;
 
     assert(equal(rng2, expected));
     assert(equal(rng2 | views::reverse(), r_expected));
@@ -571,6 +575,50 @@ test_block()
     }
 }
 
+void
+test_flatten()
+{
+    {
+        auto expected = views::iota(1, 25) | itertools::to<std::vector>();
+
+        std::vector<std::vector<std::vector<int>>> v1 = {
+            { { 1, 2, 3 }, { 4, 5, 6 } },
+            { { 7, 8, 9 }, { 10, 11, 12 } },
+            { { 13, 14, 15 }, { 16, 17, 18 } },
+            { { 19, 20, 21 }, { 22, 23, 24 } }
+        };
+
+        auto rng = views::flatten(views::flatten(v1));
+
+        // assert(equal(rng, expected));
+
+        auto rng2 = rng | views::reverse() | views::reverse();
+
+        for (auto&& i : rng2) {
+            std::cout << i << std::endl;
+        }
+
+        assert(equal(rng2, expected));
+    }
+    {
+        auto expected = views::iota(5) | itertools::to<std::vector>();
+
+        std::vector<std::vector<std::vector<std::vector<std::vector<
+          std::vector<std::vector<std::vector<std::vector<std::vector<int>>>>>>>>>>
+          v1 = { { { { { { { { { { 0, 1, 2, 3, 4 } } } } } } } } } };
+
+        auto rng = views::flatten(
+          views::flatten(views::flatten(views::flatten(views::flatten(views::flatten(
+            views::flatten(views::flatten(views::flatten(views::flatten(v1))))))))));
+
+        assert(equal(rng, expected));
+
+        auto rng2 = rng | reverse_many;
+
+        assert(equal(rng2, expected));
+    }
+}
+
 auto trim_front = views::drop_while([](char c) { return std::isspace(c); });
 
 auto trim_back = views::reverse() | trim_front | views::reverse();
@@ -601,32 +649,14 @@ main()
     test_zip();
     test_concat();
     test_block();
+    test_flatten();
 
     auto s = "    for the love of      "s | trim |
              views::transform([](char x) { return std::toupper(x); }) |
              to<std::string>();
     std::cout << s << std::endl;
 
-    std::vector<std::vector<std::vector<int>>> iter = {
-        { { 1, 2, 3 }, { 4, 5, 6 } },
-        { { 7, 8, 9 }, { 10, 11, 12 } },
-        { { 13, 14, 15 }, { 16, 17, 18 } },
-        { { 19, 20, 21 }, { 22, 23, 24 } }
-    };
-
-    // std::vector<std::vector<std::vector<int>>> iter = {
-    //     { { 1, 2, 3 }, { 4, 5, 6 } }, { { 7, 8, 9 }, { 10, 11, 12 } }
-    // };
-
-    // auto tup = std::make_tuple(*begin, *(++begin));
-
-    auto flt = views::flatten(views::flatten(iter));
-
-    for (auto&& i : flt | views::reverse()) {
-        std::cout << i << std::endl;
-    }
-
-    std::vector<int> v = { 1, 2, 3 };
+    std::vector<int> v{ 1, 2, 3, 4, 5 };
 
     for (auto&& i : v | views::reverse()) {
         std::cout << i << std::endl;
