@@ -6,6 +6,21 @@ A simple iterator library for C++, inspired by the great
 Though this technically _is_ a C++20 library, it only supports the current feature set
 offered by clang 11.0. Of note, there is no usage of `std::ranges`, or `concepts`.
 
+- [itertools](#itertools)
+  - [Quick Example](#quick-example)
+  - [Why?](#why)
+  - [How; Functionality](#how-functionality)
+  - [Iterator containers and views](#iterator-containers-and-views)
+    - [The base iterator container](#the-base-iterator-container)
+    - [The iterators](#the-iterators)
+    - [The views](#the-views)
+  - [The rest](#the-rest)
+      - [Infinite iterators](#infinite-iterators)
+      - [Terminating iterators](#terminating-iterators)
+      - [Combinatorics](#combinatorics)
+  - [Tupletools](#tupletools)
+  - [Use these instead](#use-these-instead)
+
 ## Quick Example
 
 Create a calendar for all months in the ... _whoops_ wrong library.
